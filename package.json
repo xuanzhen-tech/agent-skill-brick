@@ -1,0 +1,46 @@
+{
+  "name": "@xuanzhen-tech/agent-skill-brick",
+  "version": "0.1.0",
+  "description": "Agent skill registry and skills-index brick.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xuanzhen-tech/agent-skill-brick.git"
+  },
+  "homepage": "https://github.com/xuanzhen-tech/agent-skill-brick#readme",
+  "bugs": {
+    "url": "https://github.com/xuanzhen-tech/agent-skill-brick/issues"
+  },
+  "exports": "./src/index.mjs",
+  "bin": {
+    "agent-skill": "./src/cli.mjs"
+  },
+  "files": [
+    "src/cli.mjs",
+    "src/index.mjs",
+    "src/brick-definition.mjs",
+    "src/main"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build:artifact": "node src/scripts/build-artifact.mjs",
+    "create:descriptor": "node src/scripts/create-descriptor.mjs",
+    "pack:dry-run": "npm pack --dry-run",
+    "publish:artifact": "node src/scripts/publish-artifact.mjs",
+    "publish:artifact:placeholder": "node src/scripts/publish-artifact-placeholder.mjs",
+    "publish:npm": "npm publish",
+    "release:local": "npm run smoke:cli && npm run smoke:contract && npm run smoke:skill && npm run build:artifact && npm run create:descriptor && npm run publish:artifact:placeholder && npm run verify && npm run pack:dry-run",
+    "smoke:cli": "node src/cli.mjs version && node src/cli.mjs diagnostics --json && node src/cli.mjs roots --json && node src/cli.mjs manifest --json",
+    "smoke:contract": "node src/scripts/smoke-contract.mjs",
+    "smoke:skill": "node src/scripts/smoke-skill.mjs",
+    "verify": "node src/scripts/verify.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@xuanzhen-tech/agent-release-foundation": "0.0.4"
+  }
+}
