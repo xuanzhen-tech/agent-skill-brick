@@ -6,6 +6,7 @@
  */
 
 export { brickDefinition } from "./brick-definition.mjs";
+export { AgentSkill } from "./main/agent-skill.mjs";
 export {
   createAgentSkillLaunchConfig,
   createAgentSkillRuntimeContract,

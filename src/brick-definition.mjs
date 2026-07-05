@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.1.2";
+const BRICK_VERSION = "0.1.3";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -44,6 +44,11 @@ export const brickDefinition = createBrickDefinition({
       name: "agent-skill",
       type: "cli",
       description: "Host-facing command entrypoint. Supports diagnostics, roots, scan, install, update, remove, manifest, and version commands."
+    },
+    {
+      name: "AgentSkill",
+      type: "api",
+      description: "SDK class for composing skill registry and prompt summaries directly into AgentCli."
     },
     {
       name: "createAgentSkillIndex",

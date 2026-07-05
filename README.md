@@ -38,6 +38,32 @@ agent-skill remove my-skill --managed-root C:\Users\you\.agent-cli\skills
 agent-skill manifest --json
 ```
 
+## SDK Object Usage
+
+Product repositories should prefer the object API when composing bricks in
+process. The command entrypoint remains available for release smoke tests and
+host-managed index generation.
+
+```js
+import { AgentSkill } from "@xuanzhen-tech/agent-skill-brick";
+
+const agentSkill = new AgentSkill({
+  env: process.env,
+  workspace,
+  managedRoot: "C:\\Users\\you\\.agent-cli\\skills"
+});
+
+await agentSkill.refresh();
+const promptSection = await agentSkill.buildPrompt();
+const found = await agentSkill.find({ query: "github" });
+const activated = await agentSkill.activate("github");
+```
+
+`buildPrompt()` only returns a concise available-skills summary. It does not
+inject full `SKILL.md` content automatically. Full instructions are returned by
+`activate()` as a `loadedSkill` payload so the orchestrator can decide how to
+persist, deduplicate, and compact loaded skill context.
+
 ## Skill Roots
 
 Default precedence, highest first:

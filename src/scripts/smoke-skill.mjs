@@ -13,6 +13,7 @@ import os from "node:os";
 import path from "node:path";
 
 import {
+  AgentSkill,
   installSkillPackage,
   removeManagedSkill,
   scanSkillRoots,
@@ -128,6 +129,30 @@ try {
 
   const removed = await removeManagedSkill({ skill: "local-install", managedRoot });
   assert.equal(removed.removed, true);
+
+  const agentSkill = new AgentSkill({
+    workspace,
+    managedRoot,
+    extraDirs: [extraRoot],
+    indexPath
+  });
+  const objectIndex = await agentSkill.refresh();
+  assert.equal(objectIndex.skills.some((skill) => skill.name === "alpha"), true);
+  assert.equal(agentSkill.definitions.some((skill) => skill.name === "alpha"), true);
+
+  const prompt = await agentSkill.buildPrompt();
+  assert.match(prompt, /Available Skills/);
+  assert.match(prompt, /alpha/);
+  assert.doesNotMatch(prompt, /Use this skill when it is relevant/);
+
+  const found = await agentSkill.find({ query: "alpha", capability: "search", requiredTool: "run_shell" });
+  assert.equal(found.skills.length, 1);
+  assert.equal(found.skills[0].name, "alpha");
+
+  const activated = await agentSkill.activate("alpha");
+  assert.equal(activated.loadedSkill.name, "alpha");
+  assert.match(activated.loadedSkill.content, /Use this skill when it is relevant/);
+  await assert.rejects(() => agentSkill.activate("missing-skill"), /Unknown skill/);
 
   console.log("[smoke-skill] ok");
 } finally {

@@ -1,6 +1,6 @@
 {
   "name": "@xuanzhen-tech/agent-skill-brick",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Agent skill registry and skills-index brick.",
   "type": "module",
   "repository": {

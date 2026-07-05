@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import { validateBrickDefinition } from "@xuanzhen-tech/agent-release-foundation";
 
 import {
+  AgentSkill,
   brickDefinition,
   createAgentSkillIndex,
   createAgentSkillLaunchConfig,
@@ -21,7 +22,7 @@ import {
 
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.1.2");
+assert.equal(brickDefinition.version, "0.1.3");
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);
@@ -79,5 +80,13 @@ const index = createAgentSkillIndex({
 });
 assert.equal(validateAgentSkillIndex(index).ok, true);
 assert.equal(index.skills.length, 1);
+
+const agentSkill = new AgentSkill({ workspace: process.cwd() });
+assert.equal(agentSkill.definition.id, "agent-skill");
+assert.deepEqual(agentSkill.definitions, []);
+assert.equal(typeof agentSkill.refresh, "function");
+assert.equal(typeof agentSkill.buildPrompt, "function");
+assert.equal(typeof agentSkill.find, "function");
+assert.equal(typeof agentSkill.activate, "function");
 
 console.log("[smoke-contract] ok");
