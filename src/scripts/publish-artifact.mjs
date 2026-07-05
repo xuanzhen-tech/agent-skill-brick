@@ -1,8 +1,8 @@
 /**
- * Publish the built agent-skill artifact to OSS and write descriptor.oss.json.
+ * 将构建出的 agent-skill artifact 发布到 OSS，并写入 descriptor.oss.json。
  *
- * This is the real upload path used by release workflows. Local runs should use
- * `publish:artifact:placeholder` unless OSS credentials are intentionally set.
+ * 这是 release workflow 使用的真实上传路径。本地运行时，除非刻意设置 OSS
+ * 凭据，否则应该使用 `publish:artifact:placeholder`。
  */
 
 import fs from "node:fs/promises";
@@ -85,8 +85,8 @@ console.log("[publish-artifact] objectKey", objectKey);
 console.log("[publish-artifact] url", output.url);
 
 async function loadDotEnvIfPresent(filePath) {
-  // Keep this parser intentionally small: release secrets stay in process env,
-  // and `.env` is only a local convenience for OSS credential variables.
+  // 这个解析器刻意保持很小：release secret 留在进程环境变量中，
+  // `.env` 只是本地 OSS 凭据变量的便利入口。
   try {
     const content = await fs.readFile(filePath, "utf8");
     for (const line of content.split(/\r?\n/)) {

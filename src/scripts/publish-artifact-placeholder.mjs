@@ -1,9 +1,9 @@
 /**
- * Create a placeholder published descriptor without uploading to OSS.
+ * 创建不上传 OSS 的占位发布 descriptor。
  *
- * Local release checks need the same descriptor shape as a real publish. This
- * script swaps the local file URL for a deterministic fake OSS URL so validation
- * can catch descriptor regressions before credentials are involved.
+ * 本地 release 检查需要与真实发布一致的 descriptor 形状。本脚本把本地
+ * file URL 替换成确定性的假 OSS URL，让校验能在涉及凭据前发现 descriptor
+ * 回归。
  */
 
 import fs from "node:fs/promises";

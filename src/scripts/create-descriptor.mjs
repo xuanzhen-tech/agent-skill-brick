@@ -1,9 +1,9 @@
 /**
- * Create the local artifact descriptor for the agent-skill brick.
+ * 创建 agent-skill 积木的本地 artifact descriptor。
  *
- * The descriptor is the release-foundation contract consumed by product
- * manifests and installers. This script translates build metadata into a
- * validated `skills-index` artifact descriptor without embedding local secrets.
+ * descriptor 是产品 manifest 和安装器消费的 release-foundation 合同。本脚本
+ * 把构建元数据转换成经过校验的 `skills-index` artifact descriptor，并避免
+ * 嵌入本地 secret。
  */
 
 import fs from "node:fs/promises";

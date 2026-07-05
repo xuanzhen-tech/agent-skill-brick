@@ -1,9 +1,9 @@
 /**
- * Skill package validation and managed install operations.
+ * skill 包校验和 managed install 操作。
  *
- * This module is the only writer for managed skills. It accepts local
- * directories, local zip files, HTTP(S) zip files, and registry-index JSON
- * entries, then validates the staged package before replacing the managed copy.
+ * 本模块是 managed skills 的唯一写入方。它接受本地目录、本地 zip 文件、
+ * HTTP(S) zip 文件和 registry-index JSON 条目，并在替换 managed 副本前
+ * 校验暂存包。
  */
 
 import crypto from "node:crypto";
@@ -23,8 +23,8 @@ const ALLOWED_ROOT_DIRS = new Set(["references", "scripts", "assets"]);
 export async function validateSkillPackage(skillDir) {
   const root = path.resolve(skillDir);
   const diagnostics = [];
-  // Validation walks the actual filesystem instead of trusting archive names;
-  // this catches unsupported top-level files and local symlinks after staging.
+  // 校验会遍历真实文件系统，而不是信任压缩包文件名；这样可以在暂存后
+  // 捕获不支持的顶层文件和本地 symlink。
   const entries = await listPackageEntries(root);
   const files = entries.filter((entry) => entry.type === "file").map((entry) => entry.path);
   const symlinks = entries.filter((entry) => entry.type === "symlink");
@@ -76,8 +76,8 @@ export async function installSkillPackage({ source, managedRoot }) {
     }
     const skillName = normalizeSkillName(validation.metadata.name);
     const destination = path.resolve(managedRoot, skillName);
-    // The normalized skill name should already be safe, but this check keeps
-    // the write boundary explicit at the point where files are replaced.
+    // 规范化后的 skill name 理论上已经安全；这里在替换文件的位置再次显式
+    // 检查写入边界。
     if (!isInsideOrEqual(destination, path.resolve(managedRoot))) {
       throw new Error("skill destination escapes managed root");
     }
@@ -114,8 +114,8 @@ export async function removeManagedSkill({ skill, managedRoot }) {
 async function resolveInstallSource(source) {
   if (!source) throw new Error("install source is required");
   if (/^https?:\/\//i.test(source)) {
-    // A registry is deliberately tiny in v1: it points at installable skill
-    // archives, and selection policy can evolve without changing local install.
+    // v1 的 registry 刻意保持很小：它只指向可安装 skill archive，选择策略
+    // 后续可以在不改变本地安装流程的情况下演进。
     if (source.endsWith(".json")) {
       const registry = await fetchJson(source);
       const first = Array.isArray(registry.skills) ? registry.skills[0] : undefined;
@@ -148,7 +148,7 @@ async function resolveSkillDirectory(stagedDir) {
     const stat = await fs.stat(skillMd);
     if (stat.isFile()) return stagedDir;
   } catch {
-    // Fall through to one-directory package layout.
+    // 继续尝试单目录包布局。
   }
   const entries = await fs.readdir(stagedDir, { withFileTypes: true });
   const candidates = [];
@@ -159,7 +159,7 @@ async function resolveSkillDirectory(stagedDir) {
       const stat = await fs.stat(path.join(candidate, "SKILL.md"));
       if (stat.isFile()) candidates.push(candidate);
     } catch {
-      // Ignore non-skill directories.
+      // 忽略非 skill 目录。
     }
   }
   if (candidates.length !== 1) {
@@ -181,8 +181,7 @@ async function unzip(zipPath, outputDir) {
 }
 
 async function assertZipEntriesSafe(zipPath) {
-  // Inspect before extracting so archive traversal never gets a chance to write
-  // outside the temporary staging directory.
+  // 解压前先检查，避免 archive traversal 有机会写出临时暂存目录。
   const command = [
     "Add-Type -AssemblyName System.IO.Compression.FileSystem;",
     `$archive = [System.IO.Compression.ZipFile]::OpenRead(${psString(zipPath)});`,

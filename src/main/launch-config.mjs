@@ -1,9 +1,8 @@
 /**
- * Launch configuration and runtime contract helpers for agent-skill.
+ * agent-skill 的启动配置和运行时合同工具。
  *
- * Product/client-shell code uses these helpers to decide where managed skills
- * live and where the generated index should be written, without duplicating
- * path defaults or environment variable names.
+ * 产品或 client-shell 代码通过这些工具决定 managed skills 的位置，以及
+ * 生成的 index 应该写到哪里，从而避免重复维护路径默认值和环境变量名。
  */
 
 import os from "node:os";

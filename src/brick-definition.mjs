@@ -1,10 +1,9 @@
 /**
- * Public brick definition for agent-skill.
+ * agent-skill 的公开积木定义。
  *
- * This contract tells baseLine and product repositories that the brick produces
- * a skills-index artifact and exposes SDK/command helpers for skill discovery,
- * validation, and managed installation. It deliberately does not claim tool
- * execution or model orchestration capabilities.
+ * 这个合同告诉 baseLine 和产品仓库：当前积木产出 skills-index artifact，
+ * 并暴露用于 skill 发现、校验和托管安装的 SDK/命令工具。它刻意不声明
+ * 工具执行或模型编排能力。
  */
 
 import {

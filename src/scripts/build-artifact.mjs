@@ -1,10 +1,9 @@
 /**
- * Build the distributable agent-skill runtime artifact.
+ * 构建可分发的 agent-skill 运行时 artifact。
  *
- * The skills brick publishes a small zip that contains the host-facing command
- * entrypoint, SDK modules, brick metadata, and runtime contract. It
- * intentionally does not contain any installed skills; products or registries
- * provide those at release time.
+ * skills 积木发布一个小型 zip，其中包含面向 host 的命令入口、SDK 模块、
+ * 积木元数据和运行时合同。它刻意不包含已安装 skills；这些内容由产品或
+ * registry 在发布时提供。
  */
 
 import crypto from "node:crypto";
@@ -113,7 +112,7 @@ function sha256(buffer) {
   return crypto.createHash("sha256").update(buffer).digest("hex");
 }
 
-// A tiny store-only zip writer keeps the repo dependency-light and deterministic.
+// 这个极小的 store-only zip writer 让仓库保持少依赖且构建结果确定。
 function createZipBuffer(files) {
   const localFileRecords = [];
   const centralDirectoryRecords = [];

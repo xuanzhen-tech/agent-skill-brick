@@ -1,8 +1,8 @@
 /**
- * Small environment parsing helpers used by agent-skill.
+ * agent-skill 使用的轻量环境变量解析工具。
  *
- * Keeping these helpers dependency-free makes CLI and runtime artifact startup
- * predictable, and gives all config readers the same treatment of empty values.
+ * 这些工具不依赖外部包，保证命令入口和 runtime artifact 启动可预测，
+ * 同时让所有配置读取方用一致方式处理空值。
  */
 
 export function firstNonEmpty(...values) {

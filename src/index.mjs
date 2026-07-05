@@ -1,8 +1,8 @@
 /**
- * Public SDK surface for agent-skill.
+ * agent-skill 的公开 SDK 出口。
  *
- * Consumers should import only from this file. Internal modules may change as
- * long as these contract helpers remain stable.
+ * 消费方只应该从这个文件 import。只要这些合同工具保持稳定，内部模块
+ * 可以继续演进。
  */
 
 export { brickDefinition } from "./brick-definition.mjs";

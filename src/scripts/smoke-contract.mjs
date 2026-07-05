@@ -1,9 +1,8 @@
 /**
- * Smoke-test the public SDK and brick metadata contract.
+ * smoke 测试公开 SDK 和积木元数据合同。
  *
- * This test does not touch the filesystem-heavy install path. It verifies that
- * product repositories can import the stable SDK exports and that the descriptor
- * shape remains compatible with the release foundation.
+ * 这个测试不触碰偏重文件系统的安装路径。它验证产品仓库可以 import 稳定的
+ * SDK exports，并确认 descriptor 形状仍然兼容 release foundation。
  */
 
 import assert from "node:assert/strict";

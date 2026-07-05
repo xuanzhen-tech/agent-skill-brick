@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * agent-skill host-facing command entrypoint.
+ * agent-skill 面向 host 的命令入口。
  *
- * This executable lets host launchers and release workflows scan roots, write
- * the index, and manage installed skills. It performs file operations only
- * inside the configured managed root and never executes skill scripts.
+ * 这个可执行入口供 host launcher 和 release workflow 扫描 roots、写入 index、
+ * 管理已安装 skills。它只在配置的 managed root 内执行文件操作，并且永不
+ * 执行 skill scripts。
  */
 
 import process from "node:process";
@@ -61,8 +61,7 @@ try {
 
 function parseCommonOptions(args) {
   const options = {};
-  // These options are shared by every subcommand, so the command handlers can
-  // stay focused on the operation they perform.
+  // 这些选项由所有子命令共享，让命令处理器可以只关注自己的操作。
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     const next = args[index + 1];

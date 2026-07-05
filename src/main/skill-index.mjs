@@ -1,9 +1,9 @@
 /**
- * Skill root scanner and agent-skill.index.v1 builder.
+ * skill root 扫描器和 agent-skill.index.v1 构建器。
  *
- * This module turns multiple skill roots into one deterministic index. It owns
- * precedence, SKILL.md metadata extraction, content hashes, and lightweight
- * diagnostics. It never executes skill scripts or imports skill code.
+ * 本模块把多个 skill root 合并成一个确定性的 index。它负责优先级、
+ * SKILL.md 元数据提取、内容 hash 和轻量诊断。它永不执行 skill script，
+ * 也不 import skill 代码。
  */
 
 import crypto from "node:crypto";
@@ -20,7 +20,7 @@ export function createAgentSkillIndex({ roots = [], generatedAt = new Date().toI
   for (const root of roots) {
     for (const diagnostic of root.diagnostics ?? []) diagnostics.push(diagnostic);
     for (const skill of root.skills ?? []) {
-      // Roots are passed highest-precedence first, so keep the first skill name.
+      // roots 按最高优先级优先传入，因此同名 skill 保留第一次出现的记录。
       if (!merged.has(skill.name)) {
         merged.set(skill.name, skill);
       }
@@ -64,10 +64,10 @@ export async function scanSkillRoots(config) {
 }
 
 export function resolveSkillRoots(config) {
-  // Order matters: createAgentSkillIndex keeps the first skill with a given
-  // name, so this list is the precedence policy in executable form.
-  // User-managed skills live under the host-managed root supplied by launch
-  // config. The default launch config points that root at ~/.agent-cli/skills.
+  // 顺序很重要：createAgentSkillIndex 会保留同名 skill 的第一条记录，
+  // 因此这个列表就是可执行形式的优先级策略。
+  // 用户托管的 skills 位于启动配置提供的 host-managed root 下；
+  // 默认启动配置会把该 root 指向 ~/.agent-cli/skills。
   const roots = [
     { source: "workspace", path: path.join(config.workspace, "skills") },
     { source: "project", path: path.join(config.workspace, ".agents", "skills") },

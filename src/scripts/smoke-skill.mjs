@@ -1,10 +1,9 @@
 /**
- * End-to-end smoke test for skill scanning and managed package operations.
+ * skill 扫描和 managed package 操作的端到端 smoke 测试。
  *
- * This script creates disposable skill roots, installs packages from every
- * supported source type, writes an index, and verifies that unsafe packages are
- * rejected. It keeps the test local by serving HTTP fixtures from an in-process
- * server.
+ * 本脚本创建一次性 skill roots，从每种支持的来源安装 package，写入 index，
+ * 并验证不安全 package 会被拒绝。它通过进程内 server 提供 HTTP fixture，
+ * 让测试保持本地化。
  */
 
 import assert from "node:assert/strict";
@@ -182,7 +181,7 @@ function startFixtureServer({ httpZip, registryZip }) {
   });
 }
 
-// Store-only zip fixtures are enough for .NET extraction and avoid test deps.
+// store-only zip fixture 足够供 .NET 解压使用，也能避免测试依赖。
 function createZipBuffer(files) {
   const localFileRecords = [];
   const centralDirectoryRecords = [];

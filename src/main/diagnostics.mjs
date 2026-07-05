@@ -1,9 +1,8 @@
 /**
- * Diagnostics for agent-skill roots and output paths.
+ * agent-skill roots 和输出路径的诊断逻辑。
  *
- * agent-skill is allowed to run before any managed skills exist. Missing roots
- * are informational, while an unwritable index directory is actionable because
- * it blocks producing the registry consumed by other bricks.
+ * agent-skill 允许在没有任何 managed skill 时运行。缺失 root 只是信息提示；
+ * 无法写入 index 目录才是需要处理的问题，因为它会阻塞其它积木消费 registry。
  */
 
 import fs from "node:fs/promises";

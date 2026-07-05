@@ -1,9 +1,9 @@
 /**
- * Verify local build outputs for the agent-skill brick.
+ * 验证 agent-skill 积木的本地构建产物。
  *
- * This script is the final release-local guardrail. It validates brick metadata,
- * package metadata, artifact integrity, descriptor shape, and obvious leakage of
- * local secrets or unrelated runtime contents.
+ * 本脚本是 release:local 的最后一道护栏。它校验积木元数据、包元数据、
+ * artifact 完整性、descriptor 形状，以及明显的本地 secret 或无关运行时
+ * 内容泄露。
  */
 
 import crypto from "node:crypto";
