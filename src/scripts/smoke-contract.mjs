@@ -15,13 +15,14 @@ import {
   createAgentSkillIndex,
   createAgentSkillLaunchConfig,
   createAgentSkillRuntimeContract,
+  resolveSkillRoots,
   validateAgentSkillIndex,
   validateAgentSkillLaunchConfig
 } from "../index.mjs";
 
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.1.1");
+assert.equal(brickDefinition.version, "0.1.2");
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);
@@ -34,6 +35,15 @@ const launchConfig = createAgentSkillLaunchConfig({
 assert.equal(validateAgentSkillLaunchConfig(launchConfig).ok, true);
 assert.equal(launchConfig.command, "agent-skill");
 assert.equal(launchConfig.env.AGENT_SKILL_WORKSPACE, process.cwd());
+assert.match(launchConfig.managedRoot.replaceAll("\\", "/"), /\/\.agent-cli\/skills$/);
+
+const defaultRoots = resolveSkillRoots({
+  workspace: process.cwd(),
+  managedRoot: launchConfig.managedRoot,
+  extraDirs: [],
+  indexPath: launchConfig.indexPath
+});
+assert.deepEqual(defaultRoots.map((root) => root.source), ["workspace", "project", "managed"]);
 
 const runtimeContract = createAgentSkillRuntimeContract({ platform: "win32-x64" });
 assert.equal(runtimeContract.schemaVersion, "agent-skill.runtime.v1");

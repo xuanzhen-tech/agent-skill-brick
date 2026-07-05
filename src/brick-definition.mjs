@@ -2,7 +2,7 @@
  * Public brick definition for agent-skill.
  *
  * This contract tells baseLine and product repositories that the brick produces
- * a skills-index artifact and exposes SDK/CLI helpers for skill discovery,
+ * a skills-index artifact and exposes SDK/command helpers for skill discovery,
  * validation, and managed installation. It deliberately does not claim tool
  * execution or model orchestration capabilities.
  */
@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.1.1";
+const BRICK_VERSION = "0.1.2";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -30,7 +30,7 @@ const registryCapability = createBrickCapability({
 const installCapability = createBrickCapability({
   id: "agent-skill.install",
   name: "Agent Skill Install",
-  type: "cli",
+  type: "config",
   description: "Installs, updates, and removes managed skill packages without executing skill scripts."
 });
 
@@ -44,7 +44,7 @@ export const brickDefinition = createBrickDefinition({
     {
       name: "agent-skill",
       type: "cli",
-      description: "CLI entry. Supports diagnostics, roots, scan, install, update, remove, manifest, and version commands."
+      description: "Host-facing command entrypoint. Supports diagnostics, roots, scan, install, update, remove, manifest, and version commands."
     },
     {
       name: "createAgentSkillIndex",

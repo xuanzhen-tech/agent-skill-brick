@@ -21,15 +21,20 @@ This brick does not own:
 - thread storage or loaded-skill persistence
 - desktop UI, installer, updater, or release manifest composition
 
-## CLI
+## Host Entrypoint
+
+`agent-skill` includes a command entrypoint so host launchers, release workflows,
+and local smoke tests can scan roots, write an index, and manage installed
+skills. It is not a user-facing product CLI; the product-facing CLI is expected
+to be provided by the orchestrator brick.
 
 ```bash
 agent-skill version
 agent-skill diagnostics --json
 agent-skill roots --json
 agent-skill scan --workspace C:\Project --index C:\Project\.agent\agent-skill.index.json
-agent-skill install C:\Downloads\my-skill.zip --managed-root C:\Users\you\.agent\skills
-agent-skill remove my-skill --managed-root C:\Users\you\.agent\skills
+agent-skill install C:\Downloads\my-skill.zip --managed-root C:\Users\you\.agent-cli\skills
+agent-skill remove my-skill --managed-root C:\Users\you\.agent-cli\skills
 agent-skill manifest --json
 ```
 
@@ -40,13 +45,16 @@ Default precedence, highest first:
 ```text
 <workspace>/skills
 <workspace>/.agents/skills
-~/.agent/skills
-~/.agents/skills
+~/.agent-cli/skills
 <installed-skill-artifact>/skills
 AGENT_SKILL_EXTRA_DIRS
 ```
 
 Same-name skills from higher-precedence roots override lower-precedence skills.
+
+`~/.agent-cli/skills` is the default managed root. Older or product-specific
+skill directories can still be included explicitly through
+`AGENT_SKILL_EXTRA_DIRS`.
 
 ## Skill Package
 
@@ -83,4 +91,4 @@ npm install
 npm run release:local
 ```
 
-The release flow validates the brick definition, skill index contract, package install/remove behavior, artifact descriptor, placeholder OSS descriptor, and package shape.
+The release flow validates the brick definition, command entrypoint, skill index contract, package install/remove behavior, artifact descriptor, placeholder OSS descriptor, and package shape.

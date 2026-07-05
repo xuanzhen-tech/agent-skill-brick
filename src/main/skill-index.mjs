@@ -66,11 +66,12 @@ export async function scanSkillRoots(config) {
 export function resolveSkillRoots(config) {
   // Order matters: createAgentSkillIndex keeps the first skill with a given
   // name, so this list is the precedence policy in executable form.
+  // User-managed skills live under the host-managed root supplied by launch
+  // config. The default launch config points that root at ~/.agent-cli/skills.
   const roots = [
     { source: "workspace", path: path.join(config.workspace, "skills") },
     { source: "project", path: path.join(config.workspace, ".agents", "skills") },
-    { source: "managed", path: config.managedRoot },
-    { source: "user", path: path.join(homeDir(), ".agents", "skills") }
+    { source: "managed", path: config.managedRoot }
   ];
   if (config.artifactSkillsRoot) {
     roots.push({ source: "artifact", path: path.join(config.artifactSkillsRoot, "skills") });
@@ -224,8 +225,4 @@ function isInsideOrEqual(childPath, parentPath) {
 
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
-}
-
-function homeDir() {
-  return process.env.USERPROFILE || process.env.HOME || process.cwd();
 }

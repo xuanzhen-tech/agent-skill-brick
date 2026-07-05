@@ -1,9 +1,10 @@
 /**
  * Build the distributable agent-skill runtime artifact.
  *
- * The skills brick publishes a small zip that contains the CLI, SDK modules,
- * brick metadata, and runtime contract. It intentionally does not contain any
- * installed skills; products or registries provide those at release time.
+ * The skills brick publishes a small zip that contains the host-facing command
+ * entrypoint, SDK modules, brick metadata, and runtime contract. It
+ * intentionally does not contain any installed skills; products or registries
+ * provide those at release time.
  */
 
 import crypto from "node:crypto";

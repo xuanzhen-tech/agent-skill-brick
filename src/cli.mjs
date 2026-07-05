@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * agent-skill command-line entrypoint.
+ * agent-skill host-facing command entrypoint.
  *
- * The CLI is the operator-facing surface for scanning roots, writing the index,
- * and managing installed skills. It performs file operations only inside the
- * configured managed root and never executes skill scripts.
+ * This executable lets host launchers and release workflows scan roots, write
+ * the index, and manage installed skills. It performs file operations only
+ * inside the configured managed root and never executes skill scripts.
  */
 
 import process from "node:process";

@@ -13,6 +13,7 @@ import { brickDefinition } from "../brick-definition.mjs";
 import { firstNonEmpty, parseList } from "./env.mjs";
 
 const DEFAULT_INDEX_FILE = "agent-skill.index.json";
+const DEFAULT_MANAGED_SKILL_ROOT = ".agent-cli";
 
 export function createAgentSkillLaunchConfig(input = {}) {
   const config = resolveSkillConfig(process.env, input);
@@ -77,7 +78,7 @@ export function createAgentSkillRuntimeContract(input = {}) {
 
 export function resolveSkillConfig(env = process.env, overrides = {}) {
   const workspace = path.resolve(firstNonEmpty(overrides.workspace, env.AGENT_SKILL_WORKSPACE) ?? process.cwd());
-  const managedRoot = path.resolve(firstNonEmpty(overrides.managedRoot, env.AGENT_SKILL_MANAGED_ROOT) ?? path.join(homeDir(), ".agent", "skills"));
+  const managedRoot = path.resolve(firstNonEmpty(overrides.managedRoot, env.AGENT_SKILL_MANAGED_ROOT) ?? path.join(homeDir(), DEFAULT_MANAGED_SKILL_ROOT, "skills"));
   const artifactSkillsRoot = firstNonEmpty(overrides.artifactSkillsRoot, env.AGENT_SKILL_ARTIFACT_ROOT);
   const indexPath = path.resolve(firstNonEmpty(overrides.indexPath, env.AGENT_SKILL_INDEX_PATH) ?? path.join(workspace, ".agent", DEFAULT_INDEX_FILE));
   return {
