@@ -9,7 +9,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { brickDefinition } from "../brick-definition.mjs";
-import { firstNonEmpty, parseList } from "./env.mjs";
+import { firstNonEmpty } from "./env.mjs";
 
 const DEFAULT_INDEX_FILE = "agent-skill.index.json";
 const DEFAULT_MANAGED_SKILL_ROOT = ".agent-cli";
@@ -22,9 +22,7 @@ export function createAgentSkillLaunchConfig(input = {}) {
     env: {
       AGENT_SKILL_WORKSPACE: config.workspace,
       AGENT_SKILL_MANAGED_ROOT: config.managedRoot,
-      AGENT_SKILL_INDEX_PATH: config.indexPath,
-      ...(config.artifactSkillsRoot ? { AGENT_SKILL_ARTIFACT_ROOT: config.artifactSkillsRoot } : {}),
-      ...(config.extraDirs.length ? { AGENT_SKILL_EXTRA_DIRS: config.extraDirs.join(";") } : {})
+      AGENT_SKILL_INDEX_PATH: config.indexPath
     },
     indexPath: config.indexPath,
     managedRoot: config.managedRoot
@@ -54,8 +52,6 @@ export function createAgentSkillRuntimeContract(input = {}) {
     env: {
       workspace: "AGENT_SKILL_WORKSPACE",
       managedRoot: "AGENT_SKILL_MANAGED_ROOT",
-      artifactSkillsRoot: "AGENT_SKILL_ARTIFACT_ROOT",
-      extraDirs: "AGENT_SKILL_EXTRA_DIRS",
       indexPath: "AGENT_SKILL_INDEX_PATH",
       nodeBin: "AGENT_SKILL_NODE_BIN"
     },
@@ -78,13 +74,10 @@ export function createAgentSkillRuntimeContract(input = {}) {
 export function resolveSkillConfig(env = process.env, overrides = {}) {
   const workspace = path.resolve(firstNonEmpty(overrides.workspace, env.AGENT_SKILL_WORKSPACE) ?? process.cwd());
   const managedRoot = path.resolve(firstNonEmpty(overrides.managedRoot, env.AGENT_SKILL_MANAGED_ROOT) ?? path.join(homeDir(), DEFAULT_MANAGED_SKILL_ROOT, "skills"));
-  const artifactSkillsRoot = firstNonEmpty(overrides.artifactSkillsRoot, env.AGENT_SKILL_ARTIFACT_ROOT);
   const indexPath = path.resolve(firstNonEmpty(overrides.indexPath, env.AGENT_SKILL_INDEX_PATH) ?? path.join(workspace, ".agent", DEFAULT_INDEX_FILE));
   return {
     workspace,
     managedRoot,
-    artifactSkillsRoot: artifactSkillsRoot ? path.resolve(artifactSkillsRoot) : undefined,
-    extraDirs: parseList(overrides.extraDirs ?? env.AGENT_SKILL_EXTRA_DIRS).map((item) => path.resolve(item)),
     indexPath
   };
 }

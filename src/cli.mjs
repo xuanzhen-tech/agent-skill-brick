@@ -2,7 +2,7 @@
 /**
  * agent-skill 面向 host 的命令入口。
  *
- * 这个可执行入口供 host launcher 和 release workflow 扫描 roots、写入 index、
+ * 这个可执行入口供 host launcher 和 release workflow 扫描托管目录、写入 index、
  * 管理已安装 skills。它只在配置的 managed root 内执行文件操作，并且永不
  * 执行 skill scripts。
  */
@@ -71,12 +71,6 @@ function parseCommonOptions(args) {
     } else if (arg === "--managed-root" && next) {
       options.managedRoot = next;
       index += 1;
-    } else if (arg === "--artifact-root" && next) {
-      options.artifactSkillsRoot = next;
-      index += 1;
-    } else if (arg === "--extra-dir" && next) {
-      options.extraDirs = [...(options.extraDirs ?? []), next];
-      index += 1;
     } else if (arg === "--index" && next) {
       options.indexPath = next;
       index += 1;
@@ -86,7 +80,7 @@ function parseCommonOptions(args) {
 }
 
 function getPositionalArgs(args) {
-  const optionNamesWithValues = new Set(["--workspace", "--managed-root", "--artifact-root", "--extra-dir", "--index"]);
+  const optionNamesWithValues = new Set(["--workspace", "--managed-root", "--index"]);
   const values = [];
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -114,7 +108,7 @@ function writeOutput(value, args) {
 function printHelp() {
   console.log(`agent-skill ${brickDefinition.version}
 
-Usage:
+用法:
   agent-skill version
   agent-skill diagnostics [--json]
   agent-skill roots [--json]

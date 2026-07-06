@@ -1,9 +1,9 @@
 /**
- * skill root 扫描器和 agent-skill.index.v1 构建器。
+ * skill 托管目录扫描器和 agent-skill.index.v1 构建器。
  *
- * 本模块把多个 skill root 合并成一个确定性的 index。它负责优先级、
- * SKILL.md 元数据提取、内容 hash 和轻量诊断。它永不执行 skill script，
- * 也不 import skill 代码。
+ * 本模块只扫描配置里的 managedRoot，默认对应 ~/.agent-cli/skills。
+ * 它负责 SKILL.md 元数据提取、内容 hash 和轻量诊断。它永不执行
+ * skill script，也不 import skill 代码。
  */
 
 import crypto from "node:crypto";
@@ -64,22 +64,11 @@ export async function scanSkillRoots(config) {
 }
 
 export function resolveSkillRoots(config) {
-  // 顺序很重要：createAgentSkillIndex 会保留同名 skill 的第一条记录，
-  // 因此这个列表就是可执行形式的优先级策略。
-  // 用户托管的 skills 位于启动配置提供的 host-managed root 下；
-  // 默认启动配置会把该 root 指向 ~/.agent-cli/skills。
-  const roots = [
-    { source: "workspace", path: path.join(config.workspace, "skills") },
-    { source: "project", path: path.join(config.workspace, ".agents", "skills") },
+  // skills 的唯一扫描来源是托管根目录；默认启动配置会把它指向 ~/.agent-cli/skills。
+  // workspace、artifact 和 extra roots 不再参与扫描，避免产品仓库各自扩展路径造成行为分叉。
+  return [
     { source: "managed", path: config.managedRoot }
   ];
-  if (config.artifactSkillsRoot) {
-    roots.push({ source: "artifact", path: path.join(config.artifactSkillsRoot, "skills") });
-  }
-  for (const extraDir of config.extraDirs ?? []) {
-    roots.push({ source: "extra", path: extraDir });
-  }
-  return roots;
 }
 
 export async function writeSkillIndex(indexPath, index) {

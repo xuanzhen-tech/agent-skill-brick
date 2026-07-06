@@ -1,32 +1,29 @@
 # Agent Skill Brick
 
-`agent-skill` is a standalone skill registry and skills-index brick. It manages where skills are discovered from, validates skill packages, installs managed skills, and generates an index file that tool/orchestrator runtimes can consume.
+`agent-skill` 是独立的 skill 注册管理和 `skills-index` 积木。它负责管理托管 skill 目录、校验 skill 包、安装或删除托管 skill，并生成可被外部编排器或工具层消费的索引。
 
-## Boundary
+## 能力边界
 
-This brick owns:
+本积木负责：
 
-- skill root resolution and precedence
-- skill package validation
-- skills-index generation
-- local directory, zip, URL, and registry-index install inputs
-- managed skill removal
-- skills-index artifact packaging
+- 扫描唯一托管目录 `~/.agent-cli/skills`
+- 校验 skill 包结构
+- 生成 `agent-skill.index.v1` 索引
+- 支持本地目录、zip、HTTP zip 和 registry json 安装来源
+- 删除托管目录中的 skill
+- 打包 `skills-index` artifact
 
-This brick does not own:
+本积木不负责：
 
-- model provider calls
-- shell, browser, Python, or web tool execution
-- chat loop orchestration
-- thread storage or loaded-skill persistence
-- desktop UI, installer, updater, or release manifest composition
+- 调用模型 provider
+- 执行 shell、浏览器、Python 或 web 工具
+- 编排 chat loop
+- 存储 thread 或持久化 loaded skill 上下文
+- 桌面 UI、安装器、更新器或产品 release manifest 组合
 
-## Host Entrypoint
+## Host 入口
 
-`agent-skill` includes a command entrypoint so host launchers, release workflows,
-and local smoke tests can scan roots, write an index, and manage installed
-skills. It is not a user-facing product CLI; the product-facing CLI is expected
-to be provided by the orchestrator brick.
+`agent-skill` 提供命令入口，供 host launcher、release workflow 和本地 smoke 测试扫描托管目录、写入索引并管理已安装 skills。它不是面向最终用户的产品 CLI；产品侧 CLI 应由编排积木提供。
 
 ```bash
 agent-skill version
@@ -38,20 +35,14 @@ agent-skill remove my-skill --managed-root C:\Users\you\.agent-cli\skills
 agent-skill manifest --json
 ```
 
-## SDK Object Usage
+## SDK 对象用法
 
-Product repositories should prefer the object API when composing bricks in
-process. The command entrypoint remains available for release smoke tests and
-host-managed index generation.
+产品仓库组合 brick 时应优先使用对象 API。命令入口继续保留给 release smoke 和 host 侧索引生成。
 
 ```js
 import { AgentSkill } from "@xuanzhen-tech/agent-skill-brick";
 
-const agentSkill = new AgentSkill({
-  env: process.env,
-  workspace,
-  managedRoot: "C:\\Users\\you\\.agent-cli\\skills"
-});
+const agentSkill = new AgentSkill();
 
 await agentSkill.refresh();
 const promptSection = await agentSkill.buildPrompt();
@@ -59,32 +50,31 @@ const found = await agentSkill.find({ query: "github" });
 const activated = await agentSkill.activate("github");
 ```
 
-`buildPrompt()` only returns a concise available-skills summary. It does not
-inject full `SKILL.md` content automatically. Full instructions are returned by
-`activate()` as a `loadedSkill` payload so the orchestrator can decide how to
-persist, deduplicate, and compact loaded skill context.
+产品主路径不需要传 `env`、`workspace`、`indexPath`、`promptSkillLimit` 或 `promptBytes`。这些属于内部默认策略或测试/host 隔离场景。`AgentCli` 会在调用 `buildPrompt()`、`find()`、`activate()` 时把当前 workspace 放入 context；`AgentSkill` 自身只管理托管 skill 目录。
 
-## Skill Roots
+`buildPrompt()` 只返回可用 skills 的简短摘要，不会自动注入完整 `SKILL.md`。完整说明只能通过 `activate()` 返回 `loadedSkill` payload，由外部编排器决定如何持久化、去重和 compact。
 
-Default precedence, highest first:
+## Skill 路径
+
+默认且唯一的生产扫描路径是：
 
 ```text
-<workspace>/skills
-<workspace>/.agents/skills
 ~/.agent-cli/skills
-<installed-skill-artifact>/skills
-AGENT_SKILL_EXTRA_DIRS
 ```
 
-Same-name skills from higher-precedence roots override lower-precedence skills.
+对应 Windows 示例：
 
-`~/.agent-cli/skills` is the default managed root. Older or product-specific
-skill directories can still be included explicitly through
-`AGENT_SKILL_EXTRA_DIRS`.
+```text
+C:\Users\you\.agent-cli\skills
+```
 
-## Skill Package
+历史项目级、workspace 级、artifact 内置或额外环境变量目录都不再作为扫描来源。这样可以避免产品仓库自行扩展路径后出现优先级分叉。
 
-Allowed structure:
+测试或 host 隔离场景可以通过 `managedRoot` 或 `AGENT_SKILL_MANAGED_ROOT` 指向临时目录；这只是替换托管根目录的位置，不会恢复多 root 扫描。
+
+## Skill 包结构
+
+允许的结构：
 
 ```text
 <skill>/
@@ -94,27 +84,23 @@ Allowed structure:
   assets/
 ```
 
-`SKILL.md` must include frontmatter with `name` and `description`.
+`SKILL.md` 必须包含 frontmatter，至少声明 `name` 和 `description`。
 
-## Index Contract
+## Index 合同
 
-`agent-skill scan` writes:
+`agent-skill scan` 写入：
 
 ```text
 agent-skill.index.v1
 ```
 
-The generated index is intended to be injected into `agent-tool` through:
+对象化集成时，`AgentTool` 直接注入 `AgentSkill` 对象；文件索引主要用于 host、release smoke 或兼容流程。
 
-```text
-AGENT_TOOL_SKILL_INDEX=<path>/agent-skill.index.json
-```
-
-## Local Verification
+## 本地验证
 
 ```bash
 npm install
 npm run release:local
 ```
 
-The release flow validates the brick definition, command entrypoint, skill index contract, package install/remove behavior, artifact descriptor, placeholder OSS descriptor, and package shape.
+`release:local` 会验证积木定义、命令入口、skill index 合同、安装和删除行为、artifact descriptor、placeholder OSS descriptor 以及 npm package 形状。

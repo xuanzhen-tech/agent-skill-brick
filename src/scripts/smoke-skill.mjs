@@ -1,7 +1,7 @@
 /**
  * skill 扫描和 managed package 操作的端到端 smoke 测试。
  *
- * 本脚本创建一次性 skill roots，从每种支持的来源安装 package，写入 index，
+ * 本脚本创建一次性 managed skill root，从每种支持的来源安装 package，写入 index，
  * 并验证不安全 package 会被拒绝。它通过进程内 server 提供 HTTP fixture，
  * 让测试保持本地化。
  */
@@ -28,43 +28,32 @@ const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "agent-skill-smoke-"));
 try {
   const workspace = path.join(tempRoot, "workspace");
   const managedRoot = path.join(tempRoot, "managed");
-  const extraRoot = path.join(tempRoot, "extra");
   const indexPath = path.join(tempRoot, "agent-skill.index.json");
 
-  await writeSkill(path.join(workspace, "skills", "alpha"), {
+  await writeSkill(path.join(workspace, "skills", "ignored-workspace"), {
+    name: "ignored-workspace",
+    description: "Workspace skill should not be scanned"
+  });
+  await writeSkill(path.join(managedRoot, "alpha"), {
     name: "alpha",
-    description: "Workspace alpha skill",
-    capabilities: ["search", "workspace"],
+    description: "Managed alpha skill",
+    capabilities: ["search", "managed"],
     requiredTools: ["run_shell"]
-  });
-  await writeSkill(path.join(workspace, ".agents", "skills", "project-only"), {
-    name: "project-only",
-    description: "Project scoped skill"
-  });
-  await writeSkill(path.join(workspace, "skills", "shared"), {
-    name: "shared",
-    description: "Workspace shared skill"
   });
   await writeSkill(path.join(managedRoot, "shared"), {
     name: "shared",
-    description: "Managed shared skill should lose precedence"
-  });
-  await writeSkill(path.join(extraRoot, "extra-skill"), {
-    name: "extra-skill",
-    description: "Extra directory skill"
+    description: "Managed shared skill"
   });
 
   const scannedIndex = await scanSkillRoots({
     workspace,
     managedRoot,
-    extraDirs: [extraRoot],
     indexPath
   });
   assert.equal(validateAgentSkillIndex(scannedIndex).ok, true);
   assert.equal(scannedIndex.skills.some((skill) => skill.name === "alpha"), true);
-  assert.equal(scannedIndex.skills.some((skill) => skill.name === "project-only"), true);
-  assert.equal(scannedIndex.skills.some((skill) => skill.name === "extra-skill"), true);
-  assert.equal(scannedIndex.skills.find((skill) => skill.name === "shared").source, "workspace");
+  assert.equal(scannedIndex.skills.some((skill) => skill.name === "ignored-workspace"), false);
+  assert.equal(scannedIndex.skills.find((skill) => skill.name === "shared").source, "managed");
   await writeSkillIndex(indexPath, scannedIndex);
   assert.equal(JSON.parse(await fs.readFile(indexPath, "utf8")).schemaVersion, "agent-skill.index.v1");
 
@@ -133,7 +122,6 @@ try {
   const agentSkill = new AgentSkill({
     workspace,
     managedRoot,
-    extraDirs: [extraRoot],
     indexPath
   });
   const objectIndex = await agentSkill.refresh();

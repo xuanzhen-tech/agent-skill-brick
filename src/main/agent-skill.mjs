@@ -148,8 +148,7 @@ export class AgentSkill {
     return {
       ...this.config,
       workspace: path.resolve(context.workspace ?? context.workingDirectory ?? this.config.workspace),
-      managedRoot: context.managedRoot ? path.resolve(context.managedRoot) : this.config.managedRoot,
-      extraDirs: Array.isArray(context.extraDirs) ? context.extraDirs.map((item) => path.resolve(item)) : this.config.extraDirs
+      managedRoot: context.managedRoot ? path.resolve(context.managedRoot) : this.config.managedRoot
     };
   }
 }

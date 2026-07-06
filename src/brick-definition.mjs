@@ -16,21 +16,21 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.1.3";
+const BRICK_VERSION = "0.1.4";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
   id: "agent-skill.registry",
   name: "Agent Skill Registry",
   type: "config",
-  description: "Scans skill roots, validates skill packages, and emits an agent-skill.index.v1 registry."
+  description: "扫描托管 skill 目录，校验 skill 包，并生成 agent-skill.index.v1 索引。"
 });
 
 const installCapability = createBrickCapability({
   id: "agent-skill.install",
   name: "Agent Skill Install",
   type: "config",
-  description: "Installs, updates, and removes managed skill packages without executing skill scripts."
+  description: "安装、更新和删除托管 skill 包，但不执行 skill 脚本。"
 });
 
 export const brickDefinition = createBrickDefinition({
@@ -38,37 +38,37 @@ export const brickDefinition = createBrickDefinition({
   name: BRICK_NAME,
   version: BRICK_VERSION,
   kind: BRICK_KIND,
-  description: "Independent agent skill registry brick for skill discovery, validation, install, and skills-index packaging.",
+  description: "独立的 agent skill 注册管理积木，负责 skill 发现、校验、安装和 skills-index 打包。",
   entrypoints: [
     {
       name: "agent-skill",
       type: "cli",
-      description: "Host-facing command entrypoint. Supports diagnostics, roots, scan, install, update, remove, manifest, and version commands."
+      description: "面向 host 的命令入口，支持 diagnostics、roots、scan、install、update、remove、manifest 和 version。"
     },
     {
       name: "AgentSkill",
       type: "api",
-      description: "SDK class for composing skill registry and prompt summaries directly into AgentCli."
+      description: "SDK 对象入口，用于把 skill 注册管理和 prompt 摘要直接组合进 AgentCli。"
     },
     {
       name: "createAgentSkillIndex",
       type: "api",
-      description: "SDK helper for generating an agent-skill.index.v1 index."
+      description: "用于生成 agent-skill.index.v1 索引的 SDK helper。"
     },
     {
       name: "validateAgentSkillIndex",
       type: "api",
-      description: "SDK helper for validating the skills index contract."
+      description: "用于校验 skills index 合同的 SDK helper。"
     },
     {
       name: "scanSkillRoots",
       type: "api",
-      description: "SDK helper for scanning configured skill roots."
+      description: "用于扫描托管 skill 目录的 SDK helper。"
     },
     {
       name: "validateSkillPackage",
       type: "api",
-      description: "SDK helper for validating a skill package directory."
+      description: "用于校验 skill 包目录的 SDK helper。"
     }
   ],
   capabilities: [
@@ -80,8 +80,6 @@ export const brickDefinition = createBrickDefinition({
     properties: {
       workspace: { type: "string" },
       managedRoot: { type: "string" },
-      artifactSkillsRoot: { type: "string" },
-      extraDirs: { type: "array", items: { type: "string" } },
       indexPath: { type: "string" }
     }
   },
