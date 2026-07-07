@@ -1,7 +1,7 @@
 /**
  * skill 托管目录扫描器和 agent-skill.index.v1 构建器。
  *
- * 本模块只扫描配置里的 managedRoot，默认对应 ~/.agent-cli/skills。
+ * 本模块只扫描配置里的 skillsPath，默认对应 ~/.agent-cli/skills。
  * 它负责 SKILL.md 元数据提取、内容 hash 和轻量诊断。它永不执行
  * skill script，也不 import skill 代码。
  */
@@ -67,7 +67,7 @@ export function resolveSkillRoots(config) {
   // skills 的唯一扫描来源是托管根目录；默认启动配置会把它指向 ~/.agent-cli/skills。
   // workspace、artifact 和 extra roots 不再参与扫描，避免产品仓库各自扩展路径造成行为分叉。
   return [
-    { source: "managed", path: config.managedRoot }
+    { source: "managed", path: config.skillsPath ?? config.managedRoot }
   ];
 }
 

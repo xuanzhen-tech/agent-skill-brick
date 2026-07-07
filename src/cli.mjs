@@ -3,7 +3,7 @@
  * agent-skill 面向 host 的命令入口。
  *
  * 这个可执行入口供 host launcher 和 release workflow 扫描托管目录、写入 index、
- * 管理已安装 skills。它只在配置的 managed root 内执行文件操作，并且永不
+ * 管理已安装 skills。它只在配置的 skillsPath 内执行文件操作，并且永不
  * 执行 skill scripts。
  */
 
@@ -68,8 +68,8 @@ function parseCommonOptions(args) {
     if (arg === "--workspace" && next) {
       options.workspace = next;
       index += 1;
-    } else if (arg === "--managed-root" && next) {
-      options.managedRoot = next;
+    } else if ((arg === "--skills-path" || arg === "--managed-root") && next) {
+      options.skillsPath = next;
       index += 1;
     } else if (arg === "--index" && next) {
       options.indexPath = next;
@@ -80,7 +80,7 @@ function parseCommonOptions(args) {
 }
 
 function getPositionalArgs(args) {
-  const optionNamesWithValues = new Set(["--workspace", "--managed-root", "--index"]);
+  const optionNamesWithValues = new Set(["--workspace", "--skills-path", "--managed-root", "--index"]);
   const values = [];
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -112,9 +112,9 @@ function printHelp() {
   agent-skill version
   agent-skill diagnostics [--json]
   agent-skill roots [--json]
-  agent-skill scan --workspace <path> --index <path> [--json]
-  agent-skill install <local-dir|zip-file|https-url|registry-json-url> [--managed-root <path>] [--json]
-  agent-skill remove <skill> [--managed-root <path>] [--json]
+  agent-skill scan [--skills-path <path>] [--index <path>] [--json]
+  agent-skill install <local-dir|zip-file|https-url|registry-json-url> [--skills-path <path>] [--json]
+  agent-skill remove <skill> [--skills-path <path>] [--json]
   agent-skill manifest [--json]
 `);
 }

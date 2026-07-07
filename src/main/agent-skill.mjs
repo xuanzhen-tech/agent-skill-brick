@@ -1,9 +1,9 @@
 /**
  * AgentSkill 对象化运行时入口。
  *
- * 本文件把 skill roots 扫描、摘要注入、查找、激活和 managed 安装封装成
- * 一个可被 AgentCli / AgentTool 直接注入的对象。它只管理 skills，不执行
- * shell、web、python 或模型调用。
+ * 本文件把 skill 扫描、摘要注入、查找、激活和安装封装成可注入对象。
+ * 产品主路径只需要传一个 skills 目录；索引路径、prompt 预算和扫描策略
+ * 都由本积木内部默认，避免外部组合时泄露过多实现细节。
  */
 
 import crypto from "node:crypto";
@@ -24,10 +24,10 @@ const DEFAULT_PROMPT_BYTES = 24 * 1024;
 
 export class AgentSkill {
   constructor(input = {}) {
-    this.env = input.env ?? process.env;
-    this.config = resolveSkillConfig(this.env, input);
-    this.promptSkillLimit = normalizePositiveInteger(input.promptSkillLimit, DEFAULT_PROMPT_SKILL_LIMIT);
-    this.promptBytes = normalizePositiveInteger(input.promptBytes, DEFAULT_PROMPT_BYTES);
+    const normalizedInput = normalizeConstructorInput(input);
+    this.config = resolveSkillConfig(process.env, normalizedInput);
+    this.promptSkillLimit = DEFAULT_PROMPT_SKILL_LIMIT;
+    this.promptBytes = DEFAULT_PROMPT_BYTES;
     this.index = {
       schemaVersion: "agent-skill.index.v1",
       generatedAt: new Date(0).toISOString(),
@@ -125,18 +125,18 @@ export class AgentSkill {
   async install(source, options = {}) {
     const result = await installSkillPackage({
       source,
-      managedRoot: options.managedRoot ?? this.config.managedRoot
+      managedRoot: this.config.skillsPath
     });
-    await this.refresh(options);
+    await this.refresh();
     return result;
   }
 
   async remove(nameOrId, options = {}) {
     const result = await removeManagedSkill({
       skill: nameOrId,
-      managedRoot: options.managedRoot ?? this.config.managedRoot
+      managedRoot: this.config.skillsPath
     });
-    await this.refresh(options);
+    await this.refresh();
     return result;
   }
 
@@ -147,10 +147,23 @@ export class AgentSkill {
   contextConfig(context = {}) {
     return {
       ...this.config,
-      workspace: path.resolve(context.workspace ?? context.workingDirectory ?? this.config.workspace),
-      managedRoot: context.managedRoot ? path.resolve(context.managedRoot) : this.config.managedRoot
+      workspace: this.config.workspace,
+      skillsPath: this.config.skillsPath,
+      managedRoot: this.config.skillsPath
     };
   }
+}
+
+function normalizeConstructorInput(input) {
+  if (typeof input === "string") {
+    return { skillsPath: input };
+  }
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return {};
+  }
+  return {
+    skillsPath: input.skillsPath ?? input.managedRoot
+  };
 }
 
 function toSkillDefinition(skill) {

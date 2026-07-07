@@ -22,26 +22,25 @@ import {
 
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.1.4");
+assert.equal(brickDefinition.version, "0.2.0");
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.install"), true);
 
 const launchConfig = createAgentSkillLaunchConfig({
-  workspace: process.cwd(),
+  skillsPath: `${process.cwd()}\\skills`,
   indexPath: `${process.cwd()}\\agent-skill.index.json`
 });
 assert.equal(validateAgentSkillLaunchConfig(launchConfig).ok, true);
 assert.equal(launchConfig.command, "agent-skill");
-assert.equal(launchConfig.env.AGENT_SKILL_WORKSPACE, process.cwd());
-assert.match(launchConfig.managedRoot.replaceAll("\\", "/"), /\/\.agent-cli\/skills$/);
+assert.match(launchConfig.skillsPath.replaceAll("\\", "/"), /\/skills$/);
+assert.equal(launchConfig.env.AGENT_SKILL_SKILLS_PATH, launchConfig.skillsPath);
 assert.equal("AGENT_SKILL_EXTRA_DIRS" in launchConfig.env, false);
 assert.equal("AGENT_SKILL_ARTIFACT_ROOT" in launchConfig.env, false);
 
 const defaultRoots = resolveSkillRoots({
-  workspace: process.cwd(),
-  managedRoot: launchConfig.managedRoot,
+  skillsPath: launchConfig.skillsPath,
   indexPath: launchConfig.indexPath
 });
 assert.deepEqual(defaultRoots.map((root) => root.source), ["managed"]);
@@ -82,7 +81,7 @@ const index = createAgentSkillIndex({
 assert.equal(validateAgentSkillIndex(index).ok, true);
 assert.equal(index.skills.length, 1);
 
-const agentSkill = new AgentSkill({ workspace: process.cwd() });
+const agentSkill = new AgentSkill(`${process.cwd()}\\skills`);
 assert.equal(agentSkill.definition.id, "agent-skill");
 assert.deepEqual(agentSkill.definitions, []);
 assert.equal(typeof agentSkill.refresh, "function");

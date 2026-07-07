@@ -47,7 +47,7 @@ try {
 
   const scannedIndex = await scanSkillRoots({
     workspace,
-    managedRoot,
+    skillsPath: managedRoot,
     indexPath
   });
   assert.equal(validateAgentSkillIndex(scannedIndex).ok, true);
@@ -119,11 +119,7 @@ try {
   const removed = await removeManagedSkill({ skill: "local-install", managedRoot });
   assert.equal(removed.removed, true);
 
-  const agentSkill = new AgentSkill({
-    workspace,
-    managedRoot,
-    indexPath
-  });
+  const agentSkill = new AgentSkill(managedRoot);
   const objectIndex = await agentSkill.refresh();
   assert.equal(objectIndex.skills.some((skill) => skill.name === "alpha"), true);
   assert.equal(agentSkill.definitions.some((skill) => skill.name === "alpha"), true);

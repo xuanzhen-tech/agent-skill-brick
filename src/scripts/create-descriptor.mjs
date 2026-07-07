@@ -53,7 +53,7 @@ const descriptor = createArtifactDescriptor({
     runtimeContract: "runtime-contract.json",
     indexSchemaVersion: "agent-skill.index.v1",
     command: "agent-skill",
-    managedRootEnv: "AGENT_SKILL_MANAGED_ROOT",
+    skillsPathEnv: "AGENT_SKILL_SKILLS_PATH",
     indexPathEnv: "AGENT_SKILL_INDEX_PATH"
   }
 });

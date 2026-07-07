@@ -2,8 +2,8 @@
  * agent-skill 的公开积木定义。
  *
  * 这个合同告诉 baseLine 和产品仓库：当前积木产出 skills-index artifact，
- * 并暴露用于 skill 发现、校验和托管安装的 SDK/命令工具。它刻意不声明
- * 工具执行或模型编排能力。
+ * 并暴露一个只需要 skillsPath 的 SDK 对象。它刻意不声明工具执行或模型
+ * 编排能力。
  */
 
 import {
@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.1.4";
+const BRICK_VERSION = "0.2.0";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -78,9 +78,7 @@ export const brickDefinition = createBrickDefinition({
   configSchema: {
     type: "object",
     properties: {
-      workspace: { type: "string" },
-      managedRoot: { type: "string" },
-      indexPath: { type: "string" }
+      skillsPath: { type: "string" }
     }
   },
   runtimeDependencies: [

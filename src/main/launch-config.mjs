@@ -1,8 +1,9 @@
 /**
  * agent-skill 的启动配置和运行时合同工具。
  *
- * 产品或 client-shell 代码通过这些工具决定 managed skills 的位置，以及
- * 生成的 index 应该写到哪里，从而避免重复维护路径默认值和环境变量名。
+ * host 代码通过这些工具决定唯一的 skills 托管目录，以及兼容索引文件的
+ * 输出位置。产品主路径只需要关心 skillsPath，不再暴露 workspace、index
+ * 等内部细节。
  */
 
 import os from "node:os";
@@ -18,14 +19,13 @@ export function createAgentSkillLaunchConfig(input = {}) {
   const config = resolveSkillConfig(process.env, input);
   return {
     command: "agent-skill",
-    args: ["scan", "--workspace", config.workspace, "--index", config.indexPath],
+    args: ["scan", "--skills-path", config.skillsPath, "--index", config.indexPath],
     env: {
-      AGENT_SKILL_WORKSPACE: config.workspace,
-      AGENT_SKILL_MANAGED_ROOT: config.managedRoot,
+      AGENT_SKILL_SKILLS_PATH: config.skillsPath,
       AGENT_SKILL_INDEX_PATH: config.indexPath
     },
     indexPath: config.indexPath,
-    managedRoot: config.managedRoot
+    skillsPath: config.skillsPath
   };
 }
 
@@ -50,8 +50,7 @@ export function createAgentSkillRuntimeContract(input = {}) {
     command: "agent-skill",
     artifactType: "skills-index",
     env: {
-      workspace: "AGENT_SKILL_WORKSPACE",
-      managedRoot: "AGENT_SKILL_MANAGED_ROOT",
+      skillsPath: "AGENT_SKILL_SKILLS_PATH",
       indexPath: "AGENT_SKILL_INDEX_PATH",
       nodeBin: "AGENT_SKILL_NODE_BIN"
     },
@@ -72,16 +71,33 @@ export function createAgentSkillRuntimeContract(input = {}) {
 }
 
 export function resolveSkillConfig(env = process.env, overrides = {}) {
+  const skillsPath = path.resolve(firstNonEmpty(
+    overrides.skillsPath,
+    overrides.managedRoot,
+    env.AGENT_SKILL_SKILLS_PATH,
+    env.AGENT_SKILL_MANAGED_ROOT
+  ) ?? defaultSkillsPath());
   const workspace = path.resolve(firstNonEmpty(overrides.workspace, env.AGENT_SKILL_WORKSPACE) ?? process.cwd());
-  const managedRoot = path.resolve(firstNonEmpty(overrides.managedRoot, env.AGENT_SKILL_MANAGED_ROOT) ?? path.join(homeDir(), DEFAULT_MANAGED_SKILL_ROOT, "skills"));
-  const indexPath = path.resolve(firstNonEmpty(overrides.indexPath, env.AGENT_SKILL_INDEX_PATH) ?? path.join(workspace, ".agent", DEFAULT_INDEX_FILE));
+  const indexPath = path.resolve(firstNonEmpty(
+    overrides.indexPath,
+    env.AGENT_SKILL_INDEX_PATH
+  ) ?? defaultIndexPath(skillsPath));
   return {
     workspace,
-    managedRoot,
+    skillsPath,
+    managedRoot: skillsPath,
     indexPath
   };
 }
 
 function homeDir() {
   return process.env.USERPROFILE || process.env.HOME || os.homedir();
+}
+
+function defaultSkillsPath() {
+  return path.join(homeDir(), DEFAULT_MANAGED_SKILL_ROOT, "skills");
+}
+
+function defaultIndexPath(skillsPath) {
+  return path.join(path.dirname(path.resolve(skillsPath)), DEFAULT_INDEX_FILE);
 }
