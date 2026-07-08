@@ -129,13 +129,64 @@ try {
   assert.match(prompt, /alpha/);
   assert.doesNotMatch(prompt, /Use this skill when it is relevant/);
 
-  const found = await agentSkill.find({ query: "alpha", capability: "search", requiredTool: "run_shell" });
+  const found = await agentSkill.find({ query: "alpha", source: "local", capability: "search", requiredTool: "run_shell" });
   assert.equal(found.skills.length, 1);
   assert.equal(found.skills[0].name, "alpha");
+  assert.deepEqual(found.candidates, []);
+
+  const fakeRemoteClient = {
+    async search(input) {
+      assert.equal(input.query, "remote");
+      assert.equal(input.source, "all");
+      return {
+        results: [
+          {
+            id: "skills-sh:owner/repo@remote-writer",
+            source: "skills-sh",
+            name: "remote-writer",
+            package: "owner/repo@remote-writer",
+            description: "Remote writer skill"
+          }
+        ],
+        diagnostics: []
+      };
+    },
+    async install(input) {
+      assert.equal(input.source, "skills-sh");
+      assert.equal(input.packageName, "owner/repo@remote-writer");
+      const remoteDir = path.join(input.skillRoot, "remote-writer");
+      await writeSkill(remoteDir, {
+        name: "remote-writer",
+        description: "Installed from remote provider",
+        capabilities: ["writing"]
+      });
+      return {
+        installed: [{ name: "remote-writer", path: path.join(remoteDir, "SKILL.md"), source: "skills-sh" }],
+        diagnostics: []
+      };
+    }
+  };
+
+  const remoteFound = await agentSkill.find({ query: "remote", source: "all" }, { skillFindClient: fakeRemoteClient });
+  assert.equal(remoteFound.skills.length, 0);
+  assert.equal(remoteFound.candidates.length, 1);
+  assert.equal(remoteFound.candidates[0].package, "owner/repo@remote-writer");
+
+  const remoteInstalled = await agentSkill.find({
+    action: "install",
+    source: "skills-sh",
+    package: "owner/repo@remote-writer"
+  }, { skillFindClient: fakeRemoteClient });
+  assert.equal(remoteInstalled.action, "install");
+  assert.equal(remoteInstalled.installed[0].name, "remote-writer");
+  assert.equal(remoteInstalled.skills[0].name, "remote-writer");
 
   const activated = await agentSkill.activate("alpha");
   assert.equal(activated.loadedSkill.name, "alpha");
   assert.match(activated.loadedSkill.content, /Use this skill when it is relevant/);
+  const activatedRemote = await agentSkill.activate("remote-writer");
+  assert.equal(activatedRemote.loadedSkill.name, "remote-writer");
+  assert.match(activatedRemote.loadedSkill.content, /Installed from remote provider/);
   await assert.rejects(() => agentSkill.activate("missing-skill"), /Unknown skill/);
 
   console.log("[smoke-skill] ok");

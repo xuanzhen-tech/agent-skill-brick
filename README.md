@@ -49,13 +49,26 @@ const isolatedSkill = new AgentSkill("C:\\Users\\you\\.agent-cli\\skills");
 
 await agentSkill.refresh();
 const promptSection = await agentSkill.buildPrompt();
-const found = await agentSkill.find({ query: "github" });
+
+// search 会同时返回本地已安装 skills 和远端候选，不会返回完整 SKILL.md。
+const found = await agentSkill.find({ query: "github", source: "all", limit: 8 });
+console.log(found.skills);      // 已安装且匹配的本地 skills
+console.log(found.candidates);  // skills.sh / SkillHub / OpenAI curated 等远端候选
+
+// 安装远端候选后，AgentSkill 会刷新本地索引；随后才能 activate。
+await agentSkill.find({
+  action: "install",
+  source: "skillhub",
+  slug: "owner-repo-github"
+});
 const activated = await agentSkill.activate("github");
 ```
 
 产品主路径除了可选的 skills 根目录，不需要传任何其它配置。扫描、索引缓存、prompt 摘要预算都由积木内部默认策略管理。`AgentSkill` 自身只管理一个 skills 目录，不从产品仓库接收多 root 或索引路径配置。
 
 `buildPrompt()` 只返回可用 skills 的简短摘要，不会自动注入完整 `SKILL.md`。完整说明只能通过 `activate()` 返回 `loadedSkill` payload，由外部编排器决定如何持久化、去重和 compact。
+
+`find({ query })` 的返回值中，`skills` 表示已经安装在 `~/.agent-cli/skills` 下并进入索引的 skill；`candidates` 表示远端可安装候选。`skill_find` 搜索阶段不会把远端 skill 当成已激活上下文，也不会读取候选的完整 `SKILL.md`。
 
 ## Skill 路径
 

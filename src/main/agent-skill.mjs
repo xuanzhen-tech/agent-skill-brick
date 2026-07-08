@@ -13,6 +13,11 @@ import path from "node:path";
 import { brickDefinition } from "../brick-definition.mjs";
 import { createDiagnosticsReport } from "./diagnostics.mjs";
 import { resolveSkillConfig } from "./launch-config.mjs";
+import {
+  createDefaultSkillFindClient,
+  normalizeSkillFindLimit,
+  normalizeSkillFindSource
+} from "./skill-finder.mjs";
 import { installSkillPackage, removeManagedSkill } from "./skill-package.mjs";
 import { scanSkillRoots } from "./skill-index.mjs";
 
@@ -68,6 +73,11 @@ export class AgentSkill {
 
   async find(filter = {}, context = {}) {
     await this.refresh(context);
+    const action = normalizeFindAction(filter);
+    if (action === "install") {
+      return await this.installFromSkillFind(filter, context);
+    }
+
     const query = stringField(filter.query)?.toLowerCase();
     const capability = stringField(filter.capability);
     const requiredTool = stringField(filter.requiredTool ?? filter.tool);
@@ -82,9 +92,14 @@ export class AgentSkill {
       .slice(0, limit)
       .map(toSkillFindItem);
 
+    const remote = await this.searchRemoteSkills({ ...filter, query, limit }, context);
+
     return {
+      action: "search",
       skills,
       count: skills.length,
+      candidates: remote.results,
+      diagnostics: remote.diagnostics,
       generatedAt: this.index.generatedAt
     };
   }
@@ -140,6 +155,58 @@ export class AgentSkill {
     return result;
   }
 
+  async installFromSkillFind(filter = {}, context = {}) {
+    const client = context.skillFindClient ?? createDefaultSkillFindClient();
+    const input = normalizeSkillFindInstallInput(filter);
+    const result = await client.install({
+      ...input,
+      skillRoot: this.config.skillsPath
+    });
+    await this.refresh(context);
+    const installedSkills = result.installed
+      .map((item) => {
+        const normalizedName = item.name?.toLowerCase();
+        return this.index.skills.find((skill) => (
+          skill.name?.toLowerCase() === normalizedName ||
+          path.basename(path.dirname(skill.path || "")).toLowerCase() === normalizedName
+        ));
+      })
+      .filter(Boolean)
+      .map(toSkillFindItem);
+
+    return {
+      action: "install",
+      skillRoot: this.config.skillsPath,
+      installed: result.installed,
+      skills: installedSkills,
+      count: installedSkills.length,
+      diagnostics: result.diagnostics ?? [],
+      generatedAt: this.index.generatedAt
+    };
+  }
+
+  async searchRemoteSkills(filter = {}, context = {}) {
+    const query = stringField(filter.query);
+    if (!query) return { results: [], diagnostics: [] };
+    const source = normalizeSkillFindSource(filter.source);
+    if (source === "local") return { results: [], diagnostics: [] };
+
+    const client = context.skillFindClient ?? createDefaultSkillFindClient();
+    try {
+      return await client.search({
+        query,
+        source,
+        limit: normalizeSkillFindLimit(filter.limit),
+        skillRoot: this.config.skillsPath
+      });
+    } catch (error) {
+      return {
+        results: [],
+        diagnostics: [{ source: source === "all" ? "all" : source, message: error instanceof Error ? error.message : String(error) }]
+      };
+    }
+  }
+
   async diagnostics(context = {}) {
     return await createDiagnosticsReport(this.contextConfig(context));
   }
@@ -164,6 +231,44 @@ function normalizeConstructorInput(input) {
   return {
     skillsPath: input.skillsPath ?? input.managedRoot
   };
+}
+
+function normalizeFindAction(filter = {}) {
+  const action = stringField(filter.action)?.toLowerCase();
+  if (action === "search" || action === "find") return "search";
+  if (action === "install" || action === "add") return "install";
+  if (filter.install === true || stringField(filter.package ?? filter.packageName ?? filter.slug ?? filter.url)) {
+    return "install";
+  }
+  return "search";
+}
+
+function normalizeSkillFindInstallInput(filter = {}) {
+  const source = normalizeInstallSource(filter);
+  if (source === "skills-sh") {
+    const packageName = stringField(filter.packageName ?? filter.package);
+    if (!packageName) throw new Error("skill_find install requires package for skills-sh.");
+    return { source, packageName };
+  }
+  if (source === "skillhub") {
+    const slug = stringField(filter.slug);
+    if (!slug) throw new Error("skill_find install requires slug for skillhub.");
+    return { source, slug };
+  }
+
+  const name = stringField(filter.name);
+  const url = stringField(filter.url);
+  if (!name && !url) throw new Error("skill_find install requires name or url for openai-curated.");
+  return { source, name, url };
+}
+
+function normalizeInstallSource(filter = {}) {
+  const rawSource = normalizeSkillFindSource(filter.source);
+  if (rawSource === "local") throw new Error("skill_find install does not support source=local.");
+  if (rawSource !== "all") return rawSource;
+  if (stringField(filter.slug)) return "skillhub";
+  if (stringField(filter.packageName ?? filter.package)) return "skills-sh";
+  return "openai-curated";
 }
 
 function toSkillDefinition(skill) {
