@@ -1,9 +1,8 @@
 /**
  * agent-skill 的启动配置和运行时合同工具。
  *
- * host 代码通过这些工具决定唯一的 skills 托管目录，以及兼容索引文件的
- * 输出位置。产品主路径只需要关心 skillsPath，不再暴露 workspace、index
- * 等内部细节。
+ * host 代码通过这些工具决定唯一的 skills 托管目录。索引文件只属于 scan
+ * 命令的本地输出，不再通过环境变量暴露给产品或 AgentSkill 对象。
  */
 
 import os from "node:os";
@@ -21,8 +20,7 @@ export function createAgentSkillLaunchConfig(input = {}) {
     command: "agent-skill",
     args: ["scan", "--skills-path", config.skillsPath, "--index", config.indexPath],
     env: {
-      AGENT_SKILL_SKILLS_PATH: config.skillsPath,
-      AGENT_SKILL_INDEX_PATH: config.indexPath
+      AGENT_SKILL_SKILLS_PATH: config.skillsPath
     },
     indexPath: config.indexPath,
     skillsPath: config.skillsPath
@@ -51,7 +49,6 @@ export function createAgentSkillRuntimeContract(input = {}) {
     artifactType: "skills-index",
     env: {
       skillsPath: "AGENT_SKILL_SKILLS_PATH",
-      indexPath: "AGENT_SKILL_INDEX_PATH",
       nodeBin: "AGENT_SKILL_NODE_BIN"
     },
     outputs: {
@@ -79,8 +76,7 @@ export function resolveSkillConfig(env = process.env, overrides = {}) {
   ) ?? defaultSkillsPath());
   const workspace = path.resolve(firstNonEmpty(overrides.workspace, env.AGENT_SKILL_WORKSPACE) ?? process.cwd());
   const indexPath = path.resolve(firstNonEmpty(
-    overrides.indexPath,
-    env.AGENT_SKILL_INDEX_PATH
+    overrides.indexPath
   ) ?? defaultIndexPath(skillsPath));
   return {
     workspace,

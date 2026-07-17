@@ -15,6 +15,7 @@ import {
   createAgentSkillIndex,
   createAgentSkillLaunchConfig,
   createAgentSkillRuntimeContract,
+  resolveSkillConfig,
   resolveSkillRoots,
   validateAgentSkillIndex,
   validateAgentSkillLaunchConfig
@@ -22,7 +23,7 @@ import {
 
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.2.1");
+assert.equal(brickDefinition.version, "0.2.2");
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);
@@ -36,6 +37,7 @@ assert.equal(validateAgentSkillLaunchConfig(launchConfig).ok, true);
 assert.equal(launchConfig.command, "agent-skill");
 assert.match(launchConfig.skillsPath.replaceAll("\\", "/"), /\/skills$/);
 assert.equal(launchConfig.env.AGENT_SKILL_SKILLS_PATH, launchConfig.skillsPath);
+assert.equal("AGENT_SKILL_INDEX_PATH" in launchConfig.env, false);
 assert.equal("AGENT_SKILL_EXTRA_DIRS" in launchConfig.env, false);
 assert.equal("AGENT_SKILL_ARTIFACT_ROOT" in launchConfig.env, false);
 
@@ -49,7 +51,15 @@ const runtimeContract = createAgentSkillRuntimeContract({ platform: "win32-x64" 
 assert.equal(runtimeContract.schemaVersion, "agent-skill.runtime.v1");
 assert.equal(runtimeContract.artifactType, "skills-index");
 assert.equal(runtimeContract.command, "agent-skill");
+assert.equal("indexPath" in runtimeContract.env, false);
 assert.equal(runtimeContract.runtimeDependencies.required[0].type, "node-runtime");
+
+const legacyIndexPath = `${process.cwd()}\\legacy-index.json`;
+const ignoredLegacyIndexEnv = resolveSkillConfig(
+  { AGENT_SKILL_INDEX_PATH: legacyIndexPath },
+  { skillsPath: `${process.cwd()}\\isolated-skills` }
+);
+assert.notEqual(ignoredLegacyIndexEnv.indexPath, legacyIndexPath);
 
 const index = createAgentSkillIndex({
   roots: [

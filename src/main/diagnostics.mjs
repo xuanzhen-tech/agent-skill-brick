@@ -1,19 +1,17 @@
 /**
  * agent-skill 托管目录和输出路径的诊断逻辑。
  *
- * agent-skill 允许在没有任何 managed skill 时运行。缺失 root 只是信息提示；
- * 无法写入 index 目录才是需要处理的问题，因为它会阻塞其它积木消费 registry。
+ * agent-skill 允许在没有任何 managed skill 时运行。缺失 root 只是信息提示。
+ * AgentSkill 使用实例内索引，因此 diagnostics 不检查或创建外部 index 文件目录。
  */
 
 import fs from "node:fs/promises";
-import path from "node:path";
 
 import { brickDefinition } from "../brick-definition.mjs";
 import { resolveSkillRoots } from "./skill-index.mjs";
 
 export async function createDiagnosticsReport(config) {
   const checks = [
-    await createIndexPathCheck(config),
     ...await Promise.all(resolveSkillRoots(config).map(createRootCheck))
   ];
   const status = checks.some((check) => check.status === "fail")
@@ -31,26 +29,6 @@ export async function createDiagnosticsReport(config) {
     status,
     checks
   };
-}
-
-async function createIndexPathCheck(config) {
-  try {
-    await fs.mkdir(path.dirname(config.indexPath), { recursive: true });
-    await fs.access(path.dirname(config.indexPath));
-    return {
-      id: "index.path",
-      status: "pass",
-      summary: "skill index 输出目录可访问。",
-      detail: config.indexPath
-    };
-  } catch (error) {
-    return {
-      id: "index.path",
-      status: "fail",
-      summary: "skill index 输出目录不可访问。",
-      detail: error instanceof Error ? error.message : String(error)
-    };
-  }
 }
 
 async function createRootCheck(root) {
