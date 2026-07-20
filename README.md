@@ -9,8 +9,10 @@
 - 扫描唯一托管目录 `~/.agent-cli/skills`
 - 校验 skill 包结构
 - 生成 `agent-skill.index.v1` 索引
-- 支持本地目录、zip、HTTP zip 和 registry json 安装来源
+- 支持本地目录、zip、HTTP zip、registry json 和受控 inline 安装来源
 - 删除托管目录中的 skill
+- 为远端目录安装维护来源、revision 和内容摘要记录
+- 在替换技能前提供显式冲突检查与可回滚的目录切换
 - 打包 `skills-index` artifact
 
 本积木不负责：
@@ -69,6 +71,37 @@ const activated = await agentSkill.activate("github");
 `buildPrompt()` 只返回可用 skills 的简短摘要，不会自动注入完整 `SKILL.md`。完整说明只能通过 `activate()` 返回 `loadedSkill` payload，由外部编排器决定如何持久化、去重和 compact。
 
 `find({ query })` 的返回值中，`skills` 表示已经安装在 `~/.agent-cli/skills` 下并进入索引的 skill；`candidates` 表示远端可安装候选。`skill_find` 搜索阶段不会把远端 skill 当成已激活上下文，也不会读取候选的完整 `SKILL.md`。
+
+## 受控安装来源与更新
+
+生态目录等上游可以把已规范化的安装来源交给 `AgentSkill`，但产品层不应自行
+创建或写入 `SKILL.md`。`AgentSkill` 是唯一的磁盘写入方：
+
+```js
+import { AgentEcosystem } from "@xuanzhen-tech/agent-ecosystem-brick";
+
+const ecosystem = new AgentEcosystem();
+const source = await ecosystem.resolveInstall("sample-skill");
+const result = await agentSkill.install(source, { conflict: "check" });
+
+if (result.status === "conflict") {
+  // 产品在获得用户确认后才允许替换。
+  await agentSkill.install(source, { conflict: "replace" });
+}
+
+const installations = await agentSkill.listInstallations();
+```
+
+受控来源的格式为 `agent-skill.inline.v1`。安装时会先在暂存目录写入和校验，
+再原子切换目标目录；安装记录只写在唯一技能根目录中的：
+
+```text
+~/.agent-cli/skills/.agent-skill-installations.json
+```
+
+相同远端来源且 revision 未变化时，`conflict: "check"` 返回 `unchanged`；内容
+变化时返回 `conflict`，不会写盘。只有 `conflict: "replace"` 才会替换已有受管
+技能。既有字符串路径、zip 和 HTTP zip 的安装语义保持不变。
 
 ## Skill 路径
 

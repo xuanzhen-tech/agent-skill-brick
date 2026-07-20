@@ -1,9 +1,9 @@
 /**
- * skill 包校验和 managed install 操作。
+ * skill 包校验、受管安装和替换事务。
  *
- * 本模块是 managed skills 的唯一写入方。它接受本地目录、本地 zip 文件、
- * HTTP(S) zip 文件和 registry-index JSON 条目，并在替换 managed 副本前
- * 校验暂存包。
+ * 本模块是 managed skills 的唯一写入方。它支持本地目录、zip、HTTP(S) zip、
+ * registry-index 和受控 inline skill 来源；所有来源都必须在暂存区完成包校验。
+ * 目录替换使用同根事务目录，避免失败时丢失原有 skill。
  */
 
 import crypto from "node:crypto";
@@ -12,6 +12,12 @@ import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 
+import {
+  createManagedSkillInstallation,
+  getManagedSkillInstallation,
+  removeManagedSkillInstallation,
+  setManagedSkillInstallation
+} from "./installation-registry.mjs";
 import { normalizeSkillName } from "./skill-index.mjs";
 
 const MAX_TOTAL_BYTES = 25 * 1024 * 1024;
@@ -19,6 +25,8 @@ const MAX_FILE_COUNT = 500;
 const MAX_SINGLE_FILE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_ROOT_FILES = new Set(["SKILL.md"]);
 const ALLOWED_ROOT_DIRS = new Set(["references", "scripts", "assets"]);
+const INLINE_SKILL_SOURCE_KIND = "agent-skill.inline.v1";
+const TRANSACTION_PREFIX = ".agent-skill-transaction-";
 
 export async function validateSkillPackage(skillDir) {
   const root = path.resolve(skillDir);
@@ -64,8 +72,11 @@ export async function validateSkillPackage(skillDir) {
   };
 }
 
-export async function installSkillPackage({ source, managedRoot }) {
+export async function installSkillPackage({ source, managedRoot, conflict } = {}) {
+  const root = path.resolve(managedRoot);
+  await recoverManagedSkillTransactions(root);
   const resolvedSource = await resolveInstallSource(source);
+  const conflictMode = normalizeConflictMode(conflict, resolvedSource);
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "agent-skill-install-"));
   try {
     const stagedDir = await stageInstallSource(resolvedSource, tempRoot);
@@ -74,22 +85,92 @@ export async function installSkillPackage({ source, managedRoot }) {
     if (!validation.valid) {
       throw new Error(`Invalid skill package: ${validation.diagnostics.join("; ")}`);
     }
+
     const skillName = normalizeSkillName(validation.metadata.name);
-    const destination = path.resolve(managedRoot, skillName);
+    const destination = path.resolve(root, skillName);
     // 规范化后的 skill name 理论上已经安全；这里在替换文件的位置再次显式
     // 检查写入边界。
-    if (!isInsideOrEqual(destination, path.resolve(managedRoot))) {
+    if (!isInsideOrEqual(destination, root)) {
       throw new Error("skill destination escapes managed root");
     }
-    await fs.mkdir(path.dirname(destination), { recursive: true });
-    await fs.rm(destination, { recursive: true, force: true });
-    await copyDirectory(skillDir, destination);
+
+    const skillContent = await fs.readFile(path.join(skillDir, "SKILL.md"), "utf8");
+    const contentHash = sha256Buffer(Buffer.from(skillContent, "utf8"));
+    const incomingInstallation = createManagedSkillInstallation({
+      skillName,
+      version: validation.metadata.version ?? "0.1.0",
+      contentHash,
+      revision: resolvedSource.provenance?.revision ?? contentHash,
+      sourceKind: resolvedSource.kind,
+      provenance: resolvedSource.provenance
+    });
+    const existingInstallation = await getManagedSkillInstallation({ managedRoot: root, skillName });
+    const destinationExists = await pathExists(destination);
+
+    // 生态市场等远端目录使用 check 时，冲突是正常业务结果而不是异常。产品层
+    // 可据此展示升级确认，不会在用户确认前触碰本地文件。
+    if (conflictMode === "check" && destinationExists) {
+      if (sameInstallation(existingInstallation, incomingInstallation)) {
+        return {
+          installed: false,
+          status: "unchanged",
+          name: skillName,
+          managedRoot: root,
+          path: destination,
+          source: resolvedSource.kind,
+          installation: existingInstallation,
+          validation
+        };
+      }
+      return {
+        installed: false,
+        status: "conflict",
+        name: skillName,
+        managedRoot: root,
+        path: destination,
+        source: resolvedSource.kind,
+        existingInstallation,
+        incomingInstallation,
+        validation
+      };
+    }
+
+    const transaction = await prepareManagedSkillReplacement({
+      root,
+      skillName,
+      sourceDirectory: skillDir,
+      destination,
+      previousInstallation: existingInstallation,
+      incomingInstallation
+    });
+    let installation;
+    try {
+      installation = await setManagedSkillInstallation({
+        managedRoot: root,
+        record: incomingInstallation
+      });
+      // 文件已切换且安装记录已落盘后，才标记为可提交。进程在此之前退出时，
+      // 下一次安装会回滚目录和记录，避免目录内容与 provenance 失配。
+      await transaction.markRegistryUpdated();
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      await restoreManagedSkillInstallation({
+        managedRoot: root,
+        skillName,
+        previousInstallation: existingInstallation
+      });
+      throw error;
+    }
+
     return {
       installed: true,
+      status: destinationExists ? "replaced" : "installed",
       name: skillName,
-      managedRoot: path.resolve(managedRoot),
+      managedRoot: root,
       path: destination,
       source: resolvedSource.kind,
+      installation,
       validation
     };
   } finally {
@@ -97,41 +178,65 @@ export async function installSkillPackage({ source, managedRoot }) {
   }
 }
 
-export async function removeManagedSkill({ skill, managedRoot }) {
+export async function removeManagedSkill({ skill, managedRoot } = {}) {
   const skillName = normalizeSkillName(skill);
-  const destination = path.resolve(managedRoot, skillName);
-  if (!isInsideOrEqual(destination, path.resolve(managedRoot))) {
+  const root = path.resolve(managedRoot);
+  await recoverManagedSkillTransactions(root);
+  const destination = path.resolve(root, skillName);
+  if (!isInsideOrEqual(destination, root)) {
     throw new Error("skill destination escapes managed root");
   }
   await fs.rm(destination, { recursive: true, force: true });
+  const installation = await removeManagedSkillInstallation({ managedRoot: root, skillName });
   return {
     removed: true,
     name: skillName,
-    path: destination
+    path: destination,
+    installation
   };
 }
 
 async function resolveInstallSource(source) {
   if (!source) throw new Error("install source is required");
+  if (isInlineSkillSource(source)) {
+    const content = requiredContent(source.content, "inline skill content");
+    const expectedHash = source.integrity?.sha256;
+    if (expectedHash && sha256Buffer(Buffer.from(content, "utf8")) !== String(expectedHash).toLowerCase()) {
+      throw new Error("inline skill content sha256 mismatch");
+    }
+    return {
+      kind: "inline",
+      content,
+      provenance: normalizeInlineProvenance(source.provenance)
+    };
+  }
+  if (typeof source !== "string") {
+    throw new Error("install source must be a path, URL, or agent-skill.inline.v1 object");
+  }
   if (/^https?:\/\//i.test(source)) {
-    // v1 的 registry 刻意保持很小：它只指向可安装 skill archive，选择策略
-    // 后续可以在不改变本地安装流程的情况下演进。
+    // registry 只负责指向可安装 archive；选择和展示策略由调用方处理。
     if (source.endsWith(".json")) {
       const registry = await fetchJson(source);
       const first = Array.isArray(registry.skills) ? registry.skills[0] : undefined;
       if (!first?.url) throw new Error("registry index does not contain skills[0].url");
-      return { kind: "url", url: first.url };
+      return { kind: "url", url: first.url, provenance: { type: "url", sourceUrl: first.url } };
     }
-    return { kind: "url", url: source };
+    return { kind: "url", url: source, provenance: { type: "url", sourceUrl: source } };
   }
   const absolutePath = path.resolve(source);
   const stat = await fs.stat(absolutePath);
   return stat.isDirectory()
-    ? { kind: "directory", path: absolutePath }
-    : { kind: "zip", path: absolutePath };
+    ? { kind: "directory", path: absolutePath, provenance: { type: "directory" } }
+    : { kind: "zip", path: absolutePath, provenance: { type: "zip" } };
 }
 
 async function stageInstallSource(source, tempRoot) {
+  if (source.kind === "inline") {
+    const output = path.join(tempRoot, "inline-skill");
+    await fs.mkdir(output, { recursive: true });
+    await fs.writeFile(path.join(output, "SKILL.md"), source.content, "utf8");
+    return output;
+  }
   if (source.kind === "directory") return source.path;
   const zipPath = source.kind === "zip"
     ? source.path
@@ -166,6 +271,119 @@ async function resolveSkillDirectory(stagedDir) {
     throw new Error("skill package must contain exactly one SKILL.md root");
   }
   return candidates[0];
+}
+
+async function prepareManagedSkillReplacement({
+  root,
+  skillName,
+  sourceDirectory,
+  destination,
+  previousInstallation,
+  incomingInstallation
+}) {
+  await fs.mkdir(root, { recursive: true });
+  const transactionRoot = path.join(root, `${TRANSACTION_PREFIX}${crypto.randomUUID()}`);
+  const stagedDirectory = path.join(transactionRoot, "next");
+  const backupDirectory = path.join(transactionRoot, "previous");
+  const statePath = path.join(transactionRoot, "transaction.json");
+  let previousMoved = false;
+  const state = {
+    skillName,
+    destination,
+    previousInstallation: previousInstallation ?? null,
+    incomingInstallation,
+    phase: "preparing",
+    previousMoved: false
+  };
+  try {
+    await fs.mkdir(transactionRoot, { recursive: true });
+    await writeTransactionState(statePath, state);
+    await copyDirectory(sourceDirectory, stagedDirectory);
+    if (await pathExists(destination)) {
+      await fs.rename(destination, backupDirectory);
+      previousMoved = true;
+    }
+    await fs.rename(stagedDirectory, destination);
+    state.phase = "files_swapped";
+    state.previousMoved = previousMoved;
+    await writeTransactionState(statePath, state);
+  } catch (error) {
+    if (previousMoved && await pathExists(backupDirectory)) {
+      await fs.rm(destination, { recursive: true, force: true });
+      await fs.rename(backupDirectory, destination);
+    }
+    await fs.rm(transactionRoot, { recursive: true, force: true });
+    throw error;
+  }
+  return {
+    async markRegistryUpdated() {
+      state.phase = "registry_updated";
+      await writeTransactionState(statePath, state);
+    },
+    async commit() {
+      await fs.rm(transactionRoot, { recursive: true, force: true });
+    },
+    async rollback() {
+      await fs.rm(destination, { recursive: true, force: true });
+      if (previousMoved && await pathExists(backupDirectory)) {
+        await fs.rename(backupDirectory, destination);
+      }
+      await fs.rm(transactionRoot, { recursive: true, force: true });
+    }
+  };
+}
+
+async function recoverManagedSkillTransactions(root) {
+  let entries;
+  try {
+    entries = await fs.readdir(root, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === "ENOENT") return;
+    throw error;
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !entry.name.startsWith(TRANSACTION_PREFIX)) continue;
+    const transactionRoot = path.join(root, entry.name);
+    const statePath = path.join(transactionRoot, "transaction.json");
+    try {
+      const state = JSON.parse(await fs.readFile(statePath, "utf8"));
+      const destination = path.resolve(state.destination);
+      const backupDirectory = path.join(transactionRoot, "previous");
+      if (!isInsideOrEqual(destination, root)) continue;
+
+      if (state.phase !== "registry_updated") {
+        if (await pathExists(backupDirectory)) {
+          await fs.rm(destination, { recursive: true, force: true });
+          await fs.rename(backupDirectory, destination);
+        } else if (state.previousMoved === false) {
+          await fs.rm(destination, { recursive: true, force: true });
+        }
+        await restoreManagedSkillInstallation({
+          managedRoot: root,
+          skillName: state.skillName,
+          previousInstallation: state.previousInstallation
+        });
+      }
+    } finally {
+      await fs.rm(transactionRoot, { recursive: true, force: true });
+    }
+  }
+}
+
+// 安装记录使用独立文件，因此回滚时也必须显式恢复旧记录或清除新记录。
+async function restoreManagedSkillInstallation({ managedRoot, skillName, previousInstallation }) {
+  if (previousInstallation) {
+    await setManagedSkillInstallation({
+      managedRoot,
+      record: previousInstallation
+    });
+    return;
+  }
+  await removeManagedSkillInstallation({ managedRoot, skillName });
+}
+
+async function writeTransactionState(statePath, state) {
+  await fs.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 }
 
 async function unzip(zipPath, outputDir) {
@@ -263,6 +481,41 @@ async function copyDirectory(source, destination) {
   }
 }
 
+function normalizeConflictMode(value, source) {
+  if (value === undefined) return source.kind === "inline" ? "check" : "replace";
+  if (value === "check" || value === "replace") return value;
+  throw new Error("conflict must be check or replace");
+}
+
+function sameInstallation(existing, incoming) {
+  if (!existing) return false;
+  const existingRemoteId = existing.provenance?.remoteId;
+  const incomingRemoteId = incoming.provenance?.remoteId;
+  if (existingRemoteId && incomingRemoteId) {
+    return existingRemoteId === incomingRemoteId && existing.revision === incoming.revision;
+  }
+  return existing.contentHash === incoming.contentHash;
+}
+
+function isInlineSkillSource(source) {
+  return source && typeof source === "object" && !Array.isArray(source) && source.kind === INLINE_SKILL_SOURCE_KIND;
+}
+
+function normalizeInlineProvenance(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("inline skill source requires provenance");
+  }
+  return {
+    type: requiredString(input.type, "inline provenance.type"),
+    remoteId: optionalString(input.remoteId),
+    catalogUrl: optionalString(input.catalogUrl),
+    sourceUrl: optionalString(input.sourceUrl),
+    sourceRepository: optionalString(input.sourceRepository),
+    sourcePath: optionalString(input.sourcePath),
+    revision: requiredString(input.revision, "inline provenance.revision")
+  };
+}
+
 function isAllowedPackagePath(relativePath) {
   const normalized = toPosix(relativePath);
   if (normalized.includes("..") || path.isAbsolute(normalized)) return false;
@@ -296,6 +549,30 @@ function isInsideOrEqual(childPath, parentPath) {
 
 function toPosix(value) {
   return value.split(path.sep).join("/");
+}
+
+function requiredString(value, label) {
+  const normalized = optionalString(value);
+  if (!normalized) throw new Error(`${label} is required`);
+  return normalized;
+}
+
+function requiredContent(value, label) {
+  if (typeof value !== "string" || !value.trim()) throw new Error(`${label} is required`);
+  return value;
+}
+
+function optionalString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+async function pathExists(target) {
+  try {
+    await fs.access(target);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function sha256Buffer(buffer) {

@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.2.2";
+const BRICK_VERSION = "0.3.0";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -30,7 +30,7 @@ const installCapability = createBrickCapability({
   id: "agent-skill.install",
   name: "Agent Skill Install",
   type: "config",
-  description: "安装、更新和删除托管 skill 包，但不执行 skill 脚本。"
+  description: "安装、更新和删除托管 skill 包，维护安装来源记录和替换事务，但不执行 skill 脚本。"
 });
 
 export const brickDefinition = createBrickDefinition({
@@ -48,7 +48,7 @@ export const brickDefinition = createBrickDefinition({
     {
       name: "AgentSkill",
       type: "api",
-      description: "SDK 对象入口，用于把 skill 注册管理和 prompt 摘要直接组合进 AgentCli。"
+      description: "SDK 对象入口，用于把 skill 注册管理、受控安装来源和 prompt 摘要直接组合进 AgentCli。"
     },
     {
       name: "createAgentSkillIndex",

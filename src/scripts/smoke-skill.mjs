@@ -7,6 +7,7 @@
  */
 
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import http from "node:http";
 import os from "node:os";
@@ -15,6 +16,7 @@ import path from "node:path";
 import {
   AgentSkill,
   installSkillPackage,
+  listManagedSkillInstallations,
   removeManagedSkill,
   scanSkillRoots,
   validateAgentSkillIndex,
@@ -66,6 +68,78 @@ try {
   const localInstall = await installSkillPackage({ source: localSkill, managedRoot });
   assert.equal(localInstall.installed, true);
   assert.equal(localInstall.name, "local-install");
+
+  const inlineContentV1 = skillMarkdown({
+    name: "ecosystem-writer",
+    description: "Inline ecosystem skill",
+    version: "revision-1"
+  });
+  const inlineSourceV1 = inlineSkillSource(inlineContentV1, "revision-1");
+  const inlineInstalled = await installSkillPackage({ source: inlineSourceV1, managedRoot });
+  assert.equal(inlineInstalled.status, "installed");
+  assert.equal(inlineInstalled.installation.provenance.remoteId, "ecosystem-writer");
+
+  const inlineUnchanged = await installSkillPackage({ source: inlineSourceV1, managedRoot, conflict: "check" });
+  assert.equal(inlineUnchanged.status, "unchanged");
+
+  const inlineContentV2 = skillMarkdown({
+    name: "ecosystem-writer",
+    description: "Inline ecosystem skill updated",
+    version: "revision-2"
+  });
+  const inlineSourceV2 = inlineSkillSource(inlineContentV2, "revision-2");
+  const inlineConflict = await installSkillPackage({ source: inlineSourceV2, managedRoot, conflict: "check" });
+  assert.equal(inlineConflict.status, "conflict");
+  assert.match(await fs.readFile(path.join(managedRoot, "ecosystem-writer", "SKILL.md"), "utf8"), /revision-1/);
+
+  const inlineReplaced = await installSkillPackage({ source: inlineSourceV2, managedRoot, conflict: "replace" });
+  assert.equal(inlineReplaced.status, "replaced");
+  assert.match(await fs.readFile(path.join(managedRoot, "ecosystem-writer", "SKILL.md"), "utf8"), /revision-2/);
+  assert.equal((await listManagedSkillInstallations({ managedRoot })).some((record) => record.provenance.remoteId === "ecosystem-writer"), true);
+
+  const invalidInline = inlineSkillSource("# 缺少 frontmatter\n", "bad-revision");
+  await assert.rejects(() => installSkillPackage({ source: invalidInline, managedRoot, conflict: "replace" }), /Invalid skill package/);
+  assert.match(await fs.readFile(path.join(managedRoot, "ecosystem-writer", "SKILL.md"), "utf8"), /revision-2/);
+
+  // 模拟进程在“目录已替换、安装记录尚未提交”之间退出。下一次安装必须恢复
+  // 原目录和原 provenance，不能留下新文件配旧安装记录的半完成状态。
+  const recoveryOldContent = skillMarkdown({
+    name: "recovery-skill",
+    description: "Original recovery skill",
+    version: "recovery-old"
+  });
+  const recoveryOld = await installSkillPackage({
+    source: inlineSkillSource(recoveryOldContent, "recovery-old", "recovery-skill"),
+    managedRoot
+  });
+  const recoveryDestination = path.join(managedRoot, "recovery-skill");
+  const recoveryTransaction = path.join(managedRoot, ".agent-skill-transaction-smoke-recovery");
+  const recoveryPrevious = path.join(recoveryTransaction, "previous");
+  await fs.mkdir(recoveryTransaction, { recursive: true });
+  await fs.rename(recoveryDestination, recoveryPrevious);
+  await writeSkill(recoveryDestination, {
+    name: "recovery-skill",
+    description: "Interrupted replacement",
+    version: "recovery-new"
+  });
+  await fs.writeFile(path.join(recoveryTransaction, "transaction.json"), `${JSON.stringify({
+    skillName: "recovery-skill",
+    destination: recoveryDestination,
+    previousInstallation: recoveryOld.installation,
+    phase: "files_swapped",
+    previousMoved: true
+  }, null, 2)}\n`, "utf8");
+  await installSkillPackage({
+    source: inlineSkillSource(skillMarkdown({
+      name: "recovery-trigger",
+      description: "Trigger pending transaction recovery",
+      version: "1"
+    }), "1", "recovery-trigger"),
+    managedRoot
+  });
+  assert.match(await fs.readFile(path.join(recoveryDestination, "SKILL.md"), "utf8"), /recovery-old/);
+  assert.equal((await listManagedSkillInstallations({ managedRoot }))
+    .find((record) => record.skillName === "recovery-skill").revision, "recovery-old");
 
   const zipFile = path.join(tempRoot, "zip-skill.zip");
   await fs.writeFile(zipFile, createZipBuffer([
@@ -123,6 +197,7 @@ try {
   const objectIndex = await agentSkill.refresh();
   assert.equal(objectIndex.skills.some((skill) => skill.name === "alpha"), true);
   assert.equal(agentSkill.definitions.some((skill) => skill.name === "alpha"), true);
+  assert.equal((await agentSkill.listInstallations()).some((record) => record.provenance.remoteId === "ecosystem-writer"), true);
 
   const prompt = await agentSkill.buildPrompt();
   assert.match(prompt, /Available Skills/);
@@ -189,6 +264,10 @@ try {
   assert.match(activatedRemote.loadedSkill.content, /Installed from remote provider/);
   await assert.rejects(() => agentSkill.activate("missing-skill"), /Unknown skill/);
 
+  const removedInline = await agentSkill.remove("ecosystem-writer");
+  assert.equal(removedInline.removed, true);
+  assert.equal((await agentSkill.listInstallations()).some((record) => record.provenance.remoteId === "ecosystem-writer"), false);
+
   console.log("[smoke-skill] ok");
 } finally {
   await fs.rm(tempRoot, { recursive: true, force: true });
@@ -210,6 +289,23 @@ function skillMarkdown(metadata) {
     "---"
   ].filter(Boolean).join("\n");
   return `${frontmatter}\n\nUse this skill when it is relevant.\n`;
+}
+
+function inlineSkillSource(content, revision, remoteId = "ecosystem-writer") {
+  return {
+    kind: "agent-skill.inline.v1",
+    content,
+    integrity: {
+      sha256: crypto.createHash("sha256").update(content, "utf8").digest("hex")
+    },
+    provenance: {
+      type: "agent-ecosystem",
+      remoteId,
+      catalogUrl: "http://127.0.0.1/catalog",
+      sourceUrl: "https://example.test/ecosystem-writer",
+      revision
+    }
+  };
 }
 
 function startFixtureServer({ httpZip, registryZip }) {

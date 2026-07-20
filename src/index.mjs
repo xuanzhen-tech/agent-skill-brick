@@ -22,6 +22,13 @@ export {
   writeSkillIndex
 } from "./main/skill-index.mjs";
 export {
+  createManagedSkillInstallation,
+  getManagedSkillInstallation,
+  listManagedSkillInstallations,
+  removeManagedSkillInstallation,
+  setManagedSkillInstallation
+} from "./main/installation-registry.mjs";
+export {
   installSkillPackage,
   removeManagedSkill,
   validateSkillPackage

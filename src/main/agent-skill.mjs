@@ -18,6 +18,7 @@ import {
   normalizeSkillFindLimit,
   normalizeSkillFindSource
 } from "./skill-finder.mjs";
+import { listManagedSkillInstallations } from "./installation-registry.mjs";
 import { installSkillPackage, removeManagedSkill } from "./skill-package.mjs";
 import { scanSkillRoots } from "./skill-index.mjs";
 
@@ -140,10 +141,17 @@ export class AgentSkill {
   async install(source, options = {}) {
     const result = await installSkillPackage({
       source,
+      managedRoot: this.config.skillsPath,
+      conflict: options.conflict
+    });
+    if (result.status !== "conflict") await this.refresh();
+    return result;
+  }
+
+  async listInstallations() {
+    return await listManagedSkillInstallations({
       managedRoot: this.config.skillsPath
     });
-    await this.refresh();
-    return result;
   }
 
   async remove(nameOrId, options = {}) {

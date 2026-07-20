@@ -124,6 +124,7 @@ async function validateRuntimeArtifactIfPresent() {
     "src/brick-definition.mjs",
     "src/main/diagnostics.mjs",
     "src/main/env.mjs",
+    "src/main/installation-registry.mjs",
     "src/main/launch-config.mjs",
     "src/main/skill-index.mjs",
     "src/main/skill-package.mjs"
