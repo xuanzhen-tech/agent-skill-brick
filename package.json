@@ -1,6 +1,6 @@
 {
   "name": "@xuanzhen-tech/agent-skill-brick",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Agent skill 注册管理和 skills-index 积木。",
   "type": "module",
   "repository": {
@@ -19,7 +19,8 @@
     "src/cli.mjs",
     "src/index.mjs",
     "src/brick-definition.mjs",
-    "src/main"
+    "src/main",
+    "src/builtin-skills"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"

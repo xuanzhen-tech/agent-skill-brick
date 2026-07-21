@@ -15,6 +15,7 @@ import {
   createAgentSkillIndex,
   createAgentSkillLaunchConfig,
   createAgentSkillRuntimeContract,
+  listBuiltinSkills,
   resolveSkillConfig,
   resolveSkillRoots,
   validateAgentSkillIndex,
@@ -23,11 +24,20 @@ import {
 
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.3.0");
+assert.equal(brickDefinition.version, "0.4.0");
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.install"), true);
+assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.builtin-catalog"), true);
+assert.equal(brickDefinition.configSchema.properties.skills.type, "array");
+
+const builtinSkills = listBuiltinSkills();
+assert.deepEqual(builtinSkills.map((skill) => skill.name), [
+  "amazon-sku-profit-summary",
+  "amazon-inventory-ledger-summary",
+  "amazon-operating-analysis"
+]);
 
 const launchConfig = createAgentSkillLaunchConfig({
   skillsPath: `${process.cwd()}\\skills`,
@@ -98,5 +108,18 @@ assert.equal(typeof agentSkill.refresh, "function");
 assert.equal(typeof agentSkill.buildPrompt, "function");
 assert.equal(typeof agentSkill.find, "function");
 assert.equal(typeof agentSkill.activate, "function");
+assert.equal(typeof agentSkill.setSkillNames, "function");
+assert.deepEqual(agentSkill.builtinSkills, builtinSkills);
+
+const selectedSkill = new AgentSkill(["amazon-sku-profit-summary"]);
+assert.deepEqual(selectedSkill.selectedSkillNames, ["amazon-sku-profit-summary"]);
+assert.throws(
+  () => new AgentSkill({ skills: "amazon-sku-profit-summary" }),
+  /skills must be an array/
+);
+
+const emptySkill = new AgentSkill();
+assert.deepEqual(emptySkill.selectedSkillNames, []);
+assert.equal(emptySkill.visibilityMode, "all");
 
 console.log("[smoke-contract] ok");

@@ -13,12 +13,15 @@
 - 删除托管目录中的 skill
 - 为远端目录安装维护来源、revision 和内容摘要记录
 - 在替换技能前提供显式冲突检查与可回滚的目录切换
+- 随 SDK 和 runtime artifact 发布预制 skill，并按产品传入的名称数组受控安装
+- 枚举 skill 包内的 `references/` 与 `assets/`，并提供受控 reference 读取和 asset 解析
 - 打包 `skills-index` artifact
 
 本积木不负责：
 
 - 调用模型 provider
 - 执行 shell、浏览器、Python 或 web 工具
+- 向 workspace 复制 asset 或决定 asset 的目标路径
 - 编排 chat loop
 - 存储 thread 或持久化 loaded skill 上下文
 - 桌面 UI、安装器、更新器或产品 release manifest 组合
@@ -39,36 +42,96 @@ agent-skill manifest --json
 
 ## SDK 对象用法
 
-产品仓库组合 brick 时应优先使用对象 API。命令入口继续保留给 release smoke 和 host 侧索引生成。
+产品仓库组合 brick 时应优先使用对象 API。产品只需要传要启用的 skill 名称数组；
+预制包的安装、索引和 prompt 摘要预算都由积木内部处理。命令入口继续保留给
+release smoke 和 host 侧索引生成。
 
 ```js
 import { AgentSkill } from "@xuanzhen-tech/agent-skill-brick";
 
-const agentSkill = new AgentSkill();
-
-// 如需指定路径，只传一个 skills 根目录。
-const isolatedSkill = new AgentSkill("C:\\Users\\you\\.agent-cli\\skills");
+const agentSkill = new AgentSkill([
+  "amazon-sku-profit-summary",
+  "amazon-inventory-ledger-summary"
+]);
 
 await agentSkill.refresh();
 const promptSection = await agentSkill.buildPrompt();
+console.log(agentSkill.definitions); // 只包含上述两个被选择的 skill
+```
 
+也可以使用对象形式；`skillsPath` 是测试或 host 隔离时才需要的可选路径覆盖，
+不是产品必须理解的运行时细节：
+
+```js
+const agentSkill = new AgentSkill({
+  skills: ["amazon-operating-analysis"],
+  skillsPath: "C:\\Users\\you\\.agent-cli\\skills"
+});
+```
+
+预制 skill 实际被安装到唯一的 `skillsPath` 后才会进入索引。它们不会被当作
+第二个扫描根，也不会在未选择时出现在 `definitions`、`buildPrompt()`、
+`find()` 或 `activate()` 中。切换产品配置时可以复用同一对象：
+
+```js
+await agentSkill.setSkillNames([
+  "amazon-operating-analysis"
+]);
+```
+
+`remove(name)` 会同时从当前对象的白名单移除该名称，避免本次运行中被预制
+catalog 立刻装回。产品若持久化了选择数组，也应同步移除该名称；否则下次重新
+创建对象且再次传入该名称时，它会按配置重新准备。
+
+`new AgentSkill()` 保持旧行为：显示默认 `~/.agent-cli/skills` 中全部已安装
+skill，且不会自动安装预制内容。传入单个目录字符串或仅传 `skillsPath` 时也
+保持相同语义；新产品只有需要按需启用预制 skill 时才应使用名称数组。
+
+可通过 `builtinSkills` 或 `listBuiltinSkills()` 查询当前 SDK 可选择的预制名称：
+
+```js
+import { listBuiltinSkills } from "@xuanzhen-tech/agent-skill-brick";
+
+console.log(listBuiltinSkills());
+```
+
+远端搜索和安装能力仍保留：
+
+```js
 // search 会同时返回本地已安装 skills 和远端候选，不会返回完整 SKILL.md。
 const found = await agentSkill.find({ query: "github", source: "all", limit: 8 });
-console.log(found.skills);      // 已安装且匹配的本地 skills
+console.log(found.skills);      // 已安装且已被选择的本地 skills
 console.log(found.candidates);  // skills.sh / SkillHub / OpenAI curated 等远端候选
 
-// 安装远端候选后，AgentSkill 会刷新本地索引；随后才能 activate。
+// 安装远端候选后，需要由产品把该名称加入技能白名单，随后才能 activate。
 await agentSkill.find({
   action: "install",
   source: "skillhub",
   slug: "owner-repo-github"
 });
+await agentSkill.setSkillNames(["github"]);
 const activated = await agentSkill.activate("github");
 ```
 
-产品主路径除了可选的 skills 根目录，不需要传任何其它配置。扫描、索引缓存、prompt 摘要预算都由积木内部默认策略管理。`AgentSkill` 自身只管理一个 skills 目录，不从产品仓库接收多 root 或索引路径配置。
+产品主路径只需要 skill 名称数组。扫描、索引缓存、prompt 摘要预算、预制包安装
+和冲突保护都由积木内部默认策略管理。`AgentSkill` 自身只管理一个 skills 目录，
+不从产品仓库接收多 root 或索引路径配置。
 
 `buildPrompt()` 只返回可用 skills 的简短摘要，不会自动注入完整 `SKILL.md`。完整说明只能通过 `activate()` 返回 `loadedSkill` payload，由外部编排器决定如何持久化、去重和 compact。
+
+## Skill 资源合同
+
+`references/` 与 `assets/` 是 skill 包的正式内容，但它们不等同于任意工作区文件：
+
+- `activate(name)` 只读取 `SKILL.md`，并在 `loadedSkill.resources` 返回轻量清单，不会自动读取 reference 全文或复制 asset。
+- `listResources(name)` 返回可安全访问的 `reference` / `asset` 路径和大小。
+- `readReference(name, "references/...")` 只读取 UTF-8 文本，返回 `loadedSkillReference` payload。
+- `resolveAsset(name, "assets/...")` 只返回已经校验的源文件描述和内容 hash，不写 workspace。
+- `scripts/` 永远不会被这些接口读取或执行。
+
+产品和编排器不应自行拼接 skill 内部绝对路径。模型侧通过注入的 `AgentTool.skill_resource`
+访问资源：reference 会被编排器保存为专门上下文，asset 则由工具层复制到固定的
+`workspace/temp/skill-assets/` 目录。
 
 `find({ query })` 的返回值中，`skills` 表示已经安装在 `~/.agent-cli/skills` 下并进入索引的 skill；`candidates` 表示远端可安装候选。`skill_find` 搜索阶段不会把远端 skill 当成已激活上下文，也不会读取候选的完整 `SKILL.md`。
 

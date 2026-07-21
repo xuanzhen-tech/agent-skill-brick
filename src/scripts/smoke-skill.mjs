@@ -42,6 +42,17 @@ try {
     capabilities: ["search", "managed"],
     requiredTools: ["run_shell"]
   });
+  // references 与 assets 是 skill 包的一部分。这里用真实文件验证它们只能
+  // 经由 AgentSkill 的受控接口访问，而不会被扫描成独立 skill。
+  await fs.mkdir(path.join(managedRoot, "alpha", "references"), { recursive: true });
+  await fs.mkdir(path.join(managedRoot, "alpha", "assets"), { recursive: true });
+  await fs.writeFile(
+    path.join(managedRoot, "alpha", "references", "usage.md"),
+    "\uFEFF# Alpha Reference\n\nUse the packaged reference instructions.\n",
+    "utf8"
+  );
+  await fs.writeFile(path.join(managedRoot, "alpha", "references", "ignored.bin"), Buffer.from([0, 1, 2]));
+  await fs.writeFile(path.join(managedRoot, "alpha", "assets", "template.txt"), "asset template\n", "utf8");
   await writeSkill(path.join(managedRoot, "shared"), {
     name: "shared",
     description: "Managed shared skill"
@@ -259,6 +270,23 @@ try {
   const activated = await agentSkill.activate("alpha");
   assert.equal(activated.loadedSkill.name, "alpha");
   assert.match(activated.loadedSkill.content, /Use this skill when it is relevant/);
+  assert.deepEqual(activated.loadedSkill.resources, [
+    { kind: "asset", path: "assets/template.txt", bytes: 15 },
+    { kind: "reference", path: "references/usage.md", bytes: 63 }
+  ]);
+  const listedResources = await agentSkill.listResources("alpha");
+  assert.equal(listedResources.resources.length, 2);
+  const loadedReference = await agentSkill.readReference("alpha", "references/usage.md");
+  assert.equal(loadedReference.loadedSkillReference.skillName, "alpha");
+  assert.equal(loadedReference.loadedSkillReference.path, "references/usage.md");
+  assert.match(loadedReference.loadedSkillReference.content, /Alpha Reference/);
+  assert.equal(loadedReference.loadedSkillReference.content.startsWith("\uFEFF"), false);
+  const resolvedAsset = await agentSkill.resolveAsset("alpha", "assets/template.txt");
+  assert.equal(resolvedAsset.asset.path, "assets/template.txt");
+  assert.equal(resolvedAsset.asset.bytes, 15);
+  await assert.rejects(() => agentSkill.readReference("alpha", "assets/template.txt"), /references/);
+  await assert.rejects(() => agentSkill.resolveAsset("alpha", "references/usage.md"), /assets/);
+  await assert.rejects(() => agentSkill.readReference("alpha", "references/../SKILL.md"), /Invalid skill resource path/);
   const activatedRemote = await agentSkill.activate("remote-writer");
   assert.equal(activatedRemote.loadedSkill.name, "remote-writer");
   assert.match(activatedRemote.loadedSkill.content, /Installed from remote provider/);
@@ -268,6 +296,65 @@ try {
   assert.equal(removedInline.removed, true);
   assert.equal((await agentSkill.listInstallations()).some((record) => record.provenance.remoteId === "ecosystem-writer"), false);
 
+  // 预制 skill 只能由产品显式按名称选择。安装源仍然先经过既有 package
+  // 校验和受管替换事务，最终唯一运行时目录仍是传入的 skillsPath。
+  const builtinRoot = path.join(tempRoot, "builtin-managed");
+  const selectedBuiltinSkill = new AgentSkill({
+    skillsPath: builtinRoot,
+    skills: ["amazon-sku-profit-summary"]
+  });
+  const selectedBuiltinIndex = await selectedBuiltinSkill.refresh();
+  assert.deepEqual(selectedBuiltinIndex.skills.map((skill) => skill.name), ["amazon-sku-profit-summary"]);
+  assert.equal(await exists(path.join(builtinRoot, "amazon-sku-profit-summary", "SKILL.md")), true);
+  assert.equal(await exists(path.join(builtinRoot, "amazon-inventory-ledger-summary", "SKILL.md")), false);
+  assert.equal((await selectedBuiltinSkill.listInstallations())
+    .some((record) => record.sourceKind === "builtin" && record.provenance.remoteId === "builtin:amazon-sku-profit-summary"), true);
+
+  const builtinPrompt = await selectedBuiltinSkill.buildPrompt();
+  assert.match(builtinPrompt, /amazon-sku-profit-summary/);
+  assert.doesNotMatch(builtinPrompt, /amazon-inventory-ledger-summary/);
+  const builtinFound = await selectedBuiltinSkill.find({ query: "amazon", source: "local" });
+  assert.deepEqual(builtinFound.skills.map((skill) => skill.name), ["amazon-sku-profit-summary"]);
+  const builtinActivated = await selectedBuiltinSkill.activate("amazon-sku-profit-summary");
+  assert.equal(builtinActivated.loadedSkill.name, "amazon-sku-profit-summary");
+  await assert.rejects(
+    () => selectedBuiltinSkill.activate("amazon-inventory-ledger-summary"),
+    /Unknown skill/
+  );
+
+  await selectedBuiltinSkill.setSkillNames(["amazon-inventory-ledger-summary"]);
+  assert.deepEqual(selectedBuiltinSkill.definitions.map((skill) => skill.name), ["amazon-inventory-ledger-summary"]);
+  assert.equal(await exists(path.join(builtinRoot, "amazon-inventory-ledger-summary", "SKILL.md")), true);
+  assert.equal(await exists(path.join(builtinRoot, "amazon-sku-profit-summary", "SKILL.md")), true);
+
+  const removedSelectedBuiltin = await selectedBuiltinSkill.remove("amazon-inventory-ledger-summary");
+  assert.equal(removedSelectedBuiltin.removed, true);
+  assert.deepEqual(selectedBuiltinSkill.selectedSkillNames, []);
+  assert.deepEqual(selectedBuiltinSkill.definitions, []);
+  assert.equal(await exists(path.join(builtinRoot, "amazon-inventory-ledger-summary", "SKILL.md")), false);
+
+  await selectedBuiltinSkill.setSkillNames([]);
+  assert.deepEqual(selectedBuiltinSkill.definitions, []);
+  assert.equal(await selectedBuiltinSkill.buildPrompt(), "");
+
+  // 同名目录若不是由 builtin 安装记录管理，不能被预制 catalog 覆盖或误暴露。
+  const collisionRoot = path.join(tempRoot, "builtin-collision");
+  await writeSkill(path.join(collisionRoot, "amazon-sku-profit-summary"), {
+    name: "amazon-sku-profit-summary",
+    description: "Local skill with a protected builtin name"
+  });
+  const collidingBuiltinSkill = new AgentSkill({
+    skillsPath: collisionRoot,
+    skills: ["amazon-sku-profit-summary"]
+  });
+  const collisionIndex = await collidingBuiltinSkill.refresh();
+  assert.deepEqual(collisionIndex.skills, []);
+  assert.equal(collisionIndex.diagnostics.some((item) => item.code === "builtin_skill_conflict"), true);
+  assert.match(
+    await fs.readFile(path.join(collisionRoot, "amazon-sku-profit-summary", "SKILL.md"), "utf8"),
+    /Local skill with a protected builtin name/
+  );
+
   console.log("[smoke-skill] ok");
 } finally {
   await fs.rm(tempRoot, { recursive: true, force: true });
@@ -276,6 +363,15 @@ try {
 async function writeSkill(skillDir, metadata) {
   await fs.mkdir(skillDir, { recursive: true });
   await fs.writeFile(path.join(skillDir, "SKILL.md"), skillMarkdown(metadata), "utf8");
+}
+
+async function exists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function skillMarkdown(metadata) {

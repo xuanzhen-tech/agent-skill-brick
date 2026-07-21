@@ -125,9 +125,13 @@ async function validateRuntimeArtifactIfPresent() {
     "src/main/diagnostics.mjs",
     "src/main/env.mjs",
     "src/main/installation-registry.mjs",
+    "src/main/builtin-skill-catalog.mjs",
     "src/main/launch-config.mjs",
     "src/main/skill-index.mjs",
-    "src/main/skill-package.mjs"
+    "src/main/skill-package.mjs",
+    "src/builtin-skills/amazon-sku-profit-summary/SKILL.md",
+    "src/builtin-skills/amazon-inventory-ledger-summary/SKILL.md",
+    "src/builtin-skills/amazon-operating-analysis/SKILL.md"
   ];
   for (const requiredFile of requiredFiles) {
     if (!runtimeFiles.includes(requiredFile)) {
@@ -174,6 +178,7 @@ async function validateRuntimeArtifactIfPresent() {
 
 async function assertRuntimeFilesDoNotContainSecrets(runtimeFiles) {
   for (const file of runtimeFiles) {
+    if (!isTextRuntimeFile(file)) continue;
     const filePath = path.join(runtimeDir, ...String(file).split("/"));
     let content;
     try {
@@ -185,8 +190,14 @@ async function assertRuntimeFilesDoNotContainSecrets(runtimeFiles) {
   }
 }
 
+function isTextRuntimeFile(file) {
+  return /\.(?:cjs|js|json|md|mjs|txt|ya?ml)$/i.test(String(file));
+}
+
 function assertNoSecretText(content, label) {
-  const secretPattern = /\b(?:sk|sk-ant|sk-or|ghp|github_pat|AKIA)[A-Za-z0-9_-]{20,}\b/;
+  // 前缀必须包含真实凭据格式中的分隔符；否则 sku-profit-reconciliation
+  // 这类普通 skill 名会被误判为以 sk 开头的密钥。
+  const secretPattern = /\b(?:sk-[A-Za-z0-9_-]{20,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-or-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9_-]{20,}|github_pat_[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16})\b/;
   if (secretPattern.test(content)) {
     throw new Error(`File appears to contain a secret: ${label}`);
   }

@@ -1,0 +1,57 @@
+{
+  "说明": "经营分析端到端真实数据案例包。执行前必须先运行 workspace preflight，优先检查 C:\\ProgramData\\workspace；若不存在，再检查 C:\\ProgramData\\AnxinAI\\WorkSpace。",
+  "workspace_candidates": [
+    "C:\\ProgramData\\workspace",
+    "C:\\ProgramData\\AnxinAI\\WorkSpace"
+  ],
+  "cases": [
+    {
+      "id": "historical-review-real-data",
+      "prompt": "这个月为什么亏？请基于已核算 SKU 利润和费用输出历史经营复盘。",
+      "expected_calculator": "calculate_historical_operating_review",
+      "required_files": [
+        "outputs/normal_msku_metrics.csv",
+        "outputs/fee_allocation_facts.csv",
+        "核算源数据/交易/双橙-us-交易报告26.3.csv"
+      ],
+      "expected_behavior": ["资料反推", "要求可信 SKU 利润表", "输出成本结构", "输出 SKU 拖累排行", "列出无法归因项目", "顾问复核边界"],
+      "review_checklist": ["人工复核期间、主体、站点、币种和收入口径。", "人工复核 SKU 利润事实是否来自现有核算结果。", "人工复核无法归因费用是否单列。"]
+    },
+    {
+      "id": "operating-forecast-real-data",
+      "prompt": "未来 3 个月能卖多少？请基于历史销量、广告和库存做保守/基准/乐观预测。",
+      "expected_calculator": "calculate_operating_forecast",
+      "required_files": [
+        "outputs/normal_msku_metrics.csv",
+        "outputs/scr01_sales_qty.json",
+        "outputs/库存汇总表.xlsx"
+      ],
+      "expected_behavior": ["资料反推", "区分历史趋势和计划测算", "输出三场景", "纳入库存约束", "顾问复核边界"],
+      "review_checklist": ["人工复核历史基线是否足够代表未来。", "人工复核增长率、广告效率、季节性和断货假设。", "人工复核库存约束是否被纳入销量上限。"]
+    },
+    {
+      "id": "real-cashflow-real-data",
+      "prompt": "未来 3 个月钱够不够？请区分平台回款、reserve、采购付款和费用支出。",
+      "expected_calculator": "calculate_real_cashflow_forecast",
+      "required_files": [
+        "outputs/fee_allocation_facts.csv",
+        "outputs/normal_msku_metrics.csv",
+        "核算源数据/交易/双橙-us-交易报告26.3.csv"
+      ],
+      "expected_behavior": ["资料反推", "索要期初现金", "区分订单收入和现金到账", "输出最低现金余额", "输出资金缺口", "顾问复核边界"],
+      "review_checklist": ["人工复核期初现金、回款周期和 reserve 规则。", "人工复核采购定金、尾款、账期和物流付款节点。", "人工复核资金缺口只作为顾问底稿边界。"]
+    },
+    {
+      "id": "inventory-risk-real-data",
+      "prompt": "库存压了多少钱，哪些 SKU 要优先清？请基于库存和动销输出库存资金占用与滞销风险。",
+      "expected_calculator": "calculate_inventory_capital_risk",
+      "required_files": [
+        "outputs/库存汇总表.xlsx",
+        "核算源数据/库存/库存分类账-一览26.3.csv",
+        "核算源数据/库存/月度仓储费26.2.csv"
+      ],
+      "expected_behavior": ["资料反推", "索要库存数量和成本口径", "输出库存占用金额", "输出滞销清单", "输出清货优先级边界", "顾问复核边界"],
+      "review_checklist": ["人工复核库存数量、可售状态和地点。", "人工复核成本口径是否包含采购、头程和关税。", "人工复核清货优先级不是自动处置建议。"]
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "prompt": "这个产品能不能做？",
+    "expected_owner": "scenarios/launch-bp.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "先索要 M0", "调用正确 calculator", "不直接输出经营结论", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "售价 29.99 美金能赚钱吗？",
+    "expected_owner": "models/unit-economics.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "调用单件经济模型", "调用正确 calculator", "披露默认假设", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "我有 30 万启动资金够不够？",
+    "expected_owner": "scenarios/cashflow-forecast.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "调用现金流预测", "调用正确 calculator", "不只看利润", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "ACoS 到多少会亏？",
+    "expected_owner": "methods/sensitivity-breakeven.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "调用敏感性", "调用正确 calculator", "输出亏损阈值", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "退货率变成 15% 会怎样？",
+    "expected_owner": "methods/sensitivity-breakeven.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "调用退货率敏感性", "调用正确 calculator", "披露高风险变量", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "我只有供应商报价，能不能先判断？",
+    "expected_owner": "references/01-intake-assumptions.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "输出资料缺口清单", "缺售价不出结论", "调用正确 calculator", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "为什么利润为正但现金流还是负？",
+    "expected_owner": "scenarios/cashflow-forecast.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "解释回款付款时点", "解释库存和采购占用", "调用正确 calculator", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "卖多少件才能保本？",
+    "expected_owner": "methods/sensitivity-breakeven.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "调用盈亏平衡", "调用正确 calculator", "输出保本销量", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "用默认值先算一下可以吗？",
+    "expected_owner": "scenarios/launch-bp.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "披露默认假设", "调用正确 calculator", "结论降级为暂估测算", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "这是历史 SKU 利润核算，不是新品立项。",
+    "expected_owner": "amazon-sku-profit-summary",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "不误用新品立项 BP", "交给历史利润核算", "调用正确 calculator", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "这个月为什么亏？",
+    "expected_owner": "scenarios/historical-review.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "要求可信 SKU 利润表", "调用正确 calculator", "输出成本结构", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "未来 3 个月能卖多少？",
+    "expected_owner": "scenarios/operating-forecast.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "区分历史趋势和计划测算", "调用正确 calculator", "纳入库存约束", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "未来 3 个月钱够不够？",
+    "expected_owner": "scenarios/cashflow-forecast.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "索要期初现金", "调用正确 calculator", "区分订单收入和到账现金", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "库存压了多少钱，哪些 SKU 要清？",
+    "expected_owner": "scenarios/inventory-risk.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "索要库存数量和成本口径", "调用正确 calculator", "输出清货优先级边界", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "我只有销售和库存，能不能先判断？",
+    "expected_owner": "references/01-intake-assumptions.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "列出缺成本和费用", "调用正确 calculator", "结论降级", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "利润是正的，为什么现金还是紧？",
+    "expected_owner": "scenarios/cashflow-forecast.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "解释回款延迟", "调用正确 calculator", "解释库存采购占用", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "广告预算要怎么设？",
+    "expected_owner": "scenarios/operating-forecast.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "索要历史 ACoS 或目标 ACoS", "调用正确 calculator", "联动销量和利润预测", "结论等级", "顾问复核边界"]
+  },
+  {
+    "prompt": "哪些 SKU 拖累利润？",
+    "expected_owner": "scenarios/historical-review.md",
+    "turns": ["用户初始模糊问题", "Agent 索要资料", "用户补一部分资料", "Agent 调用 calculator", "Agent 输出顾问底稿"],
+    "required_assertions": ["资料反推", "要求可信 SKU 利润表", "调用正确 calculator", "输出 SKU 拖累排行", "结论等级", "顾问复核边界"]
+  }
+]

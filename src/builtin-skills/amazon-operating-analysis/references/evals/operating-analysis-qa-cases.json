@@ -1,0 +1,3906 @@
+{
+  "version": 1,
+  "purpose": "经营分析 Agent 真实后端 QA 用例。自动断言只覆盖硬性行为，最终财务 BP 质量由人工评分确认。",
+  "cases": [
+    {
+      "case_id": "oa-qa-launch-missing-m0",
+      "domain": "新品立项 BP",
+      "case_type": "资料不足",
+      "user_question": "这个产品能不能做？",
+      "available_data": [
+        "只有产品想法"
+      ],
+      "missing_data": [
+        "售价",
+        "采购成本",
+        "头程物流",
+        "站点",
+        "履约方式",
+        "销量假设",
+        "启动资金"
+      ],
+      "initial_prompt": "请模拟真实用户：我想做一个新的亚马逊产品，这个产品能不能做？你必须按经营分析技能处理，先判断资料是否足以支撑立项结论。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/launch-bp.md",
+        "calculators": [],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "资料缺口清单",
+            "方向性提示",
+            "暂估测算"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算",
+          "建议立项",
+          "可以直接做"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-launch-unit-price",
+      "domain": "新品立项 BP",
+      "case_type": "高风险假设",
+      "user_question": "售价 29.99 美金能赚钱吗？",
+      "available_data": [
+        "售价 29.99 美金",
+        "采购报价 48 元"
+      ],
+      "missing_data": [
+        "FBA 尺寸重量",
+        "佣金类目",
+        "头程",
+        "ACoS",
+        "退货率"
+      ],
+      "initial_prompt": "用户问：售价 29.99 美金能赚钱吗？已知采购报价 48 元，其他信息暂时没有。请按单件经济模型处理，不要把缺失费用沉默假设成客户事实。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/unit-economics.md",
+        "calculators": [
+          "calculate_unit_economics"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "单件经济",
+            "单位经济",
+            "单件贡献"
+          ],
+          [
+            "ACoS",
+            "广告"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-launch-defaults-requested",
+      "domain": "新品立项 BP",
+      "case_type": "高风险假设",
+      "user_question": "用默认值先算一下可以吗？",
+      "available_data": [
+        "用户授权可以先用默认值"
+      ],
+      "missing_data": [
+        "真实站点",
+        "真实履约方式",
+        "真实物流报价",
+        "真实广告计划"
+      ],
+      "initial_prompt": "用户说：我还没有完整资料，用默认值先算一下这个新品能不能做可以吗？请按经营分析规则处理，必须披露默认值和结论降级。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/launch-bp.md",
+        "calculators": [
+          "calculate_launch_bp"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "默认值",
+            "默认假设"
+          ],
+          [
+            "降级",
+            "暂估",
+            "方向性"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-launch-complete-bp",
+      "domain": "新品立项 BP",
+      "case_type": "资料完整",
+      "user_question": "按这些参数做 12 个月立项测算。",
+      "available_data": [
+        "售价",
+        "采购",
+        "头程",
+        "FBA",
+        "佣金",
+        "ACoS",
+        "退货率",
+        "销量爬坡",
+        "启动资金"
+      ],
+      "missing_data": [
+        "税务与合规需要顾问复核"
+      ],
+      "initial_prompt": "用户提供：售价 29.99 美金，汇率 7.2，采购 48 元，头程 12 元，FBA 5.2 美金，佣金 15%，ACoS 18%，退货率 8%，首月 300 件并每月增长 15%，启动资金 30 万元。请做 12 个月立项测算的顾问底稿。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/launch-bp.md",
+        "calculators": [
+          "calculate_unit_economics",
+          "calculate_cashflow_forecast",
+          "calculate_sensitivity_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "12 个月",
+            "十二个月"
+          ],
+          [
+            "回本",
+            "现金流",
+            "启动资金"
+          ]
+        ],
+        "forbidden_patterns": []
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-historical-loss-missing-profit",
+      "domain": "历史经营复盘",
+      "case_type": "资料不足",
+      "user_question": "这个月为什么亏？",
+      "available_data": [
+        "只有自然语言问题"
+      ],
+      "missing_data": [
+        "期间",
+        "SKU 利润核算结果",
+        "广告",
+        "退款",
+        "费用",
+        "库存"
+      ],
+      "initial_prompt": "用户问：这个月为什么亏？没有上传可信 SKU 利润表。请按历史经营复盘规则处理，不能直接编造 SKU 盈亏原因。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/historical-review.md",
+        "calculators": [],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "SKU 利润",
+            "利润核算"
+          ],
+          [
+            "资料缺口清单",
+            "方向性提示"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算",
+          "拖累利润的 SKU 是"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-historical-real-profit-review",
+      "domain": "历史经营复盘",
+      "case_type": "真实数据",
+      "user_question": "基于 outputs 的 SKU 利润表解释这个月为什么亏。",
+      "available_data": [
+        "outputs/SKU利润汇总表.xlsx",
+        "outputs/fee_allocation_facts.csv"
+      ],
+      "missing_data": [
+        "人工确认期间口径",
+        "固定费用是否分摊到 SKU"
+      ],
+      "initial_prompt": "用户问：请基于 outputs/SKU利润汇总表.xlsx 和 outputs/fee_allocation_facts.csv，解释这个月为什么亏，哪些 SKU 或费用项拖累利润。必须先确认文件存在并读取摘要。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/historical-review.md",
+        "calculators": [
+          "calculate_historical_operating_review"
+        ],
+        "files": [
+          "outputs/SKU利润汇总表.xlsx",
+          "outputs/fee_allocation_facts.csv"
+        ]
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "异常",
+            "拖累",
+            "归因"
+          ]
+        ],
+        "required_tools": [
+          "workspace_list"
+        ],
+        "required_files": [
+          "outputs/SKU利润汇总表.xlsx"
+        ],
+        "forbidden_patterns": [
+          "未读取文件但基于"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-historical-comparison-bridge",
+      "domain": "历史经营复盘",
+      "case_type": "高风险假设",
+      "user_question": "本期比上期利润差在哪里？",
+      "available_data": [
+        "本期利润表",
+        "上期利润表文件名未明确"
+      ],
+      "missing_data": [
+        "对比期文件",
+        "期间",
+        "成本分摊口径"
+      ],
+      "initial_prompt": "用户问：本期比上期利润差在哪里？他说 outputs 里有结果，但没有指出具体两个期间文件。请按利润桥分析规则先反推资料和口径。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/historical-review.md",
+        "calculators": [
+          "calculate_historical_operating_review"
+        ],
+        "files": [
+          "outputs"
+        ]
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "环比",
+            "对比期",
+            "利润桥"
+          ],
+          [
+            "期间",
+            "口径"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-historical-unattributed-fees",
+      "domain": "历史经营复盘",
+      "case_type": "高风险假设",
+      "user_question": "这些无法归因费用怎么处理？",
+      "available_data": [
+        "outputs/scr05_unresolved.json"
+      ],
+      "missing_data": [
+        "费用归因规则",
+        "是否允许硬摊"
+      ],
+      "initial_prompt": "用户问：outputs/scr05_unresolved.json 里有一些无法归因项目，这些费用怎么影响经营复盘？请读取文件摘要，不能把无法归因费用硬摊到 SKU。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/historical-review.md",
+        "calculators": [
+          "calculate_historical_operating_review"
+        ],
+        "files": [
+          "outputs/scr05_unresolved.json"
+        ]
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "无法归因",
+            "未归因"
+          ],
+          [
+            "单列",
+            "不要硬摊"
+          ]
+        ],
+        "required_files": [
+          "outputs/scr05_unresolved.json"
+        ],
+        "forbidden_patterns": [
+          "(?:无法归因|未归因).{0,20}全部分摊到 SKU",
+          "全部分摊到 SKU.{0,20}(?:无法归因|未归因)",
+          "把无法归因费用硬摊到 SKU"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-missing-history",
+      "domain": "未来经营预测",
+      "case_type": "资料不足",
+      "user_question": "未来 3 个月能卖多少？",
+      "available_data": [
+        "只有自然语言问题"
+      ],
+      "missing_data": [
+        "历史销量",
+        "广告效率",
+        "库存约束",
+        "促销计划",
+        "季节性"
+      ],
+      "initial_prompt": "用户问：未来 3 个月能卖多少？没有提供历史销量和经营计划。请按未来经营预测规则处理，区分趋势预测和计划测算。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "趋势预测",
+            "计划测算"
+          ],
+          [
+            "历史",
+            "基线"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-three-scenarios",
+      "domain": "未来经营预测",
+      "case_type": "资料完整",
+      "user_question": "按保守、基准、乐观三种场景预测未来 3 个月。",
+      "available_data": [
+        "历史月销量",
+        "售价",
+        "毛利",
+        "广告效率",
+        "库存"
+      ],
+      "missing_data": [
+        "季节性由用户假设"
+      ],
+      "initial_prompt": "用户提供：近 3 个月销量分别为 800、920、1000 件，售价 29.99 美金，广告 ACoS 18%，退货率 8%，当前可售库存 3200 件。请按保守、基准、乐观三种场景预测未来 3 个月销量、销售额、贡献利润和采购需求。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保守",
+            "基准",
+            "乐观"
+          ],
+          [
+            "采购需求",
+            "库存需求"
+          ]
+        ],
+        "forbidden_patterns": []
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-inventory-constrained",
+      "domain": "未来经营预测",
+      "case_type": "高风险假设",
+      "user_question": "库存不够会影响未来销量吗？",
+      "available_data": [
+        "销量趋势",
+        "库存数量"
+      ],
+      "missing_data": [
+        "补货到货时间",
+        "断货损失规则"
+      ],
+      "initial_prompt": "用户问：未来三个月如果库存不够，会不会影响销量？已知月销量约 1000 件，可售库存 1200 件，补货还没下单。请做库存约束下的经营预测，不要把需求预测直接当可实现销量。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存约束",
+            "断货"
+          ],
+          [
+            "可实现销量",
+            "需求预测"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-ad-budget",
+      "domain": "未来经营预测",
+      "case_type": "资料完整",
+      "user_question": "广告预算要怎么设？",
+      "available_data": [
+        "目标销量",
+        "售价",
+        "目标 ACoS"
+      ],
+      "missing_data": [
+        "广告效率变化需复核"
+      ],
+      "initial_prompt": "用户问：未来 3 个月广告预算要怎么设？目标销量 900、1100、1300 件，售价 29.99 美金，目标 ACoS 18%，广告效率可能波动。请输出广告预算预测和风险说明。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "广告预算",
+            "ACoS"
+          ],
+          [
+            "风险",
+            "敏感"
+          ]
+        ],
+        "forbidden_patterns": []
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-missing-opening-cash",
+      "domain": "真实现金流预测",
+      "case_type": "资料不足",
+      "user_question": "未来 3 个月钱够不够？",
+      "available_data": [
+        "只有自然语言问题"
+      ],
+      "missing_data": [
+        "期初现金",
+        "平台回款周期",
+        "采购付款节点",
+        "广告预算",
+        "固定费用"
+      ],
+      "initial_prompt": "用户问：未来 3 个月钱够不够？没有提供期初现金和付款节点。请按真实现金流预测处理，不能只看利润回答。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "期初现金"
+          ],
+          [
+            "回款",
+            "付款"
+          ]
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算",
+          "只要利润为正"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-300k",
+      "domain": "真实现金流预测",
+      "case_type": "高风险假设",
+      "user_question": "我有 30 万启动资金够不够？",
+      "available_data": [
+        "期初现金 30 万",
+        "预计销量",
+        "采购计划"
+      ],
+      "missing_data": [
+        "reserve",
+        "回款延迟",
+        "税费时间",
+        "物流付款节点"
+      ],
+      "initial_prompt": "用户问：我有 30 万启动资金够不够？预计前三个月销量 300、600、900 件，每件采购 48 元，首批采购 2000 件。请按现金流而不是利润判断，并列出缺口。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "required_any_text_groups": [
+          [
+            "30 万",
+            "300000"
+          ],
+          [
+            "回款",
+            "付款",
+            "reserve",
+            "冻结"
+          ]
+        ],
+        "forbidden_patterns": [
+          "只看利润",
+          "利润为正所以够"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-profit-positive-cash-tight",
+      "domain": "真实现金流预测",
+      "case_type": "高风险假设",
+      "user_question": "利润是正的，为什么现金还是紧？",
+      "available_data": [
+        "利润为正",
+        "库存采购较大"
+      ],
+      "missing_data": [
+        "平台回款",
+        "采购付款",
+        "库存占用",
+        "reserve"
+      ],
+      "initial_prompt": "用户问：利润是正的，为什么现金还是紧？请从真实现金流角度解释，必须区分收入确认、平台回款、银行到账、库存占用和采购付款。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "收入确认",
+            "回款",
+            "银行到账"
+          ],
+          [
+            "库存占用",
+            "采购付款"
+          ]
+        ],
+        "forbidden_patterns": [
+          "利润为正所以现金不紧"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-payment-schedule",
+      "domain": "真实现金流预测",
+      "case_type": "资料完整",
+      "user_question": "按回款和付款节点做周现金流。",
+      "available_data": [
+        "期初现金",
+        "销售预测",
+        "回款周期",
+        "采购定金尾款",
+        "广告和固定费用"
+      ],
+      "missing_data": [
+        "税费需复核"
+      ],
+      "initial_prompt": "用户提供：期初现金 300000 元，未来 8 周销售回款每两周到账一次，平台 reserve 10%，采购 200000 元分 30% 定金和 70% 两周后尾款，广告每周 12000 元，固定费用每月 30000 元。请做周现金流预测和风险月份/周。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "周现金流",
+            "现金流表"
+          ],
+          [
+            "最低现金",
+            "资金缺口",
+            "风险"
+          ]
+        ],
+        "forbidden_patterns": []
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cross-breakeven-route",
+      "domain": "跨场景/误路由",
+      "case_type": "误路由",
+      "user_question": "卖多少件才能保本？",
+      "available_data": [
+        "售价",
+        "单件成本",
+        "固定费用"
+      ],
+      "missing_data": [
+        "广告、退货、期间固定费用口径"
+      ],
+      "initial_prompt": "用户问：卖多少件才能保本？售价 29.99 美金，单件变动成本约 18 美金，月固定费用 30000 元。请按盈亏平衡处理，不要误走历史 SKU 利润核算。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_sensitivity_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "盈亏平衡",
+            "保本"
+          ],
+          [
+            "固定费用",
+            "贡献"
+          ]
+        ],
+        "forbidden_patterns": [
+          "(?:我将|马上|开始|直接|进入).{0,12}历史 SKU 利润核算",
+          "历史 SKU 利润核算 workflow 已启动"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cross-acos-risk",
+      "domain": "跨场景/误路由",
+      "case_type": "误路由",
+      "user_question": "ACoS 到多少会亏？",
+      "available_data": [
+        "售价",
+        "成本",
+        "平台费"
+      ],
+      "missing_data": [
+        "退货率",
+        "FBA",
+        "收款手续费"
+      ],
+      "initial_prompt": "用户问：ACoS 到多少会亏？售价 29.99 美金，采购和物流合计 10 美金，佣金 15%。请按敏感性分析处理，不要转成现金流或历史复盘。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_sensitivity_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "ACoS",
+            "广告"
+          ],
+          [
+            "敏感性",
+            "临界"
+          ]
+        ],
+        "forbidden_patterns": [
+          "这个月为什么亏"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cross-history-not-launch",
+      "domain": "跨场景/误路由",
+      "case_type": "误路由",
+      "user_question": "这是历史 SKU 利润核算，不是新品立项。",
+      "available_data": [
+        "历史核算源数据"
+      ],
+      "missing_data": [
+        "核算范围确认"
+      ],
+      "initial_prompt": "用户明确说：这是历史 SKU 利润核算，不是新品立项。请说明应该交给现有 SKU 利润核算/历史复盘能力，不要使用新品立项 BP。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "existing-sku-profit-calculation",
+        "calculators": [],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "历史",
+            "SKU 利润"
+          ],
+          [
+            "不是新品立项",
+            "不走新品"
+          ]
+        ],
+        "forbidden_patterns": [
+          "新品立项测算",
+          "12 个月立项"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cross-cashflow-not-profit",
+      "domain": "跨场景/误路由",
+      "case_type": "误路由",
+      "user_question": "未来几个月会不会缺钱？",
+      "available_data": [
+        "预计利润为正"
+      ],
+      "missing_data": [
+        "现金回款和付款节奏"
+      ],
+      "initial_prompt": "用户问：未来几个月会不会缺钱？他说利润预计是正的。请明确这是现金流问题，不能只用利润回答。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "缺钱"
+          ],
+          [
+            "回款",
+            "付款"
+          ]
+        ],
+        "forbidden_patterns": [
+          "利润为正所以不会缺钱"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-spend-map",
+      "domain": "成本结构分析",
+      "case_type": "资料完整",
+      "user_question": "钱主要花在哪？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户给出本月收入 20 万，广告 5 万、FBA 2.4 万、运营工资 3 万、网红测评 1.8 万、未匹配仓储费 3000。请按成本结构分析解释钱主要花在哪、异常费用、ROI和无法归因费用，不得硬摊。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-missing-revenue",
+      "domain": "成本结构分析",
+      "case_type": "资料不足",
+      "user_question": "只有费用没有收入能分析成本结构吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户只提供广告费、仓储费和工资，没有提供期间收入。请按成本结构分析输出资料缺口，不要计算费用占比。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-roi",
+      "domain": "成本结构分析",
+      "case_type": "资料完整",
+      "user_question": "广告和网红哪个投入回报更高？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供广告投入 5 万带来销售 18 万，网红投入 1.8 万带来销售 1.2 万。请分析 ROI 和降本空间。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-unallocated",
+      "domain": "成本结构分析",
+      "case_type": "高风险假设",
+      "user_question": "无法归因费用影响成本结构吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户说 outputs 里有无法归因仓储费和调整费。请解释这些项目如何影响成本结构，必须单列披露。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-fixed-variable",
+      "domain": "成本结构分析",
+      "case_type": "资料完整",
+      "user_question": "固定费用和变动费用各占多少？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户给出平台月租、工资、FBA、佣金、广告、包装耗材。请区分固定/变动/现金支出口径。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-cost-reduction",
+      "domain": "成本结构分析",
+      "case_type": "资料完整",
+      "user_question": "哪里最有降本空间？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供本月收入 30 万、广告 9 万、FBA 4 万、仓储费 2 万、人员 3 万。请给降本优先级和复核边界。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-real-data",
+      "domain": "成本结构分析",
+      "case_type": "真实数据",
+      "user_question": "基于 outputs 的费用表做成本结构分析。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户要求基于 outputs/fee_allocation_facts.csv 和 SKU利润汇总表解释成本结构。请先读取文件或说明缺口。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cost-structure-misroute",
+      "domain": "成本结构分析",
+      "case_type": "误路由防护",
+      "user_question": "这是成本结构分析，不是新品立项。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户说：我不是问新品能不能做，是问现有店铺钱主要花在哪。请进入成本结构分析而不是 launch BP。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ],
+          [
+            "ROI",
+            "降本",
+            "异常费用"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-seasonality",
+      "domain": "未来经营预测",
+      "case_type": "资料完整",
+      "user_question": "旺季会让未来销量怎么变？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供历史月销 1000，旺季系数 1.4，促销提升 10%，库存 3000。请做未来 3 个月预测并披露季节性假设。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "趋势预测",
+            "计划测算",
+            "场景预测"
+          ],
+          [
+            "库存约束",
+            "采购需求",
+            "广告预算"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_operating_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-promotion",
+      "domain": "未来经营预测",
+      "case_type": "资料完整",
+      "user_question": "促销计划会影响采购需求吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供 M1-M3 促销提升 0%、20%、10%，历史销量 800，库存 1800。请预测销量、销售额和采购需求。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "趋势预测",
+            "计划测算",
+            "场景预测"
+          ],
+          [
+            "库存约束",
+            "采购需求",
+            "广告预算"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_operating_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-stockout-loss",
+      "domain": "未来经营预测",
+      "case_type": "高风险假设",
+      "user_question": "断货会损失多少销量？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供需求预测 1000/1200/1300，可售库存 1500，补货未下单。请区分需求预测和可实现销量。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "趋势预测",
+            "计划测算",
+            "场景预测"
+          ],
+          [
+            "库存约束",
+            "采购需求",
+            "广告预算"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_operating_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-new-launch",
+      "domain": "未来经营预测",
+      "case_type": "资料完整",
+      "user_question": "上新计划要怎么并入预测？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户已有老品月销 1000，同时新 SKU 预计 100/200/300 件。请做组合预测和假设披露。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "趋势预测",
+            "计划测算",
+            "场景预测"
+          ],
+          [
+            "库存约束",
+            "采购需求",
+            "广告预算"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_operating_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-plan-not-trend",
+      "domain": "未来经营预测",
+      "case_type": "资料不足",
+      "user_question": "只有老板目标没有历史数据可以预测吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户只有目标销量 500/800/1000，没有历史数据。请降级为计划测算，不称为趋势预测。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "趋势预测",
+            "计划测算",
+            "场景预测"
+          ],
+          [
+            "库存约束",
+            "采购需求",
+            "广告预算"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_operating_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-forecast-real-data",
+      "domain": "未来经营预测",
+      "case_type": "真实数据",
+      "user_question": "读取历史销售数据后预测未来 3 个月。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户说历史销售在核算源数据或 outputs 中，请先尝试定位数据，再说明能否做趋势预测。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/operating-forecast.md",
+        "calculators": [
+          "calculate_operating_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "趋势预测",
+            "计划测算",
+            "场景预测"
+          ],
+          [
+            "库存约束",
+            "采购需求",
+            "广告预算"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_operating_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-payment-channel",
+      "domain": "真实现金流预测",
+      "case_type": "资料完整",
+      "user_question": "Payoneer 到账延迟会影响现金流吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供期初现金 6 万、W1 销售 10 万、亚马逊 14 天结算、Payoneer 再延迟 1 周、采购定金 4 万。请做周现金流。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "最低现金余额",
+            "资金缺口"
+          ],
+          [
+            "reserve",
+            "银行到账",
+            "安全现金线",
+            "付款节点"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-reserve-freeze",
+      "domain": "真实现金流预测",
+      "case_type": "高风险假设",
+      "user_question": "reserve 冻结款怎么影响钱够不够？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供期初现金 10 万、销售计划和 20% reserve。请区分订单收入、平台结算、reserve 和银行到账。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "最低现金余额",
+            "资金缺口"
+          ],
+          [
+            "reserve",
+            "银行到账",
+            "安全现金线",
+            "付款节点"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-tax-timing",
+      "domain": "真实现金流预测",
+      "case_type": "资料完整",
+      "user_question": "税费什么时候付会改变资金缺口吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供 M1-M3 回款计划、采购付款和 M3 VAT 支付。请输出最低现金余额和风险月份。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "最低现金余额",
+            "资金缺口"
+          ],
+          [
+            "reserve",
+            "银行到账",
+            "安全现金线",
+            "付款节点"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-deposit-balance",
+      "domain": "真实现金流预测",
+      "case_type": "资料完整",
+      "user_question": "采购定金和尾款节点怎么进现金流？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户有采购定金、尾款和物流付款节点。请按节点做现金流，不按利润表回答。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "最低现金余额",
+            "资金缺口"
+          ],
+          [
+            "reserve",
+            "银行到账",
+            "安全现金线",
+            "付款节点"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-safe-line",
+      "domain": "真实现金流预测",
+      "case_type": "资料完整",
+      "user_question": "安全现金线应该怎么看？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问未来 6 周是否低于维持 3 个月运营成本的安全线。请输出资金缺口和补资边界。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "最低现金余额",
+            "资金缺口"
+          ],
+          [
+            "reserve",
+            "银行到账",
+            "安全现金线",
+            "付款节点"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cashflow-real-data",
+      "domain": "真实现金流预测",
+      "case_type": "真实数据",
+      "user_question": "基于真实 outputs 看现金为什么紧。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户说 outputs 里有销售和费用结果，想知道现金为什么紧。请先读文件或列出缺口，不能只谈利润。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/cashflow-forecast.md",
+        "calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "现金流",
+            "最低现金余额",
+            "资金缺口"
+          ],
+          [
+            "reserve",
+            "银行到账",
+            "安全现金线",
+            "付款节点"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_real_cashflow_forecast"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-location-breakdown",
+      "domain": "库存资金占用",
+      "case_type": "资料完整",
+      "user_question": "FBA、海外仓、在途分别压了多少钱？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供 FBA、海外仓、在途、工厂未提货数量和单位成本。请按库存地点输出资金占用。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-paid-state",
+      "domain": "库存资金占用",
+      "case_type": "资料完整",
+      "user_question": "在途库存已付款和未付款要分开吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供在途库存和工厂未提货，其中部分已付款部分未付款。请区分已占用现金和未付款义务。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-unsellable",
+      "domain": "库存资金占用",
+      "case_type": "资料完整",
+      "user_question": "不可售库存还算资金占用吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供 FBA 可售和不可售库存。请单列不可售库存金额和风险。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-cost-basis",
+      "domain": "库存资金占用",
+      "case_type": "高风险假设",
+      "user_question": "采购、采购+头程、采购+头程+关税口径差异？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问库存压了多少钱，但成本口径未确认。请先澄清成本口径或降级。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-age-window",
+      "domain": "库存资金占用",
+      "case_type": "资料不足",
+      "user_question": "库龄起算日和动销窗口怎么定？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户只有库存数量和最近 30 天销量，库龄口径不明。请说明门禁和暂估。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-turnover-days",
+      "domain": "库存资金占用",
+      "case_type": "资料完整",
+      "user_question": "库存周转天数怎么算？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供平均库存成本和销售成本。请输出库存周转天数和健康区间。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-real-ledger",
+      "domain": "库存资金占用",
+      "case_type": "真实数据",
+      "user_question": "用库存 ledger 看库存占用。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户要求基于库存 ledger 或 outputs 做库存资金占用。请先读取文件或输出缺口。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-inventory-misroute",
+      "domain": "库存资金占用",
+      "case_type": "误路由防护",
+      "user_question": "这是库存资金占用，不是现金流预测。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问库存压了多少钱，不是问未来钱够不够。请主责库存分析，并说明可输入现金流。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "库存占用",
+            "库存资金",
+            "周转天数"
+          ],
+          [
+            "FBA",
+            "在途",
+            "工厂未提货",
+            "不可售"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_inventory_capital_risk"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-storage-fee",
+      "domain": "滞销库存与仓储费",
+      "case_type": "资料完整",
+      "user_question": "仓储费怎么侵蚀利润？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供滞销 SKU 数量、成本、月仓储费和长期仓储费。请比较继续持有、清仓、移除、销毁。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-clearance",
+      "domain": "滞销库存与仓储费",
+      "case_type": "资料完整",
+      "user_question": "低价清仓能不能覆盖仓储成本？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供清仓价、预计售罄率和仓储费。请输出现金回收和损失。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-remove-dispose",
+      "domain": "滞销库存与仓储费",
+      "case_type": "资料完整",
+      "user_question": "移除还是销毁更划算？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供移除费、销毁费、库存成本和仓储费。请比较动作。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-outlet-deal",
+      "domain": "滞销库存与仓储费",
+      "case_type": "资料完整",
+      "user_question": "Outlet/站外 Deal 是否值得做？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供当前售价、清仓价、站外 Deal 售罄率。请比较不同清货方案。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-missing-margin",
+      "domain": "滞销库存与仓储费",
+      "case_type": "资料不足",
+      "user_question": "缺单件毛利能判断滞销处理吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户只有库存和仓储费，缺单件毛利。请降级为方向性提示。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-long-term-fee",
+      "domain": "滞销库存与仓储费",
+      "case_type": "高风险假设",
+      "user_question": "长期仓储费超过货值怎么办？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户说下月长期仓储费可能超过商品价值。请按滞销仓储费决策模型处理。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-real-aged",
+      "domain": "滞销库存与仓储费",
+      "case_type": "真实数据",
+      "user_question": "读取库龄表判断哪些 SKU 要清。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户说 outputs 有库龄和仓储费文件。请读取或输出缺口，给清货优先级。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-slow-moving-policy-boundary",
+      "domain": "滞销库存与仓储费",
+      "case_type": "误路由防护",
+      "user_question": "清货建议能直接执行吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问能不能直接降价和销毁。请说明顾问复核边界和平台政策边界。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "继续持有",
+            "低价清仓",
+            "移除",
+            "销毁"
+          ],
+          [
+            "仓储费",
+            "现金回收",
+            "损失"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-fx",
+      "domain": "敏感性分析",
+      "case_type": "资料完整",
+      "user_question": "美元汇率下跌 5% 利润会怎样？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供基础经营参数，问汇率下跌 5% 的利润影响。请做敏感性分析。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-freight",
+      "domain": "敏感性分析",
+      "case_type": "资料完整",
+      "user_question": "海运费涨 25% 会不会亏？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供售价、采购、头程、销量和广告。请分析运费敏感性。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-acos-return",
+      "domain": "敏感性分析",
+      "case_type": "资料完整",
+      "user_question": "ACoS 和退货率同时上升会怎样？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问 ACoS 从20%到30%、退货率从15%到25%的组合影响。请做多因素交叉。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-purchase",
+      "domain": "敏感性分析",
+      "case_type": "资料完整",
+      "user_question": "供应商涨价 10% 对利润影响多少？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供基础单件模型，问采购价涨 10% 的影响。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-platform-tax",
+      "domain": "敏感性分析",
+      "case_type": "高风险假设",
+      "user_question": "平台费和税费变化怎么影响利润？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户担心平台佣金和 VAT 变化。请输出单因素和组合影响。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-missing-base",
+      "domain": "敏感性分析",
+      "case_type": "资料不足",
+      "user_question": "没有基础模型能做敏感性吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户只问如果因素波动10%会怎样，但没有售价成本。请输出资料缺口。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-rank",
+      "domain": "敏感性分析",
+      "case_type": "资料完整",
+      "user_question": "哪个因素最敏感？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供汇率、运费、ACoS、退货率、采购价波动。请排序利润冲击。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-sensitivity-misroute",
+      "domain": "敏感性分析",
+      "case_type": "误路由防护",
+      "user_question": "这是敏感性，不是经营预测。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问因素波动对利润的影响，不是未来销量预测。请主责敏感性分析。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "敏感性",
+            "压力测试",
+            "因素排序"
+          ],
+          [
+            "汇率",
+            "运费",
+            "ACoS",
+            "退货率",
+            "采购价"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_multi_factor_sensitivity"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-single-sku",
+      "domain": "盈亏平衡分析",
+      "case_type": "资料完整",
+      "user_question": "每月卖多少件才能保本？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供固定成本 3 万、单件边际贡献 50。请计算保本销量。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-multi-sku",
+      "domain": "盈亏平衡分析",
+      "case_type": "资料完整",
+      "user_question": "多个 SKU 组合怎么保本？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供 A/B SKU 销量占比和边际贡献。请做多 SKU 加权 BEP。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-cold-start",
+      "domain": "盈亏平衡分析",
+      "case_type": "高风险假设",
+      "user_question": "冷启动期保本点和成熟期一样吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问冷启动期广告最低预算更高时保本销量。请区分阶段。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-fixed-cost",
+      "domain": "盈亏平衡分析",
+      "case_type": "资料不足",
+      "user_question": "固定成本范围包括哪些？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户不清楚工资、软件、月租、最低广告预算是否算固定成本。请先澄清口径。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-safety-margin",
+      "domain": "盈亏平衡分析",
+      "case_type": "资料完整",
+      "user_question": "安全边际够不够？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供现有销量和保本销量。请输出安全边际和风险。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-sales",
+      "domain": "盈亏平衡分析",
+      "case_type": "资料完整",
+      "user_question": "保本销售额是多少？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供固定成本、单件贡献和售价。请输出保本销量与销售额。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-mix-change",
+      "domain": "盈亏平衡分析",
+      "case_type": "高风险假设",
+      "user_question": "SKU 销量结构变化会影响保本吗？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户说爆款占比下降、长尾占比上升。请按加权边际贡献解释。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-breakeven-misroute",
+      "domain": "盈亏平衡分析",
+      "case_type": "误路由防护",
+      "user_question": "这是盈亏平衡，不是现金流。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问卖多少保本，不是问资金什么时候缺。请主责盈亏平衡。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "methods/sensitivity-breakeven.md",
+        "calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "保本销量",
+            "保本销售额",
+            "BEP"
+          ],
+          [
+            "固定成本",
+            "边际贡献",
+            "安全边际"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_weighted_breakeven"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-launch-regression-startup-fee",
+      "domain": "新品立项 BP",
+      "case_type": "回归",
+      "user_question": "启动费用有哪些？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问新品立项前期投入成本有哪些。请用经营测算能力列启动费用和缺口。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/launch-bp.md",
+        "calculators": [
+          "calculate_launch_bp"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "启动费用",
+            "首批采购",
+            "首批物流"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_launch_bp"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-launch-regression-roi",
+      "domain": "新品立项 BP",
+      "case_type": "回归",
+      "user_question": "这个新品 ROI 怎么看？",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户提供售价、采购、广告和销量假设，问 ROI 和回本。请做立项测算并披露假设。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/launch-bp.md",
+        "calculators": [
+          "calculate_launch_bp"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "ROI",
+            "回本",
+            "12 个月"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_launch_bp"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cross-cost-not-launch",
+      "domain": "跨场景/误路由",
+      "case_type": "误路由防护",
+      "user_question": "钱花在哪不是新品立项。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问现有店铺费用结构，不是新品要不要做。请路由到成本结构分析。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "models/cost-structure.md",
+        "calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "成本结构",
+            "费用结构"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_cost_structure_analysis"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    },
+    {
+      "case_id": "oa-qa-cross-slow-moving-not-forecast",
+      "domain": "跨场景/误路由",
+      "case_type": "误路由防护",
+      "user_question": "滞销清货不是未来销量预测。",
+      "available_data": [
+        "由 case prompt 提供"
+      ],
+      "missing_data": [
+        "按经营分析 M0/M1/M2/M3 规则反推"
+      ],
+      "initial_prompt": "用户问滞销 SKU 是降价、移除还是销毁，不是预测未来销量。请路由到滞销库存与仓储费。",
+      "follow_up_messages": [],
+      "expected": {
+        "primary_route": "scenarios/inventory-risk.md",
+        "calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "files": []
+      },
+      "automatic_assertions": {
+        "required_text": [
+          "结论等级",
+          "资料缺口",
+          "假设披露",
+          "计算与证据来源",
+          "风险提示",
+          "顾问复核"
+        ],
+        "required_any_text_groups": [
+          [
+            "移除",
+            "销毁",
+            "低价清仓"
+          ]
+        ],
+        "required_calculators": [
+          "calculate_slow_moving_inventory_decision"
+        ],
+        "forbidden_patterns": [
+          "结论等级[：:\\s]*正式测算.*缺少 M0"
+        ]
+      },
+      "manual_scoring": {
+        "total_points": 100
+      }
+    }
+  ]
+}

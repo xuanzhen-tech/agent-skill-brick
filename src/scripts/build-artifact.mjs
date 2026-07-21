@@ -2,8 +2,8 @@
  * 构建可分发的 agent-skill 运行时 artifact。
  *
  * skills 积木发布一个小型 zip，其中包含面向 host 的命令入口、SDK 模块、
- * 积木元数据和运行时合同。它刻意不包含已安装 skills；这些内容由产品或
- * registry 在发布时提供。
+ * 积木元数据和运行时合同。它不包含用户已安装的 skills，但会包含只读的
+ * 预制 skill catalog；运行时仍需由 AgentSkill 受控安装到 skillsPath。
  */
 
 import crypto from "node:crypto";
@@ -36,6 +36,13 @@ await writeJsonIntoRuntime("brick-definition.snapshot.json", brickDefinition);
 const mainSourceFiles = await readFiles(path.join(repoRoot, "src", "main"));
 for (const file of mainSourceFiles) {
   const target = path.join(runtimeDir, "src", "main", ...file.path.split("/"));
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.writeFile(target, file.content);
+}
+
+const builtinSkillFiles = await readFiles(path.join(repoRoot, "src", "builtin-skills"));
+for (const file of builtinSkillFiles) {
+  const target = path.join(runtimeDir, "src", "builtin-skills", ...file.path.split("/"));
   await fs.mkdir(path.dirname(target), { recursive: true });
   await fs.writeFile(target, file.content);
 }

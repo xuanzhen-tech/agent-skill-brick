@@ -2,8 +2,9 @@
  * AgentSkill 对象化运行时入口。
  *
  * 本文件把 skill 扫描、摘要注入、查找、激活和安装封装成可注入对象。
- * 产品主路径只需要传一个 skills 目录；索引路径、prompt 预算和扫描策略
- * 都由本积木内部默认，避免外部组合时泄露过多实现细节。
+ * 产品主路径只需要传要启用的 skill 名称数组；预制 skill 的受控安装、索引
+ * 路径、prompt 预算和扫描策略都由本积木内部默认，避免外部组合时泄露过多
+ * 实现细节。
  */
 
 import crypto from "node:crypto";
@@ -11,6 +12,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { brickDefinition } from "../brick-definition.mjs";
+import {
+  createBuiltinSkillSource,
+  isBuiltinSkillName,
+  listBuiltinSkills
+} from "./builtin-skill-catalog.mjs";
 import { createDiagnosticsReport } from "./diagnostics.mjs";
 import { resolveSkillConfig } from "./launch-config.mjs";
 import {
@@ -18,9 +24,17 @@ import {
   normalizeSkillFindLimit,
   normalizeSkillFindSource
 } from "./skill-finder.mjs";
-import { listManagedSkillInstallations } from "./installation-registry.mjs";
+import {
+  getManagedSkillInstallation,
+  listManagedSkillInstallations
+} from "./installation-registry.mjs";
 import { installSkillPackage, removeManagedSkill } from "./skill-package.mjs";
-import { scanSkillRoots } from "./skill-index.mjs";
+import { normalizeSkillName, scanSkillRoots } from "./skill-index.mjs";
+import {
+  listSkillResources,
+  readSkillReference,
+  resolveSkillAsset
+} from "./skill-resource-runtime.mjs";
 
 const MAX_ACTIVATED_SKILL_BYTES = 256 * 1024;
 const DEFAULT_FIND_LIMIT = 20;
@@ -32,6 +46,8 @@ export class AgentSkill {
   constructor(input = {}) {
     const normalizedInput = normalizeConstructorInput(input);
     this.config = resolveSkillConfig(process.env, normalizedInput);
+    this.visibilityMode = normalizedInput.visibilityMode;
+    this.skillNames = normalizeSkillNames(normalizedInput.skillNames);
     this.promptSkillLimit = DEFAULT_PROMPT_SKILL_LIMIT;
     this.promptBytes = DEFAULT_PROMPT_BYTES;
     this.index = {
@@ -51,8 +67,46 @@ export class AgentSkill {
     return this.index.skills.map(toSkillDefinition);
   }
 
+  /**
+   * 返回当前 artifact 可供产品选择的预制 skill。
+   *
+   * 该列表不会自动启用或安装；产品必须通过构造函数数组或 setSkillNames()
+   * 显式选择，才能让对应 skill 进入运行时可见列表。
+   */
+  get builtinSkills() {
+    return listBuiltinSkills();
+  }
+
+  /**
+   * 返回当前对象采用的 skill 可见性选择。
+   *
+   * all 仅用于旧版路径构造兼容；新产品应传数组并使用 selected 模式。
+   */
+  get selectedSkillNames() {
+    return [...this.skillNames];
+  }
+
+  /**
+   * 动态切换当前 AgentSkill 实例的可见 skill 白名单。
+   *
+   * 选择内置名称时会按受控安装流程写入 skillsPath；选择外部名称时只会在
+   * 该名称已经由产品或远端安装到 skillsPath 后变为可见。
+   */
+  async setSkillNames(skillNames) {
+    this.visibilityMode = "selected";
+    this.skillNames = normalizeSkillNames(skillNames);
+    return await this.refresh();
+  }
+
   async refresh(context = {}) {
-    this.index = await scanSkillRoots(this.contextConfig(context));
+    const provisioning = await this.provisionSelectedBuiltinSkills();
+    const scannedIndex = await scanSkillRoots(this.contextConfig(context));
+    this.index = createVisibleSkillIndex(scannedIndex, {
+      visibilityMode: this.visibilityMode,
+      skillNames: this.skillNames,
+      blockedSkillNames: provisioning.blockedSkillNames,
+      diagnostics: provisioning.diagnostics
+    });
     return this.index;
   }
 
@@ -106,35 +160,91 @@ export class AgentSkill {
   }
 
   async activate(nameOrId, context = {}) {
-    await this.refresh(context);
-    const requestedSkill = stringField(nameOrId);
-    if (!requestedSkill) {
-      throw new Error("skill is required");
-    }
-
-    const skill = this.index.skills.find((candidate) => candidate.id === requestedSkill || candidate.name === requestedSkill);
-    if (!skill) throw new Error(`Unknown skill: ${requestedSkill}`);
-    if (skill.enabled === false) throw new Error(skill.disabledReason || `Skill is disabled: ${skill.name}`);
-
-    const skillFilePath = await resolveIndexedSkillPath(skill);
+    const { skill, skillFilePath } = await this.resolveActiveSkill(nameOrId, context);
     const stat = await fs.stat(skillFilePath);
     if (!stat.isFile()) throw new Error(`Skill path is not a file: ${skillFilePath}`);
     if (stat.size > MAX_ACTIVATED_SKILL_BYTES) throw new Error(`SKILL.md exceeds ${MAX_ACTIVATED_SKILL_BYTES} bytes.`);
 
     const content = await fs.readFile(skillFilePath, "utf8");
+    const resources = await listSkillResources({ skill, skillFilePath });
     const loadedSkill = {
       id: skill.id,
       name: skill.name,
       path: skillFilePath,
       content,
       contentHash: sha256(content),
-      bytes: Buffer.byteLength(content, "utf8")
+      bytes: Buffer.byteLength(content, "utf8"),
+      resources
     };
     return {
       activated: true,
       skillName: skill.name,
       contentHash: loadedSkill.contentHash,
       loadedSkill
+    };
+  }
+
+  /**
+   * 返回一个 skill 可供受控访问的 references 与 assets 清单。
+   *
+   * 清单不包含文件全文，也不暴露 scripts；模型需要具体内容时必须通过
+   * AgentTool 的 skill_resource 合同继续请求。
+   */
+  async listResources(nameOrId, context = {}) {
+    const { skill, skillFilePath } = await this.resolveActiveSkill(nameOrId, context);
+    const resources = await listSkillResources({ skill, skillFilePath });
+    return {
+      skillId: skill.id,
+      skillName: skill.name,
+      resources
+    };
+  }
+
+  /**
+   * 读取 skill references 目录下的一个 UTF-8 文本文件。
+   *
+   * 返回的 loadedSkillReference 由 AgentCli 升级为专门上下文事件，不能把
+   * 它当成任意工作区文件或普通 shell 输出使用。
+   */
+  async readReference(nameOrId, resourcePath, context = {}) {
+    const { skill, skillFilePath } = await this.resolveActiveSkill(nameOrId, context);
+    const loadedSkillReference = await readSkillReference({
+      skill,
+      skillFilePath,
+      resourcePath
+    });
+    return {
+      read: true,
+      skillId: skill.id,
+      skillName: skill.name,
+      resourcePath: loadedSkillReference.path,
+      contentHash: loadedSkillReference.contentHash,
+      bytes: loadedSkillReference.bytes,
+      loadedSkillReference
+    };
+  }
+
+  /**
+   * 解析 skill assets 目录下的一个受控文件。
+   *
+   * AgentSkill 只证明源文件安全且提供不可变 hash，不写入 workspace；实际
+   * 物化由 AgentTool 按固定的 temp/skill-assets 路径完成。
+   */
+  async resolveAsset(nameOrId, resourcePath, context = {}) {
+    const { skill, skillFilePath } = await this.resolveActiveSkill(nameOrId, context);
+    const asset = await resolveSkillAsset({
+      skill,
+      skillFilePath,
+      resourcePath
+    });
+    return {
+      resolved: true,
+      skillId: skill.id,
+      skillName: skill.name,
+      resourcePath: asset.path,
+      contentHash: asset.contentHash,
+      bytes: asset.bytes,
+      asset
     };
   }
 
@@ -155,12 +265,36 @@ export class AgentSkill {
   }
 
   async remove(nameOrId, options = {}) {
+    const skillName = normalizeSkillName(nameOrId);
     const result = await removeManagedSkill({
-      skill: nameOrId,
+      skill: skillName,
       managedRoot: this.config.skillsPath
     });
+    // 当前实例已经明确移除该 skill 时，不应在本次 refresh 中因仍留在白名单
+    // 而被预制 catalog 立即装回。产品若在下次创建对象时继续传入该名称，
+    // 则表示它仍希望启用，届时会按配置重新准备。
+    if (this.visibilityMode === "selected") {
+      this.skillNames = this.skillNames.filter((name) => name !== skillName);
+    }
     await this.refresh();
     return result;
+  }
+
+  // 集中执行索引刷新、启用状态和 SKILL.md 路径检查，保证 activate、资源清单、
+  // reference 读取与 asset 解析始终面对同一份受控 skill 元数据。
+  async resolveActiveSkill(nameOrId, context = {}) {
+    await this.refresh(context);
+    const requestedSkill = stringField(nameOrId);
+    if (!requestedSkill) throw new Error("skill is required");
+
+    const skill = this.index.skills.find((candidate) => candidate.id === requestedSkill || candidate.name === requestedSkill);
+    if (!skill) throw new Error(`Unknown skill: ${requestedSkill}`);
+    if (skill.enabled === false) throw new Error(skill.disabledReason || `Skill is disabled: ${skill.name}`);
+
+    return {
+      skill,
+      skillFilePath: await resolveIndexedSkillPath(skill)
+    };
   }
 
   async installFromSkillFind(filter = {}, context = {}) {
@@ -182,13 +316,27 @@ export class AgentSkill {
       .filter(Boolean)
       .map(toSkillFindItem);
 
+    const invisibleInstalledNames = this.visibilityMode === "selected"
+      ? result.installed
+        .map((item) => normalizeOptionalSkillName(item.name))
+        .filter(Boolean)
+        .filter((name) => !this.skillNames.includes(name))
+      : [];
+
     return {
       action: "install",
       skillRoot: this.config.skillsPath,
       installed: result.installed,
       skills: installedSkills,
       count: installedSkills.length,
-      diagnostics: result.diagnostics ?? [],
+      diagnostics: [
+        ...(result.diagnostics ?? []),
+        ...invisibleInstalledNames.map((name) => ({
+          level: "info",
+          code: "skill_not_selected",
+          message: `Skill was installed but remains inactive until selected: ${name}`
+        }))
+      ],
       generatedAt: this.index.generatedAt
     };
   }
@@ -227,18 +375,122 @@ export class AgentSkill {
       managedRoot: this.config.skillsPath
     };
   }
+
+  async provisionSelectedBuiltinSkills() {
+    if (this.visibilityMode !== "selected") {
+      return {
+        diagnostics: [],
+        blockedSkillNames: []
+      };
+    }
+
+    const diagnostics = [];
+    const blockedSkillNames = [];
+    for (const skillName of this.skillNames) {
+      if (!isBuiltinSkillName(skillName)) continue;
+
+      const source = createBuiltinSkillSource(skillName);
+      try {
+        let result = await installSkillPackage({
+          source,
+          managedRoot: this.config.skillsPath,
+          conflict: "check"
+        });
+
+        // 内置 skill 的旧版本可自动升级，但仅限安装记录和磁盘内容都表明它
+        // 没有被用户改写。未知来源或手工修改的同名目录必须保留并报告冲突。
+        if (result.status === "conflict" && await this.canReplaceBuiltinSkill(result, skillName)) {
+          result = await installSkillPackage({
+            source,
+            managedRoot: this.config.skillsPath,
+            conflict: "replace"
+          });
+        }
+
+        if (result.status === "conflict") {
+          blockedSkillNames.push(skillName);
+          diagnostics.push({
+            level: "warn",
+            code: "builtin_skill_conflict",
+            skillName,
+            message: `Builtin skill was not installed because a local skill already owns the name: ${skillName}`
+          });
+        }
+      } catch (error) {
+        blockedSkillNames.push(skillName);
+        diagnostics.push({
+          level: "warn",
+          code: "builtin_skill_install_failed",
+          skillName,
+          message: `Unable to prepare builtin skill ${skillName}: ${error instanceof Error ? error.message : String(error)}`
+        });
+      }
+    }
+    return {
+      diagnostics,
+      blockedSkillNames
+    };
+  }
+
+  async canReplaceBuiltinSkill(result, skillName) {
+    const existingInstallation = result.existingInstallation
+      ?? await getManagedSkillInstallation({
+        managedRoot: this.config.skillsPath,
+        skillName
+      });
+    if (!isManagedBuiltinInstallation(existingInstallation, skillName)) return false;
+
+    const installedSkillPath = path.join(this.config.skillsPath, skillName, "SKILL.md");
+    try {
+      const currentContent = await fs.readFile(installedSkillPath, "utf8");
+      return sha256(currentContent) === existingInstallation.contentHash;
+    } catch {
+      return false;
+    }
+  }
 }
 
 function normalizeConstructorInput(input) {
+  if (Array.isArray(input)) {
+    return {
+      skillNames: input,
+      visibilityMode: "selected"
+    };
+  }
   if (typeof input === "string") {
-    return { skillsPath: input };
+    // 字符串路径是旧版公开入口；保留“所有已安装 skills 可见”的语义，
+    // 避免既有 host 升级 SDK 后突然失去已安装 skill。
+    return {
+      skillsPath: input,
+      visibilityMode: "all"
+    };
   }
   if (!input || typeof input !== "object" || Array.isArray(input)) {
-    return {};
+    // 无参构造是既有公开用法，继续显示默认托管目录中已安装的全部 skill。
+    // 预制 catalog 只由显式名称数组触发，不会改变旧产品的启动结果。
+    return { visibilityMode: "all" };
   }
+  const hasSkills = Object.hasOwn(input, "skills") || Object.hasOwn(input, "skillNames");
+  const hasExplicitPath = Object.hasOwn(input, "skillsPath") || Object.hasOwn(input, "managedRoot");
   return {
-    skillsPath: input.skillsPath ?? input.managedRoot
+    skillsPath: input.skillsPath ?? input.managedRoot,
+    skillNames: input.skills ?? input.skillNames,
+    visibilityMode: input.allInstalled === true
+      ? "all"
+      : hasSkills
+        ? "selected"
+        : hasExplicitPath
+          ? "all"
+          : "all"
   };
+}
+
+function normalizeSkillNames(value) {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    throw new Error("skills must be an array of skill names");
+  }
+  return [...new Set(value.map((name) => normalizeSkillName(name)))];
 }
 
 function normalizeFindAction(filter = {}) {
@@ -277,6 +529,40 @@ function normalizeInstallSource(filter = {}) {
   if (stringField(filter.slug)) return "skillhub";
   if (stringField(filter.packageName ?? filter.package)) return "skills-sh";
   return "openai-curated";
+}
+
+function createVisibleSkillIndex(scannedIndex, {
+  visibilityMode,
+  skillNames,
+  blockedSkillNames,
+  diagnostics
+}) {
+  const selectedNames = new Set(skillNames);
+  const blockedNames = new Set(blockedSkillNames);
+  const skills = visibilityMode === "all"
+    ? scannedIndex.skills
+    : visibilityMode === "selected"
+      ? scannedIndex.skills.filter((skill) => (
+        (selectedNames.has(skill.name) || selectedNames.has(skill.id))
+        && !blockedNames.has(skill.name)
+        && !blockedNames.has(skill.id)
+      ))
+      : [];
+
+  return {
+    ...scannedIndex,
+    skills,
+    diagnostics: [
+      ...(scannedIndex.diagnostics ?? []),
+      ...diagnostics
+    ]
+  };
+}
+
+function isManagedBuiltinInstallation(installation, skillName) {
+  return installation?.sourceKind === "builtin"
+    && installation.provenance?.type === "agent-skill-builtin"
+    && installation.provenance?.remoteId === `builtin:${skillName}`;
 }
 
 function toSkillDefinition(skill) {
@@ -366,6 +652,14 @@ function toList(value) {
 
 function stringField(value) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function normalizeOptionalSkillName(value) {
+  try {
+    return value === undefined ? undefined : normalizeSkillName(value);
+  } catch {
+    return undefined;
+  }
 }
 
 function sha256(value) {

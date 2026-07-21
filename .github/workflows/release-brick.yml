@@ -53,8 +53,11 @@ jobs:
           node --check src/main/diagnostics.mjs
           node --check src/main/env.mjs
           node --check src/main/launch-config.mjs
+          node --check src/main/agent-skill.mjs
+          node --check src/main/builtin-skill-catalog.mjs
           node --check src/main/skill-index.mjs
           node --check src/main/skill-package.mjs
+          node --check src/main/skill-resource-runtime.mjs
           node --check src/scripts/build-artifact.mjs
           node --check src/scripts/create-descriptor.mjs
           node --check src/scripts/publish-artifact.mjs

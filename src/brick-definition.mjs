@@ -2,7 +2,7 @@
  * agent-skill 的公开积木定义。
  *
  * 这个合同告诉 baseLine 和产品仓库：当前积木产出 skills-index artifact，
- * 并暴露一个只需要 skillsPath 的 SDK 对象。它刻意不声明工具执行或模型
+ * 并暴露一个可按名称选择预制 skill 的 SDK 对象。它刻意不声明工具执行或模型
  * 编排能力。
  */
 
@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.3.0";
+const BRICK_VERSION = "0.4.0";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -31,6 +31,13 @@ const installCapability = createBrickCapability({
   name: "Agent Skill Install",
   type: "config",
   description: "安装、更新和删除托管 skill 包，维护安装来源记录和替换事务，但不执行 skill 脚本。"
+});
+
+const builtinCatalogCapability = createBrickCapability({
+  id: "agent-skill.builtin-catalog",
+  name: "Agent Skill Builtin Catalog",
+  type: "config",
+  description: "提供随 SDK 与 runtime artifact 发布的预制 skill，并只在产品按名称选择后受控安装到托管目录。"
 });
 
 export const brickDefinition = createBrickDefinition({
@@ -48,7 +55,12 @@ export const brickDefinition = createBrickDefinition({
     {
       name: "AgentSkill",
       type: "api",
-      description: "SDK 对象入口，用于把 skill 注册管理、受控安装来源和 prompt 摘要直接组合进 AgentCli。"
+      description: "SDK 对象入口，用于按名称选择预制或已安装 skill，并提供注册管理、受控安装来源和 prompt 摘要。"
+    },
+    {
+      name: "listBuiltinSkills",
+      type: "api",
+      description: "列出当前 artifact 随附、可由产品按名称选择的预制 skill。"
     },
     {
       name: "createAgentSkillIndex",
@@ -73,12 +85,21 @@ export const brickDefinition = createBrickDefinition({
   ],
   capabilities: [
     registryCapability,
-    installCapability
+    installCapability,
+    builtinCatalogCapability
   ],
   configSchema: {
     type: "object",
     properties: {
-      skillsPath: { type: "string" }
+      skills: {
+        type: "array",
+        items: { type: "string" },
+        description: "产品要在当前 AgentSkill 实例中启用的 skill 名称数组。"
+      },
+      skillsPath: {
+        type: "string",
+        description: "唯一托管目录；不传时默认为 ~/.agent-cli/skills。"
+      }
     }
   },
   runtimeDependencies: [

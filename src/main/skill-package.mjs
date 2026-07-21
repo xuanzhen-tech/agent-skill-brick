@@ -18,6 +18,10 @@ import {
   removeManagedSkillInstallation,
   setManagedSkillInstallation
 } from "./installation-registry.mjs";
+import {
+  isBuiltinSkillSource,
+  resolveBuiltinSkillSource
+} from "./builtin-skill-catalog.mjs";
 import { normalizeSkillName } from "./skill-index.mjs";
 
 const MAX_TOTAL_BYTES = 25 * 1024 * 1024;
@@ -198,6 +202,9 @@ export async function removeManagedSkill({ skill, managedRoot } = {}) {
 
 async function resolveInstallSource(source) {
   if (!source) throw new Error("install source is required");
+  if (isBuiltinSkillSource(source)) {
+    return await resolveBuiltinSkillSource(source);
+  }
   if (isInlineSkillSource(source)) {
     const content = requiredContent(source.content, "inline skill content");
     const expectedHash = source.integrity?.sha256;
@@ -211,7 +218,7 @@ async function resolveInstallSource(source) {
     };
   }
   if (typeof source !== "string") {
-    throw new Error("install source must be a path, URL, or agent-skill.inline.v1 object");
+    throw new Error("install source must be a path, URL, agent-skill.inline.v1 object, or agent-skill.builtin.v1 object");
   }
   if (/^https?:\/\//i.test(source)) {
     // registry 只负责指向可安装 archive；选择和展示策略由调用方处理。
@@ -237,7 +244,7 @@ async function stageInstallSource(source, tempRoot) {
     await fs.writeFile(path.join(output, "SKILL.md"), source.content, "utf8");
     return output;
   }
-  if (source.kind === "directory") return source.path;
+  if (source.kind === "directory" || source.kind === "builtin") return source.path;
   const zipPath = source.kind === "zip"
     ? source.path
     : await downloadFile(source.url, path.join(tempRoot, "download.zip"));
@@ -482,7 +489,9 @@ async function copyDirectory(source, destination) {
 }
 
 function normalizeConflictMode(value, source) {
-  if (value === undefined) return source.kind === "inline" ? "check" : "replace";
+  // 内置和 inline 来源都可能由上层按名称选择；默认先检查冲突，避免覆盖
+  // 用户自行安装或修改的同名 skill。
+  if (value === undefined) return source.kind === "inline" || source.kind === "builtin" ? "check" : "replace";
   if (value === "check" || value === "replace") return value;
   throw new Error("conflict must be check or replace");
 }
