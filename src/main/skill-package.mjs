@@ -2,7 +2,8 @@
  * skill 包校验、受管安装和替换事务。
  *
  * 本模块是 managed skills 的唯一写入方。它支持本地目录、zip、HTTP(S) zip、
- * registry-index 和受控 inline skill 来源；所有来源都必须在暂存区完成包校验。
+ * registry-index、受控 inline skill 来源和随已安装 SDK 发布的 bundled skill 来源；所有
+ * 来源都必须在暂存区完成包校验。
  * 目录替换使用同根事务目录，避免失败时丢失原有 skill。
  */
 
@@ -30,10 +31,20 @@ const MAX_SINGLE_FILE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_ROOT_FILES = new Set(["SKILL.md"]);
 const ALLOWED_ROOT_DIRS = new Set(["references", "scripts", "assets"]);
 const INLINE_SKILL_SOURCE_KIND = "agent-skill.inline.v1";
+const BUNDLED_SKILL_SOURCE_KIND = "agent-skill.bundled.v1";
 const TRANSACTION_PREFIX = ".agent-skill-transaction-";
+// bundled skill 已随受控 npm SDK 落盘，不是网络下载包。它仍禁止 symlink 和任意顶层
+// 目录，只放宽文件数量与许可/依赖说明文件，适配大型组件库而不降低普通安装来源的限制。
+const BUNDLED_PACKAGE_POLICY = Object.freeze({
+  maxTotalBytes: 50 * 1024 * 1024,
+  maxFileCount: 20_000,
+  maxSingleFileBytes: 5 * 1024 * 1024,
+  allowedRootFiles: new Set(["SKILL.md", "THIRD_PARTY_NOTICES.md", "requirements.txt"])
+});
 
-export async function validateSkillPackage(skillDir) {
+export async function validateSkillPackage(skillDir, policy = undefined) {
   const root = path.resolve(skillDir);
+  const limits = normalizePackagePolicy(policy);
   const diagnostics = [];
   // 校验会遍历真实文件系统，而不是信任压缩包文件名；这样可以在暂存后
   // 捕获不支持的顶层文件和本地 symlink。
@@ -46,20 +57,20 @@ export async function validateSkillPackage(skillDir) {
   if (!files.some((file) => path.basename(file) === "SKILL.md" && path.dirname(file) === root)) {
     diagnostics.push("SKILL.md not found");
   }
-  if (files.length > MAX_FILE_COUNT) {
-    diagnostics.push(`skill package contains more than ${MAX_FILE_COUNT} files`);
+  if (files.length > limits.maxFileCount) {
+    diagnostics.push(`skill package contains more than ${limits.maxFileCount} files`);
   }
   let totalBytes = 0;
   for (const file of files) {
     const relativePath = toPosix(path.relative(root, file));
-    if (!isAllowedPackagePath(relativePath)) {
+    if (!isAllowedPackagePath(relativePath, limits.allowedRootFiles)) {
       diagnostics.push(`unsupported skill package path: ${relativePath}`);
     }
     const stat = await fs.stat(file);
     totalBytes += stat.size;
-    if (stat.size > MAX_SINGLE_FILE_BYTES) diagnostics.push(`file exceeds ${MAX_SINGLE_FILE_BYTES} bytes: ${relativePath}`);
+    if (stat.size > limits.maxSingleFileBytes) diagnostics.push(`file exceeds ${limits.maxSingleFileBytes} bytes: ${relativePath}`);
   }
-  if (totalBytes > MAX_TOTAL_BYTES) diagnostics.push(`skill package exceeds ${MAX_TOTAL_BYTES} bytes`);
+  if (totalBytes > limits.maxTotalBytes) diagnostics.push(`skill package exceeds ${limits.maxTotalBytes} bytes`);
 
   const metadata = files.some((file) => path.basename(file) === "SKILL.md" && path.dirname(file) === root)
     ? parseSkillMetadata(await fs.readFile(path.join(root, "SKILL.md"), "utf8"))
@@ -85,7 +96,7 @@ export async function installSkillPackage({ source, managedRoot, conflict } = {}
   try {
     const stagedDir = await stageInstallSource(resolvedSource, tempRoot);
     const skillDir = await resolveSkillDirectory(stagedDir);
-    const validation = await validateSkillPackage(skillDir);
+    const validation = await validateSkillPackage(skillDir, resolvedSource.packagePolicy);
     if (!validation.valid) {
       throw new Error(`Invalid skill package: ${validation.diagnostics.join("; ")}`);
     }
@@ -205,6 +216,9 @@ async function resolveInstallSource(source) {
   if (isBuiltinSkillSource(source)) {
     return await resolveBuiltinSkillSource(source);
   }
+  if (isBundledSkillSource(source)) {
+    return await resolveBundledSkillSource(source);
+  }
   if (isInlineSkillSource(source)) {
     const content = requiredContent(source.content, "inline skill content");
     const expectedHash = source.integrity?.sha256;
@@ -218,7 +232,7 @@ async function resolveInstallSource(source) {
     };
   }
   if (typeof source !== "string") {
-    throw new Error("install source must be a path, URL, agent-skill.inline.v1 object, or agent-skill.builtin.v1 object");
+    throw new Error("install source must be a path, URL, agent-skill.inline.v1 object, agent-skill.builtin.v1 object, or agent-skill.bundled.v1 object");
   }
   if (/^https?:\/\//i.test(source)) {
     // registry 只负责指向可安装 archive；选择和展示策略由调用方处理。
@@ -244,7 +258,7 @@ async function stageInstallSource(source, tempRoot) {
     await fs.writeFile(path.join(output, "SKILL.md"), source.content, "utf8");
     return output;
   }
-  if (source.kind === "directory" || source.kind === "builtin") return source.path;
+  if (source.kind === "directory" || source.kind === "builtin" || source.kind === "bundled") return source.path;
   const zipPath = source.kind === "zip"
     ? source.path
     : await downloadFile(source.url, path.join(tempRoot, "download.zip"));
@@ -491,7 +505,7 @@ async function copyDirectory(source, destination) {
 function normalizeConflictMode(value, source) {
   // 内置和 inline 来源都可能由上层按名称选择；默认先检查冲突，避免覆盖
   // 用户自行安装或修改的同名 skill。
-  if (value === undefined) return source.kind === "inline" || source.kind === "builtin" ? "check" : "replace";
+  if (value === undefined) return source.kind === "inline" || source.kind === "builtin" || source.kind === "bundled" ? "check" : "replace";
   if (value === "check" || value === "replace") return value;
   throw new Error("conflict must be check or replace");
 }
@@ -510,6 +524,44 @@ function isInlineSkillSource(source) {
   return source && typeof source === "object" && !Array.isArray(source) && source.kind === INLINE_SKILL_SOURCE_KIND;
 }
 
+/**
+ * 判断来源是否为已随 npm SDK 安装到本机的受控 skill pack。
+ *
+ * 它不是对普通本地目录开放的“大包开关”：调用者必须显式提供包身份、版本和期望
+ * skill 名称，安装器仍会校验完整目录、路径白名单、大小、symlink 和 frontmatter。
+ */
+function isBundledSkillSource(source) {
+  return source && typeof source === "object" && !Array.isArray(source) && source.kind === BUNDLED_SKILL_SOURCE_KIND;
+}
+
+/**
+ * 解析已安装 SDK 中携带的完整 skill pack。
+ *
+ * revision 使用目录 hash，因此组件、脚本或 reference 的变化都会触发受控升级检查，
+ * 而不是只比较 SKILL.md。
+ */
+async function resolveBundledSkillSource(source) {
+  const packageName = requiredString(source.packageName, "bundled skill packageName");
+  const packageVersion = requiredString(source.packageVersion, "bundled skill packageVersion");
+  const skillName = normalizeSkillName(requiredString(source.skillName, "bundled skill skillName"));
+  const sourcePath = path.resolve(requiredString(source.path, "bundled skill path"));
+  const stat = await fs.stat(sourcePath);
+  if (!stat.isDirectory()) throw new Error("bundled skill path must be a directory");
+  const revisionHash = await hashDirectory(sourcePath);
+  return {
+    kind: "bundled",
+    path: sourcePath,
+    packagePolicy: BUNDLED_PACKAGE_POLICY,
+    provenance: {
+      type: "agent-skill-bundled",
+      remoteId: `bundle:${packageName}:${skillName}`,
+      sourceRepository: packageName,
+      sourcePath: "skill-pack",
+      revision: `${packageVersion}:${revisionHash}`
+    }
+  };
+}
+
 function normalizeInlineProvenance(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new Error("inline skill source requires provenance");
@@ -525,12 +577,36 @@ function normalizeInlineProvenance(input) {
   };
 }
 
-function isAllowedPackagePath(relativePath) {
+function isAllowedPackagePath(relativePath, allowedRootFiles = ALLOWED_ROOT_FILES) {
   const normalized = toPosix(relativePath);
   if (normalized.includes("..") || path.isAbsolute(normalized)) return false;
-  if (ALLOWED_ROOT_FILES.has(normalized)) return true;
+  if (allowedRootFiles.has(normalized)) return true;
   const first = normalized.split("/")[0];
   return ALLOWED_ROOT_DIRS.has(first);
+}
+
+function normalizePackagePolicy(policy) {
+  if (policy !== BUNDLED_PACKAGE_POLICY) {
+    return {
+      maxTotalBytes: MAX_TOTAL_BYTES,
+      maxFileCount: MAX_FILE_COUNT,
+      maxSingleFileBytes: MAX_SINGLE_FILE_BYTES,
+      allowedRootFiles: ALLOWED_ROOT_FILES
+    };
+  }
+  return BUNDLED_PACKAGE_POLICY;
+}
+
+async function hashDirectory(root) {
+  const files = await listFiles(root);
+  const hash = crypto.createHash("sha256");
+  for (const file of files.sort((left, right) => left.localeCompare(right, "en"))) {
+    hash.update(toPosix(path.relative(root, file)), "utf8");
+    hash.update("\0", "utf8");
+    hash.update(await fs.readFile(file));
+    hash.update("\0", "utf8");
+  }
+  return hash.digest("hex");
 }
 
 function isUnsafeArchiveEntryName(name) {

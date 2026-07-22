@@ -24,7 +24,7 @@ import {
 
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.4.0");
+assert.equal(brickDefinition.version, "0.4.1");
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);

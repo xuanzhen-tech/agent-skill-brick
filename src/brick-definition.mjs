@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.4.0";
+const BRICK_VERSION = "0.4.1";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
