@@ -185,7 +185,7 @@ export class AgentSkill {
   }
 
   /**
-   * 返回一个 skill 可供受控访问的 references 与 assets 清单。
+   * 返回一个 skill 可供受控访问的 references、workflows、assets 与 templates 清单。
    *
    * 清单不包含文件全文，也不暴露 scripts；模型需要具体内容时必须通过
    * AgentTool 的 skill_resource 合同继续请求。
@@ -201,7 +201,7 @@ export class AgentSkill {
   }
 
   /**
-   * 读取 skill references 目录下的一个 UTF-8 文本文件。
+   * 读取 skill references 或 workflows 目录下的一个 UTF-8 文本文件。
    *
    * 返回的 loadedSkillReference 由 AgentCli 升级为专门上下文事件，不能把
    * 它当成任意工作区文件或普通 shell 输出使用。
@@ -225,7 +225,7 @@ export class AgentSkill {
   }
 
   /**
-   * 解析 skill assets 目录下的一个受控文件。
+   * 解析 skill assets 或 templates 目录下的一个受控文件。
    *
    * AgentSkill 只证明源文件安全且提供不可变 hash，不写入 workspace；实际
    * 物化由 AgentTool 按固定的 temp/skill-assets 路径完成。

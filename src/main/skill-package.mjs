@@ -39,7 +39,10 @@ const BUNDLED_PACKAGE_POLICY = Object.freeze({
   maxTotalBytes: 50 * 1024 * 1024,
   maxFileCount: 20_000,
   maxSingleFileBytes: 5 * 1024 * 1024,
-  allowedRootFiles: new Set(["SKILL.md", "THIRD_PARTY_NOTICES.md", "requirements.txt"])
+  // 随 SDK 交付的大型能力包可携带模板和按需工作说明；普通本地/网络 skill
+  // 仍只能使用最小目录集合，避免扩大不受控安装来源的攻击面。
+  allowedRootFiles: new Set(["SKILL.md", "THIRD_PARTY_NOTICES.md", "requirements.txt", "PPT_MASTER_SOURCE.json"]),
+  allowedRootDirs: new Set(["references", "scripts", "assets", "templates", "workflows"])
 });
 
 export async function validateSkillPackage(skillDir, policy = undefined) {
@@ -63,7 +66,7 @@ export async function validateSkillPackage(skillDir, policy = undefined) {
   let totalBytes = 0;
   for (const file of files) {
     const relativePath = toPosix(path.relative(root, file));
-    if (!isAllowedPackagePath(relativePath, limits.allowedRootFiles)) {
+    if (!isAllowedPackagePath(relativePath, limits.allowedRootFiles, limits.allowedRootDirs)) {
       diagnostics.push(`unsupported skill package path: ${relativePath}`);
     }
     const stat = await fs.stat(file);
@@ -493,13 +496,25 @@ async function listFiles(root) {
 }
 
 async function copyDirectory(source, destination) {
+  // 安装前 validateSkillPackage 已遍历并拒绝 symlink、路径逃逸和超限文件。
+  // 大型受控 skill（模板、图标、脚本包）可能包含上万小文件。单线程递归复制在
+  // Windows 上会长期占用安装目录，因此这里采用固定并发数复制；仍然只复制已验证
+  // 的常规文件，不使用链接或外部命令。
   const files = await listFiles(source);
-  for (const file of files) {
-    const relativePath = path.relative(source, file);
-    const target = path.join(destination, relativePath);
-    await fs.mkdir(path.dirname(target), { recursive: true });
-    await fs.copyFile(file, target);
-  }
+  await fs.mkdir(destination, { recursive: true });
+  const concurrency = Math.min(32, Math.max(4, os.cpus().length * 2));
+  let nextIndex = 0;
+  await Promise.all(Array.from({ length: Math.min(concurrency, files.length) }, async () => {
+    while (true) {
+      const index = nextIndex;
+      nextIndex += 1;
+      if (index >= files.length) return;
+      const file = files[index];
+      const target = path.join(destination, path.relative(source, file));
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.copyFile(file, target);
+    }
+  }));
 }
 
 function normalizeConflictMode(value, source) {
@@ -537,8 +552,9 @@ function isBundledSkillSource(source) {
 /**
  * 解析已安装 SDK 中携带的完整 skill pack。
  *
- * revision 使用目录 hash，因此组件、脚本或 reference 的变化都会触发受控升级检查，
- * 而不是只比较 SKILL.md。
+ * 已发布 SDK 的 packageVersion 是不可变发行标识，因此 bundled skill 用它作为 revision。
+ * 这样可避免每次安装都逐文件计算大型模板包的内容 hash；安全性仍由安装前的完整
+ * 路径、symlink、文件数和大小校验保障，升级则由新的 SDK 版本显式触发。
  */
 async function resolveBundledSkillSource(source) {
   const packageName = requiredString(source.packageName, "bundled skill packageName");
@@ -547,7 +563,6 @@ async function resolveBundledSkillSource(source) {
   const sourcePath = path.resolve(requiredString(source.path, "bundled skill path"));
   const stat = await fs.stat(sourcePath);
   if (!stat.isDirectory()) throw new Error("bundled skill path must be a directory");
-  const revisionHash = await hashDirectory(sourcePath);
   return {
     kind: "bundled",
     path: sourcePath,
@@ -557,7 +572,7 @@ async function resolveBundledSkillSource(source) {
       remoteId: `bundle:${packageName}:${skillName}`,
       sourceRepository: packageName,
       sourcePath: "skill-pack",
-      revision: `${packageVersion}:${revisionHash}`
+      revision: packageVersion
     }
   };
 }
@@ -577,12 +592,16 @@ function normalizeInlineProvenance(input) {
   };
 }
 
-function isAllowedPackagePath(relativePath, allowedRootFiles = ALLOWED_ROOT_FILES) {
+function isAllowedPackagePath(
+  relativePath,
+  allowedRootFiles = ALLOWED_ROOT_FILES,
+  allowedRootDirs = ALLOWED_ROOT_DIRS
+) {
   const normalized = toPosix(relativePath);
   if (normalized.includes("..") || path.isAbsolute(normalized)) return false;
   if (allowedRootFiles.has(normalized)) return true;
   const first = normalized.split("/")[0];
-  return ALLOWED_ROOT_DIRS.has(first);
+  return allowedRootDirs.has(first);
 }
 
 function normalizePackagePolicy(policy) {
@@ -591,22 +610,11 @@ function normalizePackagePolicy(policy) {
       maxTotalBytes: MAX_TOTAL_BYTES,
       maxFileCount: MAX_FILE_COUNT,
       maxSingleFileBytes: MAX_SINGLE_FILE_BYTES,
-      allowedRootFiles: ALLOWED_ROOT_FILES
+      allowedRootFiles: ALLOWED_ROOT_FILES,
+      allowedRootDirs: ALLOWED_ROOT_DIRS
     };
   }
   return BUNDLED_PACKAGE_POLICY;
-}
-
-async function hashDirectory(root) {
-  const files = await listFiles(root);
-  const hash = crypto.createHash("sha256");
-  for (const file of files.sort((left, right) => left.localeCompare(right, "en"))) {
-    hash.update(toPosix(path.relative(root, file)), "utf8");
-    hash.update("\0", "utf8");
-    hash.update(await fs.readFile(file));
-    hash.update("\0", "utf8");
-  }
-  return hash.digest("hex");
 }
 
 function isUnsafeArchiveEntryName(name) {

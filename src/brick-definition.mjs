@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.4.1";
+const BRICK_VERSION = "0.4.2";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -30,7 +30,7 @@ const installCapability = createBrickCapability({
   id: "agent-skill.install",
   name: "Agent Skill Install",
   type: "config",
-  description: "安装、更新和删除托管 skill 包，维护安装来源记录和替换事务，但不执行 skill 脚本。"
+  description: "安装、更新和删除托管 skill 包，维护安装来源记录和替换事务，支持受控 templates/workflows 资源，但不执行 skill 脚本。"
 });
 
 const builtinCatalogCapability = createBrickCapability({

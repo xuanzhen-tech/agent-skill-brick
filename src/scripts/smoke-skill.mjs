@@ -42,17 +42,21 @@ try {
     capabilities: ["search", "managed"],
     requiredTools: ["run_shell"]
   });
-  // references 与 assets 是 skill 包的一部分。这里用真实文件验证它们只能
+  // references、workflows、assets 与 templates 是 skill 包的一部分。这里用真实文件验证它们只能
   // 经由 AgentSkill 的受控接口访问，而不会被扫描成独立 skill。
   await fs.mkdir(path.join(managedRoot, "alpha", "references"), { recursive: true });
+  await fs.mkdir(path.join(managedRoot, "alpha", "workflows"), { recursive: true });
   await fs.mkdir(path.join(managedRoot, "alpha", "assets"), { recursive: true });
+  await fs.mkdir(path.join(managedRoot, "alpha", "templates"), { recursive: true });
   await fs.writeFile(
     path.join(managedRoot, "alpha", "references", "usage.md"),
     "\uFEFF# Alpha Reference\n\nUse the packaged reference instructions.\n",
     "utf8"
   );
   await fs.writeFile(path.join(managedRoot, "alpha", "references", "ignored.bin"), Buffer.from([0, 1, 2]));
+  await fs.writeFile(path.join(managedRoot, "alpha", "workflows", "draft.md"), "# Draft workflow\n", "utf8");
   await fs.writeFile(path.join(managedRoot, "alpha", "assets", "template.txt"), "asset template\n", "utf8");
+  await fs.writeFile(path.join(managedRoot, "alpha", "templates", "layout.svg"), "<svg/>\n", "utf8");
   await writeSkill(path.join(managedRoot, "shared"), {
     name: "shared",
     description: "Managed shared skill"
@@ -272,20 +276,26 @@ try {
   assert.match(activated.loadedSkill.content, /Use this skill when it is relevant/);
   assert.deepEqual(activated.loadedSkill.resources, [
     { kind: "asset", path: "assets/template.txt", bytes: 15 },
-    { kind: "reference", path: "references/usage.md", bytes: 63 }
+    { kind: "asset", path: "templates/layout.svg", bytes: 7 },
+    { kind: "reference", path: "references/usage.md", bytes: 63 },
+    { kind: "reference", path: "workflows/draft.md", bytes: 17 }
   ]);
   const listedResources = await agentSkill.listResources("alpha");
-  assert.equal(listedResources.resources.length, 2);
+  assert.equal(listedResources.resources.length, 4);
   const loadedReference = await agentSkill.readReference("alpha", "references/usage.md");
   assert.equal(loadedReference.loadedSkillReference.skillName, "alpha");
   assert.equal(loadedReference.loadedSkillReference.path, "references/usage.md");
   assert.match(loadedReference.loadedSkillReference.content, /Alpha Reference/);
   assert.equal(loadedReference.loadedSkillReference.content.startsWith("\uFEFF"), false);
+  const loadedWorkflow = await agentSkill.readReference("alpha", "workflows/draft.md");
+  assert.match(loadedWorkflow.loadedSkillReference.content, /Draft workflow/);
   const resolvedAsset = await agentSkill.resolveAsset("alpha", "assets/template.txt");
   assert.equal(resolvedAsset.asset.path, "assets/template.txt");
   assert.equal(resolvedAsset.asset.bytes, 15);
+  const resolvedTemplate = await agentSkill.resolveAsset("alpha", "templates/layout.svg");
+  assert.equal(resolvedTemplate.asset.path, "templates/layout.svg");
   await assert.rejects(() => agentSkill.readReference("alpha", "assets/template.txt"), /references/);
-  await assert.rejects(() => agentSkill.resolveAsset("alpha", "references/usage.md"), /assets/);
+  await assert.rejects(() => agentSkill.resolveAsset("alpha", "references/usage.md"), /assets or templates/);
   await assert.rejects(() => agentSkill.readReference("alpha", "references/../SKILL.md"), /Invalid skill resource path/);
   const activatedRemote = await agentSkill.activate("remote-writer");
   assert.equal(activatedRemote.loadedSkill.name, "remote-writer");

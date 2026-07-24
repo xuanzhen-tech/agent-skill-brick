@@ -1,7 +1,7 @@
 /**
  * skill 包资源的受控访问层。
  *
- * SKILL.md 以外的 references 和 assets 同样属于 skill 的正式内容，但不能让
+ * SKILL.md 以外的 references、workflows、assets 和 templates 同样属于 skill 的正式内容，但不能让
  * 上层把它们当作任意工作区文件读取。本模块只接受已索引 skill 的根目录，严格
  * 校验相对路径、真实路径和文件类型，并分别提供文本 reference 读取与二进制
  * asset 定位能力；scripts 永远不在这里暴露或执行。
@@ -13,7 +13,9 @@ import path from "node:path";
 
 export const MAX_SKILL_REFERENCE_BYTES = 256 * 1024;
 
-const RESOURCE_DIRECTORIES = ["references", "assets"];
+const RESOURCE_DIRECTORIES = ["references", "workflows", "assets", "templates"];
+const TEXT_RESOURCE_DIRECTORIES = new Set(["references", "workflows"]);
+const ASSET_RESOURCE_DIRECTORIES = new Set(["assets", "templates"]);
 const TEXT_REFERENCE_EXTENSIONS = new Set([
   ".csv",
   ".html",
@@ -57,14 +59,14 @@ export async function listSkillResources({ skill, skillFilePath } = {}) {
 }
 
 /**
- * 读取一个 reference 文本，并返回可作为专门上下文块保存的 payload。
+ * 读取一个 reference 或 workflow 文本，并返回可作为专门上下文块保存的 payload。
  */
 export async function readSkillReference({ skill, skillFilePath, resourcePath } = {}) {
   const resolved = await resolveSkillResourceFile({
     skill,
     skillFilePath,
     resourcePath,
-    directory: "references"
+    directory: normalizeTextResourceDirectory(resourcePath)
   });
   const extension = path.extname(resolved.realFilePath).toLowerCase();
   if (!TEXT_REFERENCE_EXTENSIONS.has(extension)) {
@@ -87,7 +89,7 @@ export async function readSkillReference({ skill, skillFilePath, resourcePath } 
 }
 
 /**
- * 解析一个 asset 的真实文件位置。
+ * 解析一个 asset 或 template 的真实文件位置。
  *
  * 这里不复制文件，避免 AgentSkill 越界承担工作区副作用；调用方只能使用
  * 返回的受控源文件和 hash，随后按自身的固定策略物化副本。
@@ -97,7 +99,7 @@ export async function resolveSkillAsset({ skill, skillFilePath, resourcePath } =
     skill,
     skillFilePath,
     resourcePath,
-    directory: "assets"
+    directory: normalizeAssetResourceDirectory(resourcePath)
   });
   const contentHash = await hashFile(resolved.realFilePath);
   return {
@@ -171,12 +173,12 @@ async function walkResourceDirectory({ skillRoot, resourceRoot, currentDirectory
     const realFilePath = await fs.realpath(candidate);
     if (!isInside(resourceRoot, realFilePath) || !isInside(skillRoot, realFilePath)) continue;
     const stat = await fs.stat(realFilePath);
-    if (directory === "references") {
+    if (TEXT_RESOURCE_DIRECTORIES.has(directory)) {
       const extension = path.extname(realFilePath).toLowerCase();
       if (!TEXT_REFERENCE_EXTENSIONS.has(extension) || stat.size > MAX_SKILL_REFERENCE_BYTES) continue;
     }
     resources.push({
-      kind: directory === "references" ? "reference" : "asset",
+      kind: TEXT_RESOURCE_DIRECTORIES.has(directory) ? "reference" : "asset",
       path: toPosix(path.join(directory, path.relative(resourceRoot, realFilePath))),
       bytes: stat.size
     });
@@ -233,6 +235,35 @@ function normalizeResourcePath(value, directory) {
     throw new Error(`Invalid skill resource path: ${value}`);
   }
   return portable;
+}
+
+/**
+ * 将 references/ 与 workflows/ 统一作为只读文本资源。
+ *
+ * action 名仍保持 read_reference，避免引入第二个模型工具；workflow 只是另一类
+ * 按需说明文件，不会被自动塞进上下文。
+ */
+function normalizeTextResourceDirectory(resourcePath) {
+  return normalizeResourceDirectory(resourcePath, TEXT_RESOURCE_DIRECTORIES, "references or workflows");
+}
+
+/**
+ * 将 assets/ 与 templates/ 统一作为可物化的二进制资源。
+ */
+function normalizeAssetResourceDirectory(resourcePath) {
+  return normalizeResourceDirectory(resourcePath, ASSET_RESOURCE_DIRECTORIES, "assets or templates");
+}
+
+function normalizeResourceDirectory(resourcePath, allowedDirectories, label) {
+  if (typeof resourcePath !== "string" || !resourcePath.trim()) {
+    throw new Error("skill resource path is required");
+  }
+  const normalized = resourcePath.trim().replaceAll("\\", "/").replace(/^\.\/+/, "");
+  const directory = normalized.split("/", 1)[0];
+  if (!allowedDirectories.has(directory)) {
+    throw new Error(`Skill resource path must start with ${label}/.`);
+  }
+  return directory;
 }
 
 function decodeUtf8Text(buffer, resourcePath) {
