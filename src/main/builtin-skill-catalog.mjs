@@ -38,6 +38,12 @@ const BUILTIN_SKILLS = Object.freeze([
     name: "amazon-operating-analysis",
     version: "0.1.0",
     description: "用于 Amazon 经营分析、测算、预测和经营决策辅助。"
+  }),
+  Object.freeze({
+    id: "amazon-product-image-generation",
+    name: "amazon-product-image-generation",
+    version: "0.1.0",
+    description: "用于 Amazon 商品白底主图、卖点图、场景图生成和版本化迭代。"
   })
 ]);
 

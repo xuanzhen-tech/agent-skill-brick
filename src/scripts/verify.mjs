@@ -131,7 +131,11 @@ async function validateRuntimeArtifactIfPresent() {
     "src/main/skill-package.mjs",
     "src/builtin-skills/amazon-sku-profit-summary/SKILL.md",
     "src/builtin-skills/amazon-inventory-ledger-summary/SKILL.md",
-    "src/builtin-skills/amazon-operating-analysis/SKILL.md"
+    "src/builtin-skills/amazon-operating-analysis/SKILL.md",
+    "src/builtin-skills/amazon-product-image-generation/SKILL.md",
+    "src/builtin-skills/amazon-product-image-generation/references/tool-examples.md",
+    "src/builtin-skills/amazon-product-image-generation/references/prompt-playbook.md",
+    "src/builtin-skills/amazon-product-image-generation/references/amazon-us-guidance.md"
   ];
   for (const requiredFile of requiredFiles) {
     if (!runtimeFiles.includes(requiredFile)) {
