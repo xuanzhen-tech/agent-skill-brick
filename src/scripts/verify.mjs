@@ -135,7 +135,10 @@ async function validateRuntimeArtifactIfPresent() {
     "src/builtin-skills/amazon-product-image-generation/SKILL.md",
     "src/builtin-skills/amazon-product-image-generation/references/tool-examples.md",
     "src/builtin-skills/amazon-product-image-generation/references/prompt-playbook.md",
-    "src/builtin-skills/amazon-product-image-generation/references/amazon-us-guidance.md"
+    "src/builtin-skills/amazon-product-image-generation/references/amazon-us-guidance.md",
+    "src/builtin-skills/amazon-product-image-generation/references/reference-analysis.md",
+    "src/builtin-skills/amazon-product-image-generation/references/amazon-listing-set.md",
+    "src/builtin-skills/amazon-product-image-generation/references/production-quality-gate.md"
   ];
   for (const requiredFile of requiredFiles) {
     if (!runtimeFiles.includes(requiredFile)) {
