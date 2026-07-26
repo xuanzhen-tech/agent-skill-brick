@@ -205,6 +205,18 @@ try {
   assert.equal((await validateSkillPackage(badSkill)).valid, false);
   await assert.rejects(() => installSkillPackage({ source: badSkill, managedRoot }), /SKILL\.md|Invalid skill package/);
 
+  // `.ppt-master-library` 只允许随受控 SDK 发布的 bundled skill 使用；普通本地目录
+  // 即使体积很小也不能借此扩大可安装的顶层目录。
+  const localLibrarySkill = path.join(tempRoot, "local-library-skill");
+  await writeSkill(localLibrarySkill, {
+    name: "local-library-skill",
+    description: "Untrusted local library must be rejected"
+  });
+  await fs.mkdir(path.join(localLibrarySkill, ".ppt-master-library"), { recursive: true });
+  await fs.writeFile(path.join(localLibrarySkill, ".ppt-master-library", "manifest.json"), "{}\n", "utf8");
+  assert.equal((await validateSkillPackage(localLibrarySkill)).valid, false);
+  await assert.rejects(() => installSkillPackage({ source: localLibrarySkill, managedRoot }), /unsupported skill package path/);
+
   const removed = await removeManagedSkill({ skill: "local-install", managedRoot });
   assert.equal(removed.removed, true);
 

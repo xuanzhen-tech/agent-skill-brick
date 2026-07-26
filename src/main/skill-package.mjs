@@ -36,13 +36,22 @@ const TRANSACTION_PREFIX = ".agent-skill-transaction-";
 // bundled skill 已随受控 npm SDK 落盘，不是网络下载包。它仍禁止 symlink 和任意顶层
 // 目录，只放宽文件数量与许可/依赖说明文件，适配大型组件库而不降低普通安装来源的限制。
 const BUNDLED_PACKAGE_POLICY = Object.freeze({
-  maxTotalBytes: 50 * 1024 * 1024,
+  // 某些受控 SDK skill pack 会携带持续增长的离线资源库，因此不设总字节上限；
+  // 它们仍然仅限 bundled 来源，普通本地目录、zip 和网络安装继续使用 25MB 上限。
+  maxTotalBytes: undefined,
   maxFileCount: 20_000,
   maxSingleFileBytes: 5 * 1024 * 1024,
   // 随 SDK 交付的大型能力包可携带模板和按需工作说明；普通本地/网络 skill
   // 仍只能使用最小目录集合，避免扩大不受控安装来源的攻击面。
   allowedRootFiles: new Set(["SKILL.md", "THIRD_PARTY_NOTICES.md", "requirements.txt", "PPT_MASTER_SOURCE.json"]),
-  allowedRootDirs: new Set(["references", "scripts", "assets", "templates", "workflows"])
+  allowedRootDirs: new Set([
+    "references",
+    "scripts",
+    "assets",
+    "templates",
+    "workflows",
+    ".ppt-master-library"
+  ])
 });
 
 export async function validateSkillPackage(skillDir, policy = undefined) {
@@ -73,7 +82,9 @@ export async function validateSkillPackage(skillDir, policy = undefined) {
     totalBytes += stat.size;
     if (stat.size > limits.maxSingleFileBytes) diagnostics.push(`file exceeds ${limits.maxSingleFileBytes} bytes: ${relativePath}`);
   }
-  if (totalBytes > limits.maxTotalBytes) diagnostics.push(`skill package exceeds ${limits.maxTotalBytes} bytes`);
+  if (Number.isFinite(limits.maxTotalBytes) && totalBytes > limits.maxTotalBytes) {
+    diagnostics.push(`skill package exceeds ${limits.maxTotalBytes} bytes`);
+  }
 
   const metadata = files.some((file) => path.basename(file) === "SKILL.md" && path.dirname(file) === root)
     ? parseSkillMetadata(await fs.readFile(path.join(root, "SKILL.md"), "utf8"))
