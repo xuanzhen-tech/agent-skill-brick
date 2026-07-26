@@ -64,7 +64,10 @@ console.log(agentSkill.definitions); // 只包含上述两个被选择的 skill
 
 ```js
 const agentSkill = new AgentSkill({
-  skills: ["amazon-operating-analysis"],
+  skills: [
+    "amazon-operating-analysis",
+    "amazon-product-image-generation"
+  ],
   skillsPath: "C:\\Users\\you\\.agent-cli\\skills"
 });
 ```
@@ -75,9 +78,15 @@ const agentSkill = new AgentSkill({
 
 ```js
 await agentSkill.setSkillNames([
-  "amazon-operating-analysis"
+  "amazon-operating-analysis",
+  "amazon-product-image-generation"
 ]);
 ```
+
+`amazon-product-image-generation` 依赖 AgentTool 的
+`ecommerce_image_generate`、`ecommerce_image_edit`、
+`ecommerce_image_batch` 和 `ecommerce_image_list` 四个隐藏工具。Skill
+只教授参数、提示词、轮询和版本化编辑，不持有 provider 配置或 API key。
 
 `remove(name)` 会同时从当前对象的白名单移除该名称，避免本次运行中被预制
 catalog 立刻装回。产品若持久化了选择数组，也应同步移除该名称；否则下次重新

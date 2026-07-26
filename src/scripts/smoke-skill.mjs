@@ -344,6 +344,34 @@ try {
     /Unknown skill/
   );
 
+  await selectedBuiltinSkill.setSkillNames(["amazon-product-image-generation"]);
+  assert.deepEqual(selectedBuiltinSkill.definitions[0].requiredTools, [
+    "ecommerce_image_generate",
+    "ecommerce_image_edit",
+    "ecommerce_image_batch",
+    "ecommerce_image_list"
+  ]);
+  const imageSkillActivated = await selectedBuiltinSkill.activate("amazon-product-image-generation");
+  assert.equal(imageSkillActivated.loadedSkill.name, "amazon-product-image-generation");
+  assert.deepEqual(
+    imageSkillActivated.loadedSkill.resources.map((resource) => resource.path).sort(),
+    [
+      "references/amazon-us-guidance.md",
+      "references/prompt-playbook.md",
+      "references/tool-examples.md"
+    ]
+  );
+  assert.match(imageSkillActivated.loadedSkill.content, /ecommerce_image_generate/);
+  assert.match(imageSkillActivated.loadedSkill.content, /只使用四个 `ecommerce_image_\*` 工具/);
+  const toolExamples = await selectedBuiltinSkill.readReference(
+    "amazon-product-image-generation",
+    "references/tool-examples.md"
+  );
+  assert.match(toolExamples.loadedSkillReference.content, /"count": 1/);
+  assert.match(toolExamples.loadedSkillReference.content, /"action": "status"/);
+  assert.match(toolExamples.loadedSkillReference.content, /"edits":/);
+  assert.match(toolExamples.loadedSkillReference.content, /"assetId":/);
+
   await selectedBuiltinSkill.setSkillNames(["amazon-inventory-ledger-summary"]);
   assert.deepEqual(selectedBuiltinSkill.definitions.map((skill) => skill.name), ["amazon-inventory-ledger-summary"]);
   assert.equal(await exists(path.join(builtinRoot, "amazon-inventory-ledger-summary", "SKILL.md")), true);
