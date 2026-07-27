@@ -345,6 +345,7 @@ try {
   );
 
   await selectedBuiltinSkill.setSkillNames(["amazon-product-image-generation"]);
+  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.2.0");
   assert.deepEqual(selectedBuiltinSkill.definitions[0].requiredTools, [
     "ecommerce_image_generate",
     "ecommerce_image_edit",
@@ -397,6 +398,7 @@ try {
   assert.match(qualityGate.loadedSkillReference.content, /无法看图时只能确认 artifact/);
   assert.match(qualityGate.loadedSkillReference.content, /结果未知时不自动重试/);
   assert.match(qualityGate.loadedSkillReference.content, /不得自动重新生成整套/);
+  assert.match(qualityGate.loadedSkillReference.content, /明确指定生成数量、编辑目标和范围时，即视为本次操作已确认/);
   const promptPlaybook = await selectedBuiltinSkill.readReference(
     "amazon-product-image-generation",
     "references/prompt-playbook.md"

@@ -1,6 +1,7 @@
 ---
 name: amazon-product-image-generation
 displayChineseName: 亚马逊商品生图
+version: 0.2.0
 description: 为亚马逊商品创建白底主图、卖点图、场景图和可迭代版本；适用于用户要求生成、调整、对比或继续编辑 Amazon 商品图片的任务。
 requiredTools: [ecommerce_image_generate, ecommerce_image_edit, ecommerce_image_batch, ecommerce_image_list]
 ---
