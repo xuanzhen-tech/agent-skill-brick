@@ -1,0 +1,80 @@
+<!--
+文件功能：定义市场关键词、ASIN 关键词、Listing 流量和广告可见结构的独立语义、规范化匹配与交叉分类。
+职责边界：只处理研究层交叉，不把集合重合解释成订单归因、广告账户或因果，也不生成广告架构或 Listing 文案。
+关联关系：由 ../SKILL.md 的跨通道交叉步骤读取，并约束 ../assets/templates/ 下报告与账本的分列方式。
+-->
+
+# 关键词通道分离与交叉合同
+
+## 四类证据不能互换
+
+### 市场关键词
+
+SIF 的关键词需求、历史、竞争与机会工具描述供应商口径下的市场信号。它不能证明目标 ASIN 获得该词流量、订单或利润。
+
+### ASIN 关键词
+
+ASIN keyword signals、ABA footprint 与 Listing keyword distribution 描述供应商可见关联。它们不能证明后台搜索词、真实曝光、点击、订单或因果。未返回的词不能写成 0。
+
+### Listing 流量
+
+流量 overview、structure、trend 与 detail 描述 SIF 可见的 Listing 流量信号。它们不是 Amazon Business Report，也不能自动拆成自然、广告、点击、订单或归因销售，除非本次实际字段明确且结论仍标为供应商口径。
+
+### 广告可见结构
+
+`ads_*` 工具只能说明 SIF 可见的广告类型、Campaign、Ad Group、关键词或流量贡献结构。它们不能证明用户账户配置、Search Term Report、预算、出价、曝光、点击、花费、订单、ACoS、ROAS 或归因收入。
+
+Campaign ID 与 Ad Group ID 必须沿前序 SIF 结果传递，不得凭名称拼接。
+
+## 关键词规范化
+
+同时保存：
+
+- `keyword_raw`；
+- `keyword_normalized`；
+- `normalization_actions`；
+- `language` 与 `marketplace`。
+
+仅允许用于确定性匹配的小写、首尾空白、连续空白和标点规范化。词干化、同义词、翻译或品牌词聚类必须建立 `source_type=agent`、`transformation_type=inference` 的独立对象，并列出直接 `parent_evidence_ids`。
+
+## 交叉分类
+
+| 分类 | 证据要求 | 解释上限 |
+|---|---|---|
+| `market_and_asin` | 市场与 ASIN 关键词同词且时间可比 | 两通道均覆盖，不推出流量或订单因果 |
+| `asin_and_traffic` | ASIN 关键词与 Listing 流量通道同词 | 供应商可见关联重合，不代表真实归因 |
+| `ads_visible_overlap` | 广告可见结构与其他通道同词 | 结构重合，不代表账户执行或转化 |
+| `market_not_linked` | 市场有证据，ASIN/流量未覆盖 | 研究缺口，不直接写成投放机会 |
+| `conflicted` | 可比证据方向冲突 | 保留冲突并指定下一条证据 |
+| `blocked` | 关键工具、字段或期间缺失 | 不输出跨通道结论 |
+
+## 可比闸门
+
+交叉前确认：
+
+1. 站点与语言一致；
+2. ASIN 父子体口径明确；
+3. 时间范围重合或差异已披露；
+4. 周、月或滚动粒度没有混算；
+5. 字段单位、供应商定义和估算状态明确；
+6. 分页与对象覆盖足以支持集合结论；
+7. 每条 Agent 解释都能回到直接父 evidence ID。
+
+不满足时只能并列展示，状态为 `conflicted` 或 `blocked`。
+
+## 相对排序
+
+用户没有认可模型时不生成综合分。用户明确要求排序时：
+
+- 只在同通道、同期间、同单位样本内计算分位；
+- 公开原始值、方向、公式和缺失处理；
+- 计算用 `source_type=agent`、`transformation_type=calculation`；
+- 解释用 `source_type=agent`、`transformation_type=inference`；
+- 缺失通道不填 0、不填均值；
+- 不把任一关键词、流量或广告结构字段设为跨类目万能闸门。
+
+## 输出边界
+
+允许输出关键词通道矩阵、证据覆盖、缺口、冲突、可验证假设和下一条 SIF/用户/上游证据。
+
+禁止输出 Campaign、Ad Group、Match Type、Bid、预算、否定词执行、投放日程、Listing 文案，以及“必投”“必转化”“绝对蓝海”等承诺。

@@ -17,6 +17,7 @@ import {
 } from "@xuanzhen-tech/agent-release-foundation";
 
 import { brickDefinition } from "../brick-definition.mjs";
+import { listBuiltinSkills } from "../main/builtin-skill-catalog.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "../..");
@@ -126,6 +127,7 @@ async function validateRuntimeArtifactIfPresent() {
     "src/main/env.mjs",
     "src/main/installation-registry.mjs",
     "src/main/builtin-skill-catalog.mjs",
+    "src/main/expert-builtin-skill-catalog.mjs",
     "src/main/launch-config.mjs",
     "src/main/skill-index.mjs",
     "src/main/skill-package.mjs",
@@ -140,6 +142,9 @@ async function validateRuntimeArtifactIfPresent() {
     "src/builtin-skills/amazon-product-image-generation/references/amazon-listing-set.md",
     "src/builtin-skills/amazon-product-image-generation/references/production-quality-gate.md"
   ];
+  requiredFiles.push(...listBuiltinSkills().map(
+    (skill) => `src/builtin-skills/${skill.name}/SKILL.md`
+  ));
   for (const requiredFile of requiredFiles) {
     if (!runtimeFiles.includes(requiredFile)) {
       throw new Error(`Runtime artifact is missing ${requiredFile}`);

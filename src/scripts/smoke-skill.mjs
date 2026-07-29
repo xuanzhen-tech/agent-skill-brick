@@ -16,6 +16,7 @@ import path from "node:path";
 import {
   AgentSkill,
   installSkillPackage,
+  listBuiltinSkills,
   listManagedSkillInstallations,
   removeManagedSkill,
   scanSkillRoots,
@@ -421,6 +422,56 @@ try {
   await selectedBuiltinSkill.setSkillNames([]);
   assert.deepEqual(selectedBuiltinSkill.definitions, []);
   assert.equal(await selectedBuiltinSkill.buildPrompt(), "");
+
+  // 14 位专家提供的 64 个预制包必须全部经过真实目录校验、受管安装和激活，
+  // 避免 catalog 只登记名称但发布物缺文件，或单个 reference/asset 破坏整批安装。
+  const legacyBuiltinNames = new Set([
+    "amazon-sku-profit-summary",
+    "amazon-inventory-ledger-summary",
+    "amazon-operating-analysis",
+    "amazon-product-image-generation"
+  ]);
+  const expertBuiltinNames = listBuiltinSkills()
+    .map((skill) => skill.name)
+    .filter((name) => !legacyBuiltinNames.has(name));
+  assert.equal(expertBuiltinNames.length, 64);
+
+  for (const skillName of expertBuiltinNames) {
+    const validation = await validateSkillPackage(path.resolve("src", "builtin-skills", skillName));
+    assert.equal(validation.valid, true, `${skillName}: ${validation.diagnostics.join("; ")}`);
+    assert.equal(validation.metadata.name, skillName);
+  }
+
+  const expertBuiltinRoot = path.join(tempRoot, "expert-builtin-managed");
+  const selectedExpertSkills = new AgentSkill({
+    skillsPath: expertBuiltinRoot,
+    skills: expertBuiltinNames
+  });
+  const expertIndex = await selectedExpertSkills.refresh();
+  assert.equal(expertIndex.skills.length, 64);
+  assert.deepEqual(
+    expertIndex.skills.map((skill) => skill.name).sort(),
+    [...expertBuiltinNames].sort()
+  );
+  assert.equal((await selectedExpertSkills.listInstallations())
+    .filter((record) => record.sourceKind === "builtin").length, 64);
+
+  for (const skillName of expertBuiltinNames) {
+    const activated = await selectedExpertSkills.activate(skillName);
+    assert.equal(activated.loadedSkill.name, skillName);
+    assert.equal(activated.loadedSkill.content.length > 0, true);
+  }
+
+  const opportunityReference = await selectedExpertSkills.readReference(
+    "amazon-opportunity-discovery",
+    "references/sif-research-contract.md"
+  );
+  assert.match(opportunityReference.loadedSkillReference.content, /sif_mcp/);
+  const opportunityAsset = await selectedExpertSkills.resolveAsset(
+    "amazon-opportunity-discovery",
+    "assets/templates/discovery-report-template.md"
+  );
+  assert.equal(opportunityAsset.asset.path, "assets/templates/discovery-report-template.md");
 
   // 同名目录若不是由 builtin 安装记录管理，不能被预制 catalog 覆盖或误暴露。
   const collisionRoot = path.join(tempRoot, "builtin-collision");

@@ -12,6 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { normalizeSkillName } from "./skill-index.mjs";
+import { EXPERT_BUILTIN_SKILLS } from "./expert-builtin-skill-catalog.mjs";
 
 export const BUILTIN_SKILL_SOURCE_KIND = "agent-skill.builtin.v1";
 
@@ -44,7 +45,8 @@ const BUILTIN_SKILLS = Object.freeze([
     name: "amazon-product-image-generation",
     version: "0.2.0",
     description: "用于 Amazon 商品白底主图、卖点图、场景图生成和版本化迭代。"
-  })
+  }),
+  ...EXPERT_BUILTIN_SKILLS
 ]);
 
 const BUILTIN_SKILL_BY_NAME = new Map(BUILTIN_SKILLS.map((skill) => [skill.name, skill]));

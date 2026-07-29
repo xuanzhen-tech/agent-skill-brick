@@ -1,0 +1,274 @@
+---
+name: amazon-policy-change-impact-assessment
+description: 对用户或可信上游提供的带日期 Amazon 政策原文执行版本冻结、段落级差异、适用范围、影响对象、行动和证据评估，并生成可供内置经营分析消费的 policy impact handoff。适用于单次政策变更评估和业务整改准备；不适用于 Web/RSS 抓取、持续监控、自动推送、把摘要当原文或在缺少当前政策文本时声称“最新政策”。
+---
+
+<!--
+文件功能：定义 Amazon 政策原文、版本、差异、翻译、适用性、业务影响、行动和跨专家 handoff。
+职责边界：只对合法输入中的政策文本做一次性评估，不抓取或监控政策，不宣布法律效力，不替代 Amazon 原文或专业意见。
+重要关联：政策证据、差异和影响字段见 references/policy-change-evidence-contract.md；正式交付使用 assets/templates/policy-change-impact-template.md；账号风控第10专家只消费本包带证据输出。
+-->
+
+# Amazon 政策变更影响评估
+
+## 目标与完成定义
+
+把“Amazon 政策变了，对我们有什么影响”转成可验证链路：
+
+1. 比较的是哪一站点、政策、旧版和新版；
+2. 原文、摘要、翻译和 Agent 解释如何分开；
+3. 哪些段落新增、删除、修改或仅重新排列；
+4. 何时发布、生效，适用哪些主体、商品、流程或账户；
+5. 哪些 Listing、视觉、广告、促销、账号、客服、物流或经营流程受影响；
+6. 需要什么行动、证据、责任人和完成验证；
+7. 哪些适用性或法律问题必须交专业责任方。
+
+首次只有一个版本时只能建立 `baseline_only`，不能声称发生变化。
+
+## 运行合同
+
+### 合法输入
+
+- 用户对话及只读 `uploads/` 中的 Amazon 政策原文、通知、版本、截图、导出和既有摘要；
+- 可信上游 `outputs/` 中带原文路径、政策 ID、站点、日期和版本的政策资料；
+- 用户提供的业务对象清单、当前流程、控制和责任人；
+- 合格法务/合规责任方的适用性意见。
+
+当前政策事实只能来自用户或可信上游带日期原文。列表标题、邮件摘要或 Agent 记忆不能替代正文。
+
+### 外部数据边界
+
+- 不调用 `sif_mcp`；当前 SIF 目录没有 Amazon 政策原文、政策效力或账号政策能力；
+- 运行时输入仅限用户对话、只读 `uploads/` 与带来源/日期/版本的可信 `outputs/`；
+- 不使用 Web、浏览器、RSS、Google Trends、LinkFox、CrossPulse、Firecrawl、其他 MCP/API；
+- 不调用 Feishu、邮件或推送；
+- 不创建 Cron、后台监控、订阅或自动告警；
+- 缺当前原文时只输出获取清单，失败关闭。
+
+### 工作区
+
+- `uploads/` 只读；
+- `temp/compliance/<case-id>/03-policy-impact/` 存放版本索引、段落对齐、差异和影响草稿；
+- `outputs/compliance/<case-id>/03-policy-impact/` 存放唯一正式评估；
+- 每次评估冻结输入，不覆盖旧版本。
+
+### 双层谱系
+
+`input_evidence` 保存 `evidence_id`、`source_path`、政策 ID、站点、语言、发布/生效/修订/提供日期、版本、四轴、权威性和限制。
+
+Agent 的段落对齐、差异编码、适用性候选、影响、行动和 handoff 为 `agent_output`，记录 `parent_evidence_ids`、转换类型、假设状态和专业复核状态。
+
+四轴：
+
+- `source_type`
+- `temporal_scope`
+- `estimation_status`
+- `transformation_type`
+
+## 启动检查
+
+### 最低输入
+
+至少需要：
+
+1. 政策身份、站点和语言；
+2. 当前版本原文；
+3. 发布/生效日期或明确 unknown；
+4. 旧版本原文，若要评估“变化”；
+5. 业务对象、流程和责任人；
+6. 用户希望做出的决策。
+
+### 状态
+
+- `baseline_only`
+- `diff_ready`
+- `impact_ready`
+- `current_text_missing`
+- `previous_text_missing`
+- `version_conflict`
+- `scope_uncertain`
+- `translation_review_required`
+- `blocked`
+- `out_of_scope`
+
+### 来源缺失语义（与业务状态分列）
+
+业务 `result_status` 继续使用上述政策状态；每个输入字段另记 `source_availability_status`，只允许：
+
+- `not_returned`：已核验的合法来源未返回该字段；
+- `not_queried`：本次未向合法来源查询；
+- `parse_failed`：材料存在但无法可靠解析；
+- `missing`：范围已确定，但必需材料未提供；
+- `conflicted`：同一范围的证据互相冲突；
+- `true_zero`：完整、可验证覆盖明确证明数值或记录数为零。
+
+前五项不得写成 0、无政策、无变化或无影响，也不得覆盖 `baseline_only/current_text_missing/...` 等业务门禁。正例：两版完整原文逐段覆盖后，删除条款数确为 0，可记 `true_zero`，业务状态仍按 diff/impact 门禁判断。反例：尚未取得当前正文必须记 `not_queried` 或 `missing`，不能写“变化数为 0”或“政策未变化”。
+
+## 执行流程
+
+### 第一步：建立政策 manifest
+
+每份文档记录：
+
+- `policy_document_id`
+- 标题、发布主体；
+- 站点/地区；
+- 原文语言；
+- 发布、生效、修订和提供日期；
+- 版本标识；
+- source path；
+- 是否原文、摘要、通知或专业意见；
+- 完整性、页码/段落；
+- 当前性由谁确认。
+
+### 第二步：取得正文层级
+
+若输入先提供列表/通知：
+
+- 记录 list item ID/标题/日期；
+- 必须有对应正文证据才能分析条款；
+- 列表和详情建立父子关系；
+- 无正文时状态 `current_text_missing`；
+- 不从标题扩写政策内容。
+
+此处保留“列表→详情”的证据方法，但不调用 LinkFox 或任何外部源。
+
+### 第三步：去重与版本冻结
+
+通过政策 ID、站点、版本、日期和正文证据判断：
+
+- exact duplicate；
+- same policy different version；
+- related notice；
+- unknown relation。
+
+仅 URL/标题相似不足以合并。每次评估冻结两份明确版本。
+
+### 第四步：证据保真翻译
+
+跨语言时：
+
+- 段落 ID 一一对齐；
+- 保留 shall/must/may、否定、例外、日期、定义和限定词；
+- 术语表独立；
+- Agent 翻译不标官方；
+- 高风险段落交专业复核；
+- 差异优先对原文而非两份不同译文。
+
+### 第五步：段落级差异
+
+允许状态：
+
+- `added`
+- `removed`
+- `modified`
+- `moved_without_substantive_change`
+- `unchanged`
+- `not_alignable`
+
+每项保留旧/新段落 ID、短摘要、结构变化和原文证据。不要只给全文摘要。
+
+### 第六步：区分事实、解释和适用性
+
+- 文本事实：原文明确内容；
+- Agent 解释：对语义的结构化说明；
+- 适用性候选：可能影响某业务对象；
+- 专业意见：合格责任方提供；
+- 未知：缺定义、例外或范围。
+
+Agent 不能把适用性候选写成 Amazon 或法律的终局结论。
+
+### 第七步：建立影响对象
+
+按稳定 ID 映射：
+
+- 商品/ASIN/SKU；
+- Listing/A+/视觉资产；
+- 广告和促销计划；
+- 库存/物流/退货；
+- 账号健康、执法事件和 POA；
+- 客服模板/案件；
+- 品牌/站外内容；
+- 经营流程和内置分析。
+
+每项影响记录差异 ID、影响机制、证据、严重性理由、未知和责任专家。
+
+### 第八步：制定行动与验证
+
+每项行动记录：
+
+- 必须理解或修改的对象；
+- 责任人；
+- 截止日期来源；
+- 前置专业确认；
+- 计划/执行/验证状态；
+- 验证证据；
+- 未完成时的业务闸门。
+
+没有执行证据时保持 `planned`。
+
+### 第九步：生成跨专家 handoff
+
+至少生成：
+
+- `policy_evidence_id`
+- `policy_document_ids`
+- 站点、发布日期、生效日；
+- `diff_ids`
+- 受影响对象 IDs；
+- 行动、责任人和状态；
+- 适用性/专业复核限制。
+
+对 Product 内置经营分析生成 `policy-impact-handoff.md`，只提供可追溯变化和业务输入，不声称已调用或更新内置 Skill。
+
+### 第十步：一次性结论
+
+报告必须注明：
+
+- `assessment_mode=one_time`
+- `monitoring_status=not_running`
+- `as_of`
+- 下次复核触发器由用户/责任方人工定义。
+
+不得写“将持续跟踪”或“已开启提醒”。
+
+## 失败与降级
+
+- `current_text_missing`：不声称最新，只给获取清单；
+- `previous_text_missing`：`baseline_only`，不做变化结论；
+- `summary_only`：只描述摘要限制，不扩写条款；
+- `version_conflict`：并列版本并暂停 diff；
+- `translation_uncertain`：保留原文和专业复核；
+- `scope_uncertain`：影响标候选；
+- `out_of_scope`：监控、抓取、推送、法律裁决、自动整改或平台提交。
+
+## 正式交付
+
+至少生成：
+
+1. `amazon-policy-change-impact.md`
+2. `policy-document-manifest.csv`
+3. `policy-diff-register.csv`
+4. `policy-action-and-verification-register.csv`
+5. `policy-impact-handoff.md`
+6. `policy-evidence-ledger.md`
+
+使用 `assets/templates/policy-change-impact-template.md`。只有一版原文时，标题和摘要明确 `baseline_only`。
+
+## 质量门
+
+- 政策身份、站点、版本和日期明确；
+- 原文、摘要、翻译、解释和专业意见分开；
+- 列表没有冒充正文；
+- 两版原文段落级差异可追溯；
+- 首次运行没有写成变化；
+- 影响对象、行动和责任专家有稳定 ID；
+- 计划没有写成已执行；
+- handoff 不冒充已调用内置能力；
+- 无 Web/RSS/LinkFox/CrossPulse/推送/监控；
+- 双层谱系与工作区合同完整。
+
+## 资源读取
+
+- 建立 manifest、差异和影响前读取 `references/policy-change-evidence-contract.md`。
+- 写正式评估和 handoff 前读取或物化 `assets/templates/policy-change-impact-template.md`。
