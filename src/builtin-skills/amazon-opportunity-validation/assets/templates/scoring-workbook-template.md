@@ -1,0 +1,137 @@
+<!--
+文件功能：提供候选机会评分的可复制工作表，统一记录运行配置、证据、维度换算、缺失权重、决策上限和独立复核。
+职责边界：模板中的名称与数值只说明填写结构，不代表任何类目的真实权重、阈值或结论；正式使用前必须用本次证据和用户认可口径替换。
+关联关系：由 ../../SKILL.md 的透明计算阶段使用，评分规则由 ../../references/transparent-scoring-model.md 规定。
+-->
+
+# 候选机会评分工作表
+
+将本模板复制到：
+
+```text
+temp/product-selection/<case-id>/02-validation/scoring-workbook.md
+```
+
+完成复核后，再把已核准版本复制到同一 case 的 `outputs/`。不要在模板原位填写项目数据。
+
+## 1. 运行配置
+
+| 字段 | 本次值 | 依据/确认人 |
+|---|---|---|
+| case_id |  |  |
+| Amazon 站点 |  |  |
+| 比较类目与口径 |  |  |
+| 数据截止日期 |  |  |
+| `missing_weight_stop` |  | 必须显式填写 |
+| `required_for_go` | `demand, unit_economics` | 只能增加，不能删除这两项 |
+| `go` 阈值 | `TBD` | 未获用户认可时保持 `TBD` |
+| `watch` 阈值 | `TBD` | 未获用户认可时保持 `TBD` |
+| `boundary_margin` |  | 阈值未确认时不适用 |
+| `tie_breakers` | `unit_economics, demand, competition` | 可按本次任务调整 |
+
+### 维度与权重
+
+| 维度机器名 | 业务含义 | 原权重 | 校准样本/期间 | 用户是否认可 |
+|---|---|---:|---|---|
+| `demand` | 需求质量 |  |  |  |
+| `competition` | 竞争可进入性 |  |  |  |
+| `new_product_acceptance` | 新品接受度 |  |  |  |
+| `differentiation` | 差异化证据 |  |  |  |
+| `unit_economics` | 用户单位经济 |  |  |  |
+| **合计** |  |  |  |  |
+
+权重必须为正数。合计不必等于 100，但同一轮所有候选必须使用同一组权重。
+
+## 2. 证据账本
+
+每条证据一行；同一条证据可以支持多个维度，但不得复制成多个看似独立的来源。
+
+| evidence_id | 候选 | 维度 | source_type | source_provider | source_tool | agent_request_id | tool_call_id | provider_request_id | retrieved_at | marketplace | query_scope | temporal_scope | coverage_or_pagination | estimation_status | transformation_type | parent_input_evidence_ids | parent_evidence_ids | raw_result_locator/限制 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|  |  |  | `sif_mcp` / `user_input` / `upstream_output` / `agent` |  |  | `not_returned` | `not_returned` | `not_returned` |  |  |  |  |  |  |  |  |  |  |
+
+强制规则：
+
+- SIF 原始证据填写真实 `source_tool`、三类请求 ID、站点、时间和原始结果位置。
+- `agent_request_id` 与 `tool_call_id` 只填写当前 AgentTool 调用上下文暴露的对应真实值；仅当该上下文未暴露对应字段时写 `not_returned`。`provider_request_id` 只填写 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三类 ID 不得互代。
+- 任何传入的 `arguments.country` 都必须把其直接父 Evidence ID 写入 `parent_input_evidence_ids`；缺少该证据时不得调用。
+- `demand=ready` 至少需要明确时间范围和足够覆盖的当前或历史证据。
+- `unit_economics=ready` 必须引用内置利润包的正式输出或等价且已复核的用户成本对象；SIF 探索性利润门槛不能替代。
+- Agent 派生对象必须列出直接 `parent_evidence_ids`。
+- 冲突证据保留在账本中，不通过删除反证或无声平均来消除。
+
+## 3. 逐维换算
+
+每个候选复制一份本节。只有 `ready` 或 `partial` 维度可以填写 0–100 分；`missing` 不得填写分数。
+
+### 候选：`<candidate-id>`
+
+| 维度 | evidence_id | 原始证据 | 方向/变换 | 低锚/高锚及依据 | 维度分 0–100 | 状态 | 原权重 | 加权项 = 分数 × 权重 |
+|---|---|---|---|---|---:|---|---:|---:|
+| `demand` |  |  |  |  |  | `ready/partial/missing` |  |  |
+| `competition` |  |  |  |  |  | `ready/partial/missing` |  |  |
+| `new_product_acceptance` |  |  |  |  |  | `ready/partial/missing` |  |  |
+| `differentiation` |  |  |  |  |  | `ready/partial/missing` |  |  |
+| `unit_economics` |  |  |  |  |  | `ready/partial/missing` |  |  |
+
+### 覆盖与总分
+
+| 检查项 | 数值/结论 |
+|---|---|
+| 总权重 |  |
+| 可用权重 |  |
+| 缺失权重 |  |
+| 可用权重 + 缺失权重 = 总权重 | `是/否` |
+| 缺失权重是否严格大于熔断线 | `是/否` |
+| 加权项合计 |  |
+| 未四舍五入总分 = 加权项合计 / 可用权重 |  |
+| 展示分（最后一步四舍五入） |  |
+
+若缺失权重严格大于 `missing_weight_stop`，总分写 `blocked`，不得继续计算。恰好等于熔断线时可计算，但必须标记“熔断边界人工复核”。
+
+## 4. 硬闸门与决策
+
+| 检查项 | 结果 | 证据/理由 |
+|---|---|---|
+| 用户禁售、预算、物流或合规硬约束 | `pass/watch/fail` |  |
+| 基准单位经济硬闸门 | `pass/watch/fail/unknown` |  |
+| 数据口径可比性 | `pass/watch/fail` |  |
+| `demand` 是否 `ready` | `是/否` |  |
+| `unit_economics` 是否 `ready` | `是/否` |  |
+| 阈值是否已获用户认可 | `是/否` |  |
+| 是否位于阈值敏感区 | `是/否/不适用` |  |
+| 最终状态 | `go/watch/kill/blocked/rank_only` |  |
+| 决策上限为何没有被突破 |  |  |
+
+应用顺序：
+
+1. 任一硬闸门 `fail` → `kill`；
+2. 缺失权重熔断 → `blocked`；
+3. `demand` 或 `unit_economics` 不为 `ready` → 最高 `watch`；
+4. 阈值未确认 → `rank_only`，不制造 `go/watch` 分界；
+5. 最后才应用阈值、敏感区和并列规则。
+
+## 5. 排名表
+
+| 名次 | 候选 | 未四舍五入分 | 展示分 | 硬闸门 | 决策上限 | 最终状态 | 并列处理 |
+|---:|---|---:|---:|---|---|---|---|
+|  |  |  |  |  |  |  |  |
+
+先按可推进状态分组，再按未四舍五入分排序。并列依次比较本次 `tie_breakers`；仍相同则给同名次。
+
+## 6. 独立复核
+
+复核者不得直接沿用第一遍合计数；应从证据账本和逐维行重新核算。
+
+| 复核项 | 第一遍 | 独立复核 | 一致 | 处理 |
+|---|---:|---:|---|---|
+| 每个候选的加权项合计 |  |  |  |  |
+| 可用权重与缺失权重 |  |  |  |  |
+| 未四舍五入总分 |  |  |  |  |
+| 排名前三名 |  |  |  |  |
+| 熔断线“严格大于”边界 |  |  |  |  |
+| 硬闸门失败仍为 `kill` |  |  |  |  |
+| 只有预测的需求未标 `ready` |  |  |  |  |
+| 无用户成本计算的经济性未标 `ready` |  |  |  |  |
+
+任一“不一致”都要回到证据、锚点、权重或公式定位原因。没有完成一致性复核，不得将工作表移入 `outputs/`。

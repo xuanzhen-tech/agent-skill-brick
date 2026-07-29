@@ -106,6 +106,11 @@ import { listBuiltinSkills } from "@xuanzhen-tech/agent-skill-brick";
 console.log(listBuiltinSkills());
 ```
 
+从 `0.7.0` 起，预制目录包含 14 类跨境经营专家能力对应的 64 个独立 skill，
+加上既有经营分析、生图等能力共 68 个。专家身份、提示词以及“专家对应哪些
+skill”的映射仍由产品管理；本积木只按名称选择、安装和开放 skill，不在 SDK
+内部创建专家角色或固定工作流。
+
 远端搜索和安装能力仍保留：
 
 ```js
