@@ -1,303 +1,184 @@
 ---
 name: amazon-poa-evidence-and-draft
-description: 基于已有账号执法根因、Amazon 通知原文、整改状态和可核验附件，建立陈述—证据映射并起草供人工审核的 Amazon Plan of Action。适用于 POA 证据准备、行动状态核验、附件索引和草案质检；不适用于重新猜测根因、自动提交申诉、伪造完成状态或承诺账号恢复。
+description: 基于已有账号执法根因、Amazon 通知原文、整改进度和可核验附件，建立陈述与证据对应关系并起草供人工审核的 Amazon Plan of Action。适用于 POA 证据准备、行动核验、附件索引和草案质检；不适用于重新猜测根因、自动提交申诉、伪造完成状态或承诺账号恢复。
 ---
 
 <!--
-文件功能：定义 POA 的输入门禁、证据映射、行动状态、草案结构、附件索引和人工审核流程。
-职责边界：只把用户、只读 uploads 或可信上游已有的根因与已核验整改组织成草案；当前 SIF 没有账号案件、整改或 POA 能力，因而不调用 SIF；不重新做 RCA、不判断政策/IP实体问题、不提交申诉或保证恢复。
-重要关联：字段与证据门见 references/poa-evidence-and-draft-contract.md；正式交付使用 assets/templates/poa-evidence-and-draft-template.md；根因输入来自 amazon-account-enforcement-root-cause-analysis。
+文件功能：指导 Agent 把已有根因和真实整改组织成可审核的 POA 证据包与草案。
+职责边界：只使用用户、只读 uploads 或可信上游材料；不调用三个市场研究 MCP，不重新做 RCA，不提交申诉或保证恢复。
+重要关联：写作与核验方法见 references/poa-evidence-and-draft-contract.md；正式交付使用 assets/templates/poa-evidence-and-draft-template.md；根因来自 amazon-account-enforcement-root-cause-analysis。
 -->
 
 # Amazon POA 证据与草案
 
-## 目标与完成定义
+## 目标
 
-将“帮我写一封 POA”转成可审查、可追溯、不过度陈述的证据包：
+一份合格草案应做到：
 
-1. 锁定 Amazon 通知、账号/站点、事件和截止时间；
-2. 消费已有 `root_cause_id`，不在写作阶段重做根因分析；
-3. 区分临时遏制、立即纠正、纠正措施、预防控制和有效性验证；
-4. 对每个行动记录真实执行状态；
-5. 让每项事实陈述都能回到证据；
-6. 建立附件索引，暴露缺失、冲突和敏感信息；
-7. 输出 `draft_for_human_review`，而非“可直接提交”或“保证通过”。
+- 准确回应本次 Amazon 通知及其范围；
+- 只使用已经通过根因分析和人工确认的根因；
+- 区分临时遏制、即时纠正、纠正措施、预防控制和有效性验证；
+- 不把计划或口头完成写成已完成；
+- 每个重要事实和行动都有对应材料；
+- 附件用途、缺口、冲突与敏感信息清楚；
+- 明确标记为“供人工审核的草案”。
 
-完成的 POA 草案只能说明材料准备状态，不能说明 Amazon 已接受、账号已恢复或整改已被平台验证。
+草案准备完成不代表已提交、已被接受或账号会恢复。
 
-## 运行合同
+## 开始前的材料门
 
-### 合法输入
+完整起草至少需要：
 
-- 用户对话及只读 `uploads/` 中的 Amazon 通知原文、截止日期、申诉问题、账号/站点/ASIN 范围和附件；
-- `amazon-account-enforcement-root-cause-analysis` 产生的带版本 `root_cause_id`、执法事件 IDs、因果链、未知和人工批准状态；
-- 第09专家输出的带来源、日期、站点、适用范围和结论上限的政策/IP判断；
-- 用户提供或可信 `outputs/` 中的整改记录、责任人、执行日期、系统/流程变更和有效性证据；
-- 合格责任方提供的法律、知识产权、产品合规或税务意见。
-
-### 最低输入
-
-开始完整草案前至少需要：
-
-1. 一份可读的 Amazon 通知或可追溯原文摘录；
-2. 账号、站点、事件对象和通知日期；
-3. Amazon 所述问题与要求；
-4. 已有且人工批准状态明确的 `root_cause_id`；
-5. 每项行动的负责人、状态和证据；
+1. 可读且可定位的 Amazon 通知原文或完整摘录；
+2. 账号、站点、对象、通知日期和截止时间；
+3. Amazon 明示的问题与要求；
+4. 由根因分析形成并经人工确认的根因；
+5. 每项整改的负责人、真实进度和材料；
 6. 附件清单或明确缺口；
-7. 用户指定的审核责任人。
+7. 最终审核责任人。
 
-缺少通知、已支持根因或行动证据时，输出证据缺口备忘录，不伪造完整 POA。
+缺少通知、可用根因或关键行动材料时，不为凑文案而猜测；输出证据缺口备忘录和最小补证清单。
 
-### 外部数据与工具边界
+## 输入、工作区与安全
 
-- 本包不需要新外部业务数据，不调用 `sif_mcp`；
-- 当前 SIF 的关键词、ASIN、流量、销量、广告或供应商诊断数据不能证明账号案件、整改执行或 Amazon 接受状态；
-- 不调用 SP-API、Seller Central、Web、浏览器、邮件、飞书或其他 MCP/API；
-- 不读取 LWA/OAuth、Cookie、session 或账号凭据；
-- 不上传附件、不提交申诉、不查询审核结果、不启动监控或提醒；
-- 若未来 SIF 出现账号相关工具，必须先重新设计读取权限、证据合同和本包授权；不得在当前 Skill 中临时猜测接口或字段。
+使用用户对话、只读 `uploads/` 或可信 `outputs/` 中的通知、RCA 交接、整改记录、流程变更、执行证明、政策/IP判断和附件。
 
-### 工作区与敏感信息
+`uploads/` 保持只读；过程材料放入 `temp/account-risk/<case-id>/03-poa-draft/`，正式交付写入 `outputs/account-risk/<case-id>/03-poa-draft/`。
 
-- `uploads/` 只读；
-- `temp/account-risk/<case-id>/03-poa-draft/` 存放摘录、映射、去标识副本和草案；
-- `outputs/account-risk/<case-id>/03-poa-draft/` 存放唯一正式交付；
-- 账号 ID、买家 PII、证件、银行、税号、签名、凭据和受限附件只记录掩码值、哈希或证据引用；
-- 不把附件正文无差别复制到草案。
-
-### 双层谱系
-
-每条 `input_evidence` 记录：
-
-- `evidence_id`
-- `source_path`
-- `source_type`
-- `evidence_class`
-- 账号/站点/事件/对象范围
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- 版本、提供方和限制
-
-Agent 的摘录、陈述、证据映射、风险标记和草案段落属于 `agent_output`，必须记录 `parent_evidence_ids`、转换说明和结论上限。
-
-## 状态模型
-
-### 工作流状态
-
-- `poa_ready_for_drafting`
-- `notice_missing`
-- `root_cause_missing`
-- `root_cause_not_approved`
-- `action_evidence_incomplete`
-- `attachment_gap`
-- `material_conflict`
-- `draft_for_human_review`
-- `blocked`
-- `out_of_scope`
-
-### 行动执行状态
-
-只允许：
-
-- `verified_completed`：存在可追溯执行证据，且范围和日期匹配；
-- `user_claimed_unverified`：用户声称完成，但尚无充分证据；
-- `planned`：仅有计划、责任人或日期；
-- `blocked`：存在明确依赖或障碍。
-
-只有 `verified_completed` 可以在 POA 中写成已完成。其余状态必须使用未来式、条件式或缺口说明。
-
-### 来源缺失语义（与业务状态分列）
-
-业务 `workflow_status/action_status/support_status` 继续使用上述 POA 状态；每个通知、根因、行动或附件字段另记 `source_availability_status`，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。只有完整、可验证覆盖明确为零时才可使用 `true_zero`。
-
-前五项不得写成 0、无问题、无附件需求或无风险，也不得替代 `notice_missing/root_cause_missing/...` 等业务门禁。正例：完整陈述—证据矩阵确认未支持陈述数为 0，可记 `true_zero`，正式草案仍需人工审核。反例：附件无法解析时记 `parse_failed` 并保持 `attachment_gap`，不能写“无需附件”。
+账号、买家、证件、银行、税号、签名和受限附件只保留掩码、哈希或安全定位。不读取凭据、Cookie、session 或 OAuth/LWA 信息，也不把附件全文无差别复制进草案。
 
 ## 执行流程
 
-### 第一步：冻结申诉范围
+### 1. 锁定通知与申诉范围
 
-记录：
+先确认：
 
-- `poa_case_id`
-- 掩码账号、站点、ASIN/SKU/事件范围；
-- Amazon notice ID 或证据 ID；
-- 通知日期、截止日期、时区；
-- 原文语言；
-- Amazon 所述问题、要求和允许的附件；
-- 当前申诉轮次（若用户提供）。
+- 哪个账号、站点、ASIN/SKU 或事件；
+- 通知日期、截止时间、语言和申诉轮次；
+- Amazon 明示的问题、要求和附件限制；
+- 是否有缺页、截断截图、OCR 或翻译风险。
 
-不同通知、站点或对象不得未经说明合并成一封草案。
+不同通知、站点或对象不要无说明地合并。区分 Amazon 原文、用户陈述和 Agent 解释，不按常见模板补写 Amazon 未要求的内容。
 
-### 第二步：验证通知原文
+### 2. 接收根因，不在写作阶段重做 RCA
 
-对通知：
+检查根因交接是否说明：
 
-1. 保留原文或可追溯摘录；
-2. 区分 Amazon 陈述、用户陈述和 Agent 解释；
-3. 标出问题类型、被要求的信息和格式限制；
-4. 记录缺页、截图截断、OCR 或翻译风险；
-5. 不根据常见模板补写 Amazon 未提出的要求。
+- 适用哪些执法事件和对象；
+- 根因是什么、由哪些因果连接支持；
+- 有哪些未知和限制；
+- 是否经过责任人确认；
+- 涉及政策/IP时，第09专家的判断是什么。
 
-### 第三步：接收而非重做 RCA
+根因缺失、仍是未经确认的候选或适用范围不一致时，暂停确定性根因段落，并路由 `amazon-account-enforcement-root-cause-analysis`。不要为了写得完整而临时创造根因。
 
-核对 RCA handoff：
+### 3. 核验每项行动的真实进度
 
-- `root_cause_id`
-- 适用 `enforcement_event_ids`
-- 根因陈述；
-- causal link IDs 与支持状态；
-- 未知和限制；
-- 人工批准状态；
-- 第09政策/IP证据 IDs。
+行动分为：
 
-若不存在可用 `root_cause_id`，返回 `root_cause_missing` 并路由根因分析。不得为了完成文案而临时猜测根因。
+- 临时遏制；
+- 即时纠正；
+- 针对根因的纠正措施；
+- 防止其他对象复发的预防控制；
+- 有效性验证。
 
-### 第四步：建立行动登记
+对每项行动核对对象、负责人、计划/完成日期、所需材料、已有材料和未覆盖风险。
 
-将行动分为：
+只有材料能证明动作真实发生，且日期、范围、执行者与本次事件一致时，才能写“已验证完成”。用户口述但材料不足，应写“用户称已完成，待核验”；尚未执行写计划式；存在依赖则说明阻塞。
 
-- containment；
-- immediate correction；
-- corrective action；
-- preventive control；
-- effectiveness verification。
+动作完成与动作有效是两个结论。完成培训不等于问题已不再发生，流程上线也不等于控制持续运行。
 
-每项记录：
+### 4. 建立陈述—证据对应
 
-- `action_id`
-- 关联 `root_cause_id`
-- 对象与范围；
-- owner；
-- planned/completion date；
-- 执行状态；
-- 证明完成所需证据；
-- 当前 evidence IDs；
-- 尚未覆盖的风险。
+对草案中每个根因、纠正、预防和验证陈述逐项检查：
 
-### 第五步：核验执行状态
+- 具体说了什么；
+- 来自通知原文、执行记录、截图、系统记录还是用户确认；
+- 是忠实改写还是 Agent 推导；
+- 证据支持完整、部分支持、冲突还是不支持；
+- 在什么账号、站点、对象和时间范围内成立；
+- 是否需要人工、法律、政策、IP或产品安全复核。
 
-判为 `verified_completed` 至少需要：
+不支持或存在未解决冲突的陈述不得进入正式草案。部分支持的内容要收窄措辞，不能扩大到未覆盖对象。
 
-1. 证据显示具体动作已发生；
-2. 日期晚于或合理关联问题事件；
-3. 账号/站点/ASIN/流程范围匹配；
-4. 执行者或责任人可追溯；
-5. 不仅是计划、截图标题或口头承诺；
-6. 若声称有效，存在独立有效性验证证据。
+### 5. 审查附件
 
-完成动作与“动作有效”是两个结论，不得合并。
+每个附件都要回答：
 
-### 第六步：建立陈述—证据映射
+- 它具体证明哪一句陈述或哪项行动；
+- 提供方、日期、对象范围和版本是否匹配；
+- 是否完整、清晰、有效且无过期；
+- 是否需要翻译；
+- 是否含不必要的敏感信息；
+- 是否与其他材料冲突；
+- 人工审核者是否确认可用。
 
-草案中的每项事实陈述登记：
+附件存在不等于它支持结论。只有文件名、截图标题或计划书通常不能证明实际执行。
 
-- `statement_id`
-- section；
-- statement text；
-- claim type；
-- parent evidence IDs；
-- support status；
-- contradiction/limitation；
-- 可用措辞；
-- human review status。
-
-支持状态：
-
-- `supported`
-- `partially_supported`
-- `unsupported`
-- `conflicted`
-
-`unsupported` 或 `conflicted` 陈述不得进入正式草案。
-
-### 第七步：建立附件索引
-
-每个附件记录：
-
-- `attachment_id`
-- 文件名或安全显示名；
-- source path；
-- 证明的 statement/action；
-- 日期、提供方和范围；
-- 版本或哈希；
-- 语言与是否需翻译；
-- 敏感字段及遮蔽状态；
-- 缺页、过期或冲突；
-- 人工确认状态。
-
-附件存在不等于它支持所述结论。
-
-### 第八步：组织草案
+### 6. 起草 POA
 
 默认结构：
 
-1. 简短承认收到通知及适用范围；
+1. 简短确认通知和适用范围；
 2. 已证实根因；
 3. 已完成的立即纠正；
-4. 已完成或明确计划的预防控制；
-5. 有效性验证方法；
-6. 附件引用；
-7. 人工审核标记和未决项。
+4. 针对根因的纠正与预防控制；
+5. 有效性验证；
+6. 附件说明。
 
-草案应具体、事实化、避免情绪化，不添加未经证实的责任归属、法律承认、恢复承诺或模板化空话。
+写作原则：
 
-### 第九步：语言与翻译控制
+- 具体、事实化、直接回应通知；
+- 根因、行动和证据相互一致；
+- 已完成动作使用过去式，计划动作使用未来式；
+- 避免情绪、辩解、模板空话和无证据的责任归属；
+- 不添加法律承认、平台接受状态或恢复承诺；
+- 草案顶部明确“供人工审核，尚未由本 Skill 提交”。
 
-- 保留 Amazon 原文、用户原文和译文的关联；
-- 翻译标 `agent_generated_translation`；
-- 关键政策、法律、IP和产品安全术语需人工或合格专业人员复核；
-- 不借翻译消除模糊、冲突或证据缺口；
-- 双语草案中使用稳定 statement/attachment ID。
+### 7. 翻译控制
 
-### 第十步：独立质检
+保留 Amazon 原文、用户原文和译文之间的对应。关键政策、法律、IP和产品安全术语应由合格人员复核。
 
-逐项检查：
+翻译不得消除原文的模糊、冲突或证据缺口。若一个词有多种可能含义，在审核说明中保留歧义。
 
-- 通知问题均有响应；
-- `root_cause_id` 未被改写成新根因；
-- 每项“已完成”都有 `verified_completed` 证据；
-- 计划动作没有过去式；
-- 每项陈述有证据映射；
-- 附件与陈述一一关联；
-- 时间、账号、站点和对象范围一致；
-- 政策/IP判断来自第09或合格责任方；
-- 不含敏感凭据和不必要 PII；
-- 明确 `draft_for_human_review`。
+### 8. 独立质检与人工交接
 
-### 第十一步：人工审核交接
+质检时逐项问：
 
-交付人工审核清单：
+- 通知的每个问题是否得到回应；
+- 根因是否未经改写且范围一致；
+- 每个“已完成”是否有可验证材料；
+- 计划动作是否误用了完成时；
+- 每个事实陈述能否回到直接材料；
+- 附件是否与陈述一一对应；
+- 日期、账号、站点和对象是否一致；
+- 政策/IP判断是否来自适格责任方；
+- 是否含不必要 PII 或凭据；
+- 是否保留最终人工审核和提交门。
 
-- 事实准确性；
-- 法律、政策、IP和产品安全专业判断；
-- 承认、责任和措辞风险；
-- 附件完整性和可读性；
-- 行动是否真实完成；
-- 是否符合 Seller Central 当前页面要求；
-- 最终提交权限和时间。
+人工审核应覆盖事实准确性、措辞风险、专业判断、附件可读性、行动真实性以及 Seller Central 当前页面要求。本 Skill 不执行提交。
 
-本包不执行提交。
+## 三 MCP 与外部工具边界
+
+`sif_mcp`、`sellersprite_mcp`、`sorftime_mcp` 的公开 Listing、Review、商标、关键词、排名、销量、广告和市场数据不能证明账号通知、Case、根因、整改、附件、POA 适当性或 Amazon 接受状态，本 Skill 不调用它们。
+
+也不调用 Seller Central、SP-API、浏览器、邮件、飞书或其他外部渠道；不上传附件、不查询审核结果、不启动监控或提醒。
 
 ## 失败与降级
 
-- `notice_missing`：只输出所需材料清单；
-- `root_cause_missing`：路由 RCA，输出证据缺口备忘录；
-- `root_cause_not_approved`：保留候选，不生成确定性根因段落；
-- `user_claimed_unverified`：可写“用户报告已完成，待核验”，不可写已完成；
-- `action_evidence_incomplete`：草案保持计划式或阻塞；
-- `attachment_gap`：列明缺失，不伪造引用；
-- `material_conflict`：并列冲突，暂停相关陈述；
-- `policy_or_ip_judgment_needed`：路由第09专家；
-- `single_case_response_needed`：路由第11专家；
-- `submission_requested`：说明越界并给人工提交检查表；
-- `recovery_guarantee_requested`：拒绝保证结果；
-- `tool_or_schema_unavailable`：不猜测或改用其他数据源。
+- 通知缺失或截断：只列所需材料，不能按常见格式猜；
+- 根因缺失或未确认：路由 RCA，交付缺口备忘录；
+- 用户称行动完成但无法核验：草案用待核措辞；
+- 关键行动材料不完整：保留计划式或阻塞说明；
+- 附件缺失/无法读取：列明受影响的陈述，不写“无需附件”；
+- 材料冲突：并列冲突，暂停相关陈述；
+- 需要政策/IP判断：交第09专家；
+- 需要单案回复：交第11专家；
+- 用户要求直接提交或保证恢复：明确拒绝越界。
 
 ## 正式交付
 
-至少生成：
+使用 `assets/templates/poa-evidence-and-draft-template.md` 生成：
 
 1. `poa-evidence-readiness.md`
 2. `poa-draft-for-human-review.md`
@@ -306,24 +187,22 @@ Agent 的摘录、陈述、证据映射、风险标记和草案段落属于 `age
 5. `poa-attachment-index.csv`
 6. `poa-evidence-ledger.md`
 
-使用 `assets/templates/poa-evidence-and-draft-template.md`。若不满足完整草案门禁，首页必须显示阻塞状态并交付证据缺口备忘录。
+不满足完整草案门时，首页直说阻塞原因，并优先交付证据缺口备忘录。
 
 ## 质量门
 
-- 有可追溯通知原文和明确范围；
-- 完整草案消费已有 `root_cause_id`；
-- 未在写作阶段重新猜根因；
-- 行动状态只使用四个允许值；
-- 只有 `verified_completed` 被写成已完成；
-- 所有事实陈述均有证据映射；
-- 附件证明对象和限制明确；
-- 政策/IP判断未越过第09专家；
-- 单案回复未越过第11专家；
-- 草案标记 `draft_for_human_review`；
-- 无提交、查询结果、监控或恢复保证；
-- 双层谱系、四轴、敏感信息与工作区合同完整。
+- 通知原文、范围和期限可追溯；
+- 使用已有且经确认的根因，没有在写作阶段重做 RCA；
+- 只有可验证完成的行动写成已完成；
+- 动作完成与效果验证分开；
+- 每个重要陈述都有直接材料，冲突未被掩盖；
+- 附件用途、范围、版本和遮蔽清楚；
+- 政策/IP与单案职责没有越界；
+- 草案标记为供人工审核；
+- 未提交、未监控、未保证恢复；
+- 敏感信息和工作区边界正确。
 
 ## 资源读取
 
-- 建立行动状态、陈述映射和附件索引前读取 `references/poa-evidence-and-draft-contract.md`。
-- 形成正式交付前读取或物化 `assets/templates/poa-evidence-and-draft-template.md`。
+- 开始核验行动、陈述和附件前读取 `references/poa-evidence-and-draft-contract.md`。
+- 写正式交付前读取 `assets/templates/poa-evidence-and-draft-template.md`。

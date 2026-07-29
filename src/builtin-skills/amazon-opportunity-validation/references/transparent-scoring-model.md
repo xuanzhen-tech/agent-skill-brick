@@ -78,10 +78,10 @@
 
 有分数的维度必须携带结构化 `evidence`，而不是只有不可解释的字符串 ID。每条至少声明来源、数据类型、时间角色、工具和日期/期间。
 
-- `demand=ready` 至少需要明确 `temporal_scope` 和足够覆盖的当前或历史证据；只有单点或时间未返回时必须降为 `partial`。
-- `unit_economics=ready` 必须来自内置利润包的正式输出或等价且已复核的用户成本对象；SIF 探索性利润门槛不能满足该条件。
-- SIF 原始证据必须记录 `source_tool`、`agent_request_id`、`tool_call_id`、`provider_request_id`、`marketplace`、`temporal_scope`、覆盖和 `raw_result_locator`。前两类 ID 只取当前 AgentTool 调用上下文暴露的对应真实值；仅当上下文未暴露对应字段时写 `not_returned`。`provider_request_id` 只取 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`，三类 ID 不得互代。
-- Agent 派生评分必须用 `source_type=agent` 并直接列出 `parent_evidence_ids`。
+- 需求维度要判为可评分，至少需要明确数据期间且当前或历史覆盖足够；只有单点或时间未返回时必须降为部分证据。
+- `unit_economics=ready` 必须来自内置利润包的正式输出或等价且已复核的用户成本对象；任一供应商利润率、潜力指数或 SIF 探索性利润门槛都不能满足该条件。
+- MCP 原始证据必须记录供应商、精确工具、站点、对象、期间、覆盖、原值和原始结果位置；请求 ID 只在真实返回且排错确实需要时保留。
+- Agent 评分必须在对应候选维度列出直接依据、换算方法、反证和限制。
 
 ## 阈值与敏感区
 

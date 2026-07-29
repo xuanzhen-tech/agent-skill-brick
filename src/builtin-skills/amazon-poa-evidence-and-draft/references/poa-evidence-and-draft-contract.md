@@ -1,98 +1,105 @@
 <!--
-文件功能：定义 POA 通知、根因输入、行动状态、陈述证据映射、附件索引和草案状态合同。
-职责边界：只约束证据化草案，不生成新根因、不提交申诉、不保证恢复。
-重要关联：由 ../SKILL.md 在 POA 准备时读取；正式字段映射到 ../assets/templates/poa-evidence-and-draft-template.md。
+文件功能：提供 POA 的通知解读、根因接收、行动核验、陈述证据映射和附件审查方法。
+职责边界：只支持证据化草案，不生成新根因、不提交申诉、不保证恢复。
+重要关联：由 ../SKILL.md 在 POA 准备时读取；正式交付结构见 ../assets/templates/poa-evidence-and-draft-template.md。
 -->
 
-# POA 证据与草案合同
+# POA 证据与写作方法
 
-## 1. 输入对象
+## 1. 通知解读
 
-### `notice_record`
+先忠实回答 Amazon 实际要求了什么，再决定草案结构。重点识别：
 
-- `notice_evidence_id`
-- `account_scope_id_masked`
-- `marketplace_id`
-- `object_scope`
-- `notice_date/deadline/timezone`
-- `issue_reported`
-- `request_reported`
-- `source_path`
-- `completeness`
+- 被指向的账号、站点、商品或事件；
+- 通知中的事实陈述与政策指向；
+- 要求解释、整改还是提供文件；
+- 截止时间、语言、字符或附件限制；
+- 通知是否完整、是否存在 OCR 或翻译风险。
 
-### `rca_handoff`
+不要把其他案件常见问题自动加入本次 POA。
 
-- `root_cause_id`
-- `enforcement_event_ids`
-- `root_cause_statement`
-- `causal_link_ids`
-- `support_status`
-- `unknowns/limitations`
-- `human_approval_status`
-- `policy_or_ip_evidence_ids`
+## 2. 根因接收门
 
-没有可用 `root_cause_id` 时不得产生完整 POA。
+可用根因必须与本次通知范围一致，有因果链支撑、说明未知和限制，并经过责任人确认。
 
-## 2. 行动状态
+以下内容不能当作根因：
 
-只允许：
+- “我们重视这个问题”；
+- “员工操作失误”但未解释控制为何失效；
+- 只由公开评论或市场数据推测的问题；
+- 为匹配 POA 模板临时写出的原因；
+- 仍与主要证据冲突的候选。
 
-| 状态 | 含义 | 可否写成已完成 |
-|---|---|---|
-| `verified_completed` | 范围、日期和执行证据已核对 | 是 |
-| `user_claimed_unverified` | 用户声称完成但证据不足 | 否 |
-| `planned` | 尚未执行或仅有计划 | 否 |
-| `blocked` | 明确依赖阻塞 | 否 |
+根因不合格时退回 RCA，不在写作阶段补造。
 
-行动类型为 `containment`、`immediate_correction`、`corrective_action`、`preventive_control` 或 `effectiveness_verification`。
+## 3. 行动核验
 
-## 3. 陈述—证据映射
+判断行动是否可写成已完成，至少检查：
 
-| 字段 | 约束 |
-|---|---|
-| `statement_id` | 稳定编号 |
-| `section` | root cause/correction/prevention/verification |
-| `statement_text` | 草案中的事实陈述 |
-| `claim_type` | observed/inferred/action_completed/action_planned |
-| `parent_evidence_ids` | 必填 |
-| `support_status` | supported/partially_supported/unsupported/conflicted |
-| `limitations` | 缺口、冲突、范围 |
-| `human_review_status` | pending/approved/rejected |
+1. 证据显示具体动作已经发生；
+2. 时间与问题事件合理衔接；
+3. 账号、站点、ASIN、人员或流程范围一致；
+4. 执行者和责任人可追溯；
+5. 材料不是纯计划、空白模板或截图标题；
+6. 若声称有效，另有独立效果证据。
 
-`unsupported`、`conflicted` 或未经人工审核的高风险陈述不得进入提交候选。
+### 正例
 
-## 4. 附件索引
+流程文件显示新的放行条件，系统变更记录显示已上线，审批记录和上线日期匹配，抽检记录覆盖受影响产品。可以写“该控制已实施”，效果如何仍依据后续验证。
 
-- `attachment_id`
-- `safe_display_name`
-- `source_path`
-- `supported_statement_or_action_ids`
-- `document_date/provider/scope`
-- `version_or_hash`
-- `language/translation_status`
-- `redaction_status`
-- `completeness/conflicts`
-- `human_review_status`
+### 反例
 
-## 5. 草案状态
+用户说“团队已经培训”，只有一份培训计划和未签名名单。只能写计划或待核，不能写“所有员工已完成培训”。
 
-正式草案状态只能是 `draft_for_human_review`。交付中禁止使用 `submitted`、`accepted`、`reinstated` 等未经外部证据证明的状态。
+## 4. 陈述证据映射
 
-## 6. 证据谱系
+一条草案陈述应只表达材料真正支持的范围。
 
-输入记录 `evidence_id`、`source_path`、`source_type`、`evidence_class`、范围和四轴；Agent 输出记录 `parent_evidence_ids`、转换方法、支持状态和结论上限。
+- 原文摘录：保持原意并注明来源位置；
+- 忠实改写：不得扩大账号、站点、时间或对象；
+- 推导判断：必须说明推导，并交人工审核；
+- 计划陈述：写负责人和预计完成时间；
+- 已完成陈述：必须有执行材料。
 
-## 7. 不变量
+证据只覆盖一个 ASIN 时，不能写成“全账号产品均已检查”。多份材料冲突时，暂停该陈述，先解决冲突。
 
-- 通知、根因、行动和附件范围一致；
-- POA 不重新做 RCA；
-- 已完成动作必须有执行证据；
-- 完成与有效性分开；
-- 政策/IP判断来自第09或合格责任方；
-- 所有交付都保留人工审核门。
+## 5. 附件适用性
 
-## 8. 来源可用性与业务状态
+附件价值取决于它能证明什么，而非数量。优先保留：
 
-`source_availability_status` 与 POA `workflow_status/action_status/support_status` 分列，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。前五项不得写成 0、无问题、无附件需求或无风险；`true_zero` 仅用于完整可验证覆盖明确为零的计数。
+- 直接支持根因或行动的材料；
+- 日期、提供方和适用范围清楚的版本；
+- 可阅读、可复核且必要敏感信息已遮蔽的副本；
+- 与正文陈述能一一对应的文件。
 
-正例：完整陈述—证据矩阵确认未支持陈述数为 0，可记 `true_zero`，草案仍是 `draft_for_human_review`。反例：附件无法解析时记 `parse_failed` 并保持 `attachment_gap`，不能写“无需附件”。
+删除或不引用重复、过期、无关、无法读取、范围不符或暴露过多敏感信息的材料。是否允许上传及格式限制由最终人工审核者在当前 Seller Central 页面确认。
+
+## 6. POA 写作检查
+
+每一段都要回答一个明确问题：
+
+- 根因段：为什么问题发生，哪个控制失效；
+- 纠正段：对已发生问题做了什么；
+- 预防段：如何改变系统，避免复发；
+- 验证段：怎样证明控制持续有效；
+- 附件段：哪些材料分别支持上述陈述。
+
+避免“加强管理、严格要求、深刻反省”等无法验证的空话。不要夸大覆盖范围，也不要宣称 Amazon 已验证。
+
+## 7. 高风险措辞
+
+下列内容必须人工或专业复核：
+
+- 法律责任、侵权、欺诈或安全承认；
+- 政策适用性解释；
+- 产品安全、检测和认证结论；
+- 对供应商、员工或买家的责任归属；
+- 翻译可能改变实质含义的术语。
+
+Agent 应标出风险，不自行把争议性内容改成确定结论。
+
+## 8. 三 MCP 边界
+
+`sif_mcp`、`sellersprite_mcp`、`sorftime_mcp` 均不能提供通知、Case、根因、整改、附件、POA 或平台接受证据。公开市场数据不得进入 POA 事实链。
+
+草案与证据对应只能回溯用户或可信上游材料，并在对应陈述附近说明直接依据和表达上限。

@@ -1,114 +1,76 @@
 <!--
-文件功能：定义实际/目标/保本 ACoS、TACoS、经济边界、预算情景和人工决策状态合同。
-职责边界：不提供固定行业阈值，不重建利润，不执行预算、竞价或自动规则。
-重要关联：由 ../SKILL.md 在预算与经济判断时读取；正式字段映射到 ../assets/templates/ad-budget-acos-plan-template.md。
+文件功能：说明广告 ACoS/TACoS 核算、经济护栏、预算情景和人工决策的方法。
+职责边界：不提供行业阈值，不重建利润，不执行预算、竞价或自动规则。
+重要关联：由 ../SKILL.md 在核算与预算判断时读取；正式交付使用 ../assets/templates/ad-budget-acos-plan-template.md。
 -->
 
-# 广告预算与 ACoS 合同
+# 广告预算与 ACoS 方法
 
-## 1. 顶层结果合同
+## 1. 先锁定比较范围
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `MISSING_AD_REPORT | MISSING_TOTAL_SALES | MISSING_ECONOMIC_GUARDRAIL | ZERO_DENOMINATOR | CURRENCY_OR_PERIOD_CONFLICT | ATTRIBUTION_IMMATURE | TARGET_NOT_APPROVED | OUT_OF_SCOPE_REQUEST`
+核算前确认账户/profile、站点、商品或广告实体、币种、时区、日期范围和归因窗口。任一项不同，都先分开计算，不能为了得到一个数字而拼接。
 
-每次运行只允许这一组顶层结果字段；不得并列 `planning_status`。指标 `calculation_status`、情景批准和决策候选状态是局部字段。
+实际广告数据只接受用户报表、只读 `uploads/` 或可信 `outputs/`。SIF、SellerSprite 和 Sorftime 只能补充市场、关键词、PPC 或自然排名观察，不能补花费、归因销售或总销售。
 
-## 2. 指标身份
+## 2. 核算三类 ACoS
 
-每个指标记录：
+- 实际 ACoS：`广告花费 / 广告归因销售额`。
+- 目标 ACoS：用户批准的未来目标，不是观测事实。
+- 保本 ACoS：只引用专家 14 或用户已验证的可用于广告贡献边界，本 Skill 不自行重建。
 
-- `metric_id`
-- `metric_type`
-- `numerator`
-- `denominator`
-- `currency_or_unit`
-- `account/entity/product_scope`
-- `period/timezone`
-- `attribution_contract`
-- `source_evidence_ids`
-- `calculation_status`
-- `rounding_rule`
+三个概念必须分列。原始计算使用无量纲比例，例如 `0.25`；展示为百分比时最后乘以 100。
 
-## 3. ACoS 类型
+目标差距：
 
-| 类型 | 来源 | 规则 |
-|---|---|---|
-| `actual_acos_raw_ratio` | 一方广告报表 | spend / attributed sales |
-| `target_acos_raw_ratio` | 用户批准目标 | future，不是实际 |
-| `breakeven_acos_raw_ratio` | 第14或用户验证经济边界 | 不在本包重建 |
+`gap_ratio = actual_acos - target_acos`
 
-三者不得共用一个无类型字段。
+`gap_percentage_points = gap_ratio * 100`
 
-raw ratio 是无量纲值，例如 `0.25`。展示百分比只在最后通过 `display_percent = raw_ratio * 100` 得到；计算和比较始终使用未舍入 raw ratio。
+例如 `0.25 - 0.20 = 0.05`，表示高出 5 个百分点，不是相对上升 5%。
 
-差距合同固定为：
+分母缺失或为零时写“不可计算”，不能补零。归因尚未成熟时保留当前值，但不据此做确定预算动作。
 
-- `gap_ratio = actual_acos_raw_ratio - target_acos_raw_ratio`
-- `gap_percentage_points = gap_ratio * 100`
-- `breakeven_gap_ratio = actual_acos_raw_ratio - breakeven_acos_raw_ratio`
-- `breakeven_gap_percentage_points = breakeven_gap_ratio * 100`
+## 3. 核算 TACoS
 
-`gap_percentage_points` 的单位是 percentage points，不是 percent change。每项必须记录 raw ratio、展示百分比和 `rounding_rule`。
+`TACoS = 广告花费 / 一方总销售额`
 
-## 4. TACoS
+总销售必须来自一方资料，并与花费保持同站点、同商品范围、同币种、同期间。缺总销售、范围不一致或分母为零时不计算。TACoS 变化不能单独证明自然销量由广告造成。
 
-`tacos = actual_spend / first_party_total_sales`
+## 4. 取得经济护栏
 
-必须满足：
+向专家 14 或用户确认：
 
-- 同站点、币种、商品范围和期间；
-- 总销售为一方资料；
-- 花费和销售期间已对齐；
-- 零/缺失分母为 `not_computable`；
-- 不做自然销量因果推断。
+- 适用产品和价格/成本版本；
+- 生效日期、币种和促销叠加情况；
+- 可用于广告的单位贡献或区间；
+- 已排除的费用与限制。
 
-## 5. 经济边界
+没有这一护栏时，可以描述实际 ACoS/TACoS，但不能给出保本 ACoS、确定预算或“可承受出价”。
 
-| 字段 | 说明 |
-|---|---|
-| `economic_guardrail_id` | 上游稳定 ID |
-| `source_expert_or_user` | 14或用户 |
-| `price/cost version` | 必填 |
-| `valid_as_of` | 必填 |
-| `currency` | 必填 |
-| `product_scope` | 必填 |
-| `promotion_stack_status` | 价格变化是否处理 |
-| `available_ad_contribution` | 数值或范围 |
-| `limitations` | 结论上限 |
+## 5. 建立预算情景
 
-## 6. 情景
+情景从业务约束出发，不使用 70/20/10、行业平均 ACoS 或固定增长比例。每个情景说明：
 
-每个情景记录：
+- 预算范围与适用实体；
+- 目标 ACoS/TACoS 和保本边界；
+- 使用的实际基线与关键假设；
+- 观察窗口、所需报表和复核人；
+- 停止、回滚或继续投入的条件。
 
-- `scenario_id`
-- `scenario_name`
-- `budget_range`
-- `currency`
-- `entity_scope`
-- `target_acos/tacos`
-- `breakeven_guardrail_id`
-- `assumption_ids`
-- `review_window`
-- `stop_trigger`
-- `approval_owner/status`
+保守、基础、进取只是名称，不自带固定比例。未来销量或转化只能写成待验证假设。
 
-场景名不携带固定比例。
+## 6. 形成人工计划建议
 
-## 7. 决策状态
+建议可以是维持观察、增加候选、减少候选、重分配候选、等待数据、等待经济护栏或停止候选。每项都写清：
 
-- `maintain_for_review`
-- `increase_candidate`
-- `decrease_candidate`
-- `reallocate_candidate`
-- `hold_for_data`
-- `hold_for_economics`
-- `stop_candidate`
-- `not_assessable`
+- 面向哪个广告实体；
+- 直接依据和计算；
+- 为什么这样建议；
+- 执行前条件与主要风险；
+- 负责人和人工批准情况。
 
-每项必须有 `parent_evidence_ids`、条件、风险和人工批准状态。
+不得把建议写成已执行。用户要求立即改预算或竞价时，只交付人工操作与回滚清单。
 
-## 8. 四轴与谱系
+## 7. 三源观察如何使用
 
-记录 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path` 或 `parent_evidence_ids`。
-
-实际指标为 reported/calculation；目标为 future；预算情景为 forecast/hypothesis。
+记录供应商、实际工具、查询对象/站点/期间、原始值、可复查位置和限制。三个来源只有对象、时间、单位和定义一致时才比较，绝不平均；冲突逐源展示。覆盖不足要降低外部观察的结论强度，但不能改变一方广告报表的真实状态。

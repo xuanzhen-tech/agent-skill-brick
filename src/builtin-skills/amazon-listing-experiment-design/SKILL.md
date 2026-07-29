@@ -35,8 +35,10 @@ description: 为 Amazon Listing 改版定义可交接的实验干预：冻结对
 
 ### 禁止输入与禁止动作
 
-- 本 Skill 不直接调用 `sif_mcp`；SIF 观察若与假设相关，必须先由第 02/03 的上游研究或审计 Skill 固化为可追溯输出；
-- 不使用 Pangolinfo、网页、浏览器、Amazon 抓取、其他 MCP 或 API；
+- 本 Skill 不直接调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；任何供应商观察必须先由第 02/03 的研究或审计 Skill 固化为可追溯上游输出；
+- 上游 MCP 证据保留供应商与精确工具、原始结果位置、站点/实体/变体/期间/粒度/单位/定义、实际覆盖及压缩/截断限制；本包不得把供应商观察当实验结果、产品事实或合规宣称；
+- 同类供应商证据仅在口径可比时支撑同一假设，不盲目平均或隐藏冲突；
+- 不使用网页、浏览器、Amazon 抓取、其他 MCP/API、Gateway/HTTP/shell；
 - 不登录或操作 Seller Central，不创建、启动、暂停、结束或切换实验；
 - 不创建 cron、后台进程、自动告警或持续监控；
 - 不把任何上游供应商排名、搜索、流量或销量估算当作用户一方实验结果；
@@ -54,32 +56,13 @@ description: 为 Amazon Listing 改版定义可交接的实验干预：冻结对
 
 ## 证据合同
 
-### 四轴
+### 实验假设与证据链
 
-每条输入证据和 Agent 输出都记录：
+每个 Listing 实验假设说明当前版本的问题、候选版本只改变了什么、依据来自哪些文本、产品事实、关键词或用户要求，以及为什么预期该变化可能影响目标指标。版本差异、单变量判断和实验资格由 Agent 形成，不能回写成来源事实。
 
-- `source_type`：`user_input | upstream_output | agent`；
-- `temporal_scope`：`current | historical | future | mixed | not_applicable | unknown`；
-- `estimation_status`：`reported | estimated | forecast | mixed | not_applicable | unknown`；
-- `transformation_type`：`raw | normalized | calculation | coding | inference | hypothesis`。
+输入材料保留来源路径或精确工具、证据编号、版本、期间和原有限制；每个假设、干预项和资格判断列出直接依据、所用字段、形成过程与限制。第 13 专家的协议或分析结果按上游交付引用，不能被改写为本包自己的实验结果。Listing 干预使用 `intervention_id` 串联版本、交接、实施证据和后续结果，不用文件名猜关联。
 
-Listing 假设标为 `transformation_type=hypothesis`；版本差异归一化标为 `normalized`；单变量与资格判断标为 `inference`。Agent 产物不能回写成来源事实。
-
-### 双层谱系
-
-- `input_evidence` 保存来源路径或工具、原始 Evidence ID、版本、时间和四轴；
-- `agent_output` 保存稳定 Record ID、`parent_evidence_ids`、使用字段、变换说明和四轴；
-- 第 13 的协议或分析结果作为 `upstream_output` 引用，同时保留其原始四轴与上游限制；
-- 其他上游对象在本包固定使用 `source_type=upstream_output`，并在 `upstream_original_axes` 保留其原始四轴、父证据 ID 与限制；
-- Listing 干预使用 `intervention_id` 串联版本、交接、实施证据和后续结果，不用文件名猜关联。
-
-### 六种缺失状态
-
-数据状态只允许：
-
-`not_returned | not_queried | parse_failed | missing | conflicted | true_zero`
-
-前五种不等于零、不等于无记录，也不能变成“无变化”或“无风险”。`true_zero` 仅在来源明确返回合法零值且口径可验证时使用；本 Skill 不依赖零值补齐版本或内容证据。
+未查询、未返回、解析失败、资料缺失和来源冲突都不等于零、无变化或无风险；只有来源明确给出且口径可验证的零值才可作为零证据。
 
 ## 启动检查
 
@@ -89,7 +72,7 @@ Listing 假设标为 `transformation_type=hypothesis`；版本差异归一化标
 2. 当前版本与候选版本的稳定 ID、路径或可复核快照；
 3. 一个 Listing 业务问题与一个主要内容假设；
 4. 计划改变的字段与唯一主要内容变量；
-5. 产品事实、关键词和禁用宣称等内容约束的 Evidence IDs；
+5. 产品事实、关键词和禁用宣称等内容约束及其来源位置；
 6. 实施责任方与允许的发布方式说明；
 7. 需要第 13 设计测量协议的问题。
 
@@ -100,11 +83,11 @@ Listing 假设标为 `transformation_type=hypothesis`；版本差异归一化标
 默认消费第 02/03 已有的可信上游输出，不为实验干预重复做市场研究或新增外部取数：
 
 1. 确认来源路径、版本、站点、产品与变体范围可定位；
-2. 确认 Fact ID、Keyword ID、VOC/Issue Evidence ID 和 Listing 版本 ID 真实存在；
-3. 保留上游原始四轴、父证据 ID、期间、估算属性和限制；
+2. 确认产品事实、关键词、VOC/审计问题依据和 Listing 版本路径真实存在；
+3. 保留上游来源、版本、直接依据、期间、数值性质和限制；
 4. 只把供应商观察放入内容机制假设背景，不放入测量指标、实施证据或结果分析；
 5. 不从供应商展示块、描述、未返回字段或旧工具名扩写结论；
-6. 上游合同、版本或适用范围不匹配时，停止受影响假设，不直接调用 SIF 或其他来源补齐。
+6. 上游合同、版本、站点、实体/变体、期间、定义或覆盖不匹配时，停止受影响假设，不直接调用 MCP 或其他来源补齐。
 
 若上游版本与事实证据已足够，继续定义干预并披露未新增外部取数；若缺口影响内容资格，则 `blocked`。
 
@@ -130,7 +113,7 @@ Listing 假设标为 `transformation_type=hypothesis`；版本差异归一化标
 对于 [站点/产品/变体/目标用户]，
 把 Listing 的 [字段] 从 [对照版本] 改为 [处理版本]，
 希望验证 [一个可测量的业务问题]，
-其内容机制假设是 [由 Evidence IDs 支持的机制]。
+其内容机制假设是 [由产品事实、关键词、VOC 或审计依据支持的机制]。
 ```
 
 “希望验证”不是结果承诺。机制必须引用产品事实、关键词、VOC 或质量审计，不能只写“新版更吸引人”。
@@ -146,14 +129,14 @@ Listing 假设标为 `transformation_type=hypothesis`；版本差异归一化标
 - 必须保持不变的事实、关键词、品牌与风险约束；
 - 生成方与审批状态。
 
-若标题、主图、价格、要点和广告等多个主要变量同时变化，本 Skill 不把它包装成单变量干预。可以拆分候选，或标记 `multi_variable_change` 并交给第 13 判断是否还能形成其他测量设计；第 03 不自行降级为因果实验。
+若标题、主图、价格、要点和广告等多个主要变量同时变化，本 Skill 不把它包装成单变量干预。应拆分候选，或明确说明“存在多个主要变化”，再交给第 13 判断是否还能形成其他测量设计；第 03 不自行降级为因果实验。
 
 ### 第四步：审查内容与实施资格
 
 确认：
 
 - Control 与 Treatment 指向同一站点、产品和目标变体范围；
-- Treatment 中每个事实性宣称都有有效 Evidence ID；
+- Treatment 中每个事实性宣称都能定位到有效来源；
 - 不引入未证认证、性能、比较级、质保或合规结论；
 - 关键词改变不破坏事实准确性和自然表达；
 - 当前版本、候选版本和上游约束没有 stale/conflicted；
@@ -186,7 +169,7 @@ implementation_owner
 activation_evidence_required
 rollback_trigger
 known_external_changes
-parent_evidence_ids
+direct_evidence
 ```
 
 `event_label` 只是领域侧可验证的版本激活/曝光事件名称；`desired_metric` 只是业务希望观察的结果名称，不是 KPI 合同。第 13 负责确认或重写正式曝光定义、`metric_id`、定义、分子、分母、单位、分析单位、样本、窗口、停止规则和统计方法。
@@ -200,7 +183,7 @@ parent_evidence_ids
 - 第 13 要求的版本激活、分配或事件证据；
 - 未满足的实施前置条件。
 
-不得在本包复制、改写或“优化”协议字段。协议缺失时可以输出 `handoff_ready`，不能声称实验已准备执行。
+不得在本包复制、改写或“优化”协议字段。协议缺失时可以说明内容干预资料已具备交给第 13 的条件，但不能声称实验已准备执行。
 
 ### 第七步：定义实施证据与回滚
 
@@ -219,30 +202,21 @@ parent_evidence_ids
 后续如收到第 13 的 `experiment_analysis_output_id`：
 
 - 验证其 `intervention_id`、协议版本与 Listing 版本是否匹配；
-- 原样保留第 13 的结论等级、限制和 Evidence IDs；
+- 原样保留第 13 的结论等级、限制和依据位置；
 - 仅把它作为下一轮 Listing 文案或审计的上游输入；
 - 不重算效应、不改变显著性、不把观察性结果升级为因果结论。
 
-## 状态与沟通
+## 结果沟通
 
-`result_status` 只允许：
+交付时直接说明：
 
-- `handoff_ready`：Listing 干预合同完整，可交第 13 设计测量协议；
-- `protocol_linked`：已关联适用的第 13 正式协议，仍未执行；
-- `blocked`：关键版本、事实、单变量、责任或协议关联冲突；
-- `out_of_scope`：请求属于写作、统计分析、后台执行或持续监控。
+- 内容干预资料是否完整，能否交给第 13 设计测量协议；
+- 是否已经关联适用于当前站点、产品、版本和范围的第 13 正式协议；
+- 当前缺少的是对照版本、处理版本、事实依据、单一主要变量、实施责任人，还是协议范围确认；
+- 上游材料是否陈旧、冲突，或字段、版本、口径不符合当前任务；
+- 用户请求是否属于写作、统计分析、后台执行或持续监控等其他责任范围。
 
-`reason_codes[]` 只允许：
-
-`none | missing_control_version | missing_treatment_version | multi_variable_change | missing_fact_evidence | missing_implementation_owner | stale_or_conflicted | protocol_scope_mismatch | upstream_contract_mismatch | out_of_scope`
-
-另固定：
-
-- `execution_status=not_executed`；
-- `analysis_status=not_performed | upstream_result_linked`；
-- `publication_status=not_published`。
-
-这些状态相互独立，不能由 `protocol_linked` 推断已发布、已执行或已有结果。
+无论资料是否可交接，都必须明确本 Skill 没有发布或执行实验。只有第 13 的正式分析产物已经真实关联时，才可以原样引用其结果和限制；不得由“已关联协议”推断已经发布、执行或产生结果。
 
 ## 正式交付
 
@@ -251,7 +225,7 @@ parent_evidence_ids
 1. `listing-intervention-definition.md`：假设、范围、版本、单变量与内容资格；
 2. `listing-version-diff.csv`：逐字段、逐证据的 Control/Treatment 差异；
 3. `experiment-measurement-handoff.md`：交给第 13 的稳定合同及可选协议链接；
-4. `listing-intervention-evidence-ledger.md`：四轴、双层谱系、缺失与限制。
+4. `listing-intervention-evidence-ledger.md`：输入依据、版本差异、Agent 判断、缺失与限制。
 
 缺最低输入时只生成 `data-readiness.md`，列缺口、责任方和恢复条件。所有正式文件只写入 `outputs/`；最终回复只链接这些文件。
 
@@ -262,12 +236,12 @@ parent_evidence_ids
 - Listing 假设、站点、产品和变体范围明确；
 - Control/Treatment 有稳定版本 ID 与可复核差异；
 - 单一主要内容变量通过，伴随变化没有隐藏；
-- 每个事实性宣称和约束都有 Evidence ID；
+- 每个事实性宣称和约束都能定位到来源；
 - `intervention_id` 在定义、交接、实施证据和上游结果中一致；
 - 第 13 的协议只引用不改写，测量字段没有被第 03 抢占；
-- SIF 只可通过可信上游成为可选观察背景，本 Skill 不直接调用；任何供应商观察都不是实验结果；
-- 六种缺失状态、四轴和双层谱系完整；
-- `execution_status=not_executed`，没有后台执行、监控或效果承诺；
+- 三 MCP 只可通过可信上游成为可选观察背景，本 Skill 不直接调用；任何供应商观察都不是实验结果；
+- 未查询、未返回、解析失败、资料缺失、来源冲突与明确零值没有混写，输入依据和 Agent 判断可追溯；
+- 明确说明本 Skill 没有执行后台动作、持续监控或效果承诺；
 - 正式文件位于 `outputs/`，中间文件位于 `temp/`。
 
 ## 资源读取

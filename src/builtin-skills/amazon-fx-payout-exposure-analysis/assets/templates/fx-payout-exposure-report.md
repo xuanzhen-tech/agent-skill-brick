@@ -1,101 +1,68 @@
 <!--
-文件功能：承载 FX、渠道结算与银行到账暴露分析的正式交付结构。
-职责边界：模板只组织已有证据和可复核计算，不获取汇率、不推荐渠道、不执行交易、划款或套保。
-重要关联：../../SKILL.md 定义流程；../../references/fx-payout-analysis-contract.md 定义率、方向与交易链。
+文件功能：提供同一回款交易链、汇率、费用、差额和未来情景模板。
+职责边界：模板不表示实时汇率已获取，也不表示任何换汇或划款已执行。
+重要关联：由 ../../SKILL.md 物化；判断方法见 ../../references/fx-payout-analysis-contract.md。
 -->
 
-# FX 与回款暴露分析
+# Amazon FX 与回款暴露分析
 
-## 1. 分析状态
+## 1. 范围
 
-- `case_id`: `{{CASE_ID}}`
-- `analysis_status`: `{{ANALYSIS_STATUS}}`
-- `created_at`: `{{CREATED_AT}}`
-- `marketplace`: `{{MARKETPLACE}}`
-- `account_or_entity`: `{{ACCOUNT_OR_ENTITY}}`
-- `actual_or_scenario`: `{{ACTUAL_OR_SCENARIO}}`
+- Payout/批次掩码标识：
+- 源币/目标币与报价方向：
+- 分析期间：
+- 交易链覆盖：
+- 参考率目的：
+- 主要限制：
 
 ## 2. 交易链
 
-| chain_id | payout_id | settlement_id | bank_transaction_id | linkage_status | linkage_evidence_ids |
-|---|---|---|---|---|---|
-| `{{CHAIN_ID}}` | `{{PAYOUT_ID}}` | `{{SETTLEMENT_ID}}` | `{{BANK_TRANSACTION_ID}}` | `{{LINKAGE_STATUS}}` | `{{LINKAGE_EVIDENCE_IDS}}` |
+| 环节 | 时间 | 金额/币种 | gross/net | 费用/扣款 | 直接材料 | 与前后环节的联接 | 限制 |
+|---|---|---|---|---|---|---|---|
+| `<Amazon应结算/渠道接收/换汇结算/银行到账>` | `<时间>` | `<金额>` | `<口径>` | `<内容>` | `<定位>` | `<依据>` | `<内容>` |
 
-### 时间
+## 3. 汇率
 
-- `payout_time`: `{{PAYOUT_TIME}}`
-- `settlement_time`: `{{SETTLEMENT_TIME}}`
-- `bank_receipt_time`: `{{BANK_RECEIPT_TIME}}`
-- `timezone`: `{{TIMEZONE}}`
+| 汇率类型 | 分子金额/币种 | 分母金额/币种 | 方向与公式 | 时间 | 含费口径 | 结果 | 限制 |
+|---|---|---|---|---|---|---|---|
+| `<参考/报价/结算有效/到账有效>` | `<值>` | `<值>` | `<公式>` | `<时间>` | `<内容>` | `<值>` | `<内容>` |
 
-## 3. 四类汇率
+## 4. 可比性
 
-| rate_record_id | output_evidence_id | rate_type | numerator amount/currency | denominator amount/currency | quote_direction | rate_value | amount_basis | fee_inclusion | rate_timestamp | parent_evidence_ids | source_type | temporal_scope | estimation_status | transformation_type |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `{{RATE_RECORD_ID}}` | `{{OUTPUT_EVIDENCE_ID}}` | `{{RATE_TYPE}}` | `{{NUMERATOR_AMOUNT}} {{NUMERATOR_CURRENCY}}` | `{{DENOMINATOR_AMOUNT}} {{DENOMINATOR_CURRENCY}}` | `{{QUOTE_DIRECTION}}` | `{{RATE_VALUE}}` | `{{AMOUNT_BASIS}}` | `{{FEE_INCLUSION}}` | `{{RATE_TIMESTAMP}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `{{TEMPORAL_SCOPE}}` | `{{ESTIMATION_STATUS}}` | `{{TRANSFORMATION_TYPE}}` |
-
-> 若 `rate_type=bank_receipt_effective_rate` 且到账已扣费用或扣款，展示名称必须为“含费用的到账有效率”。
-
-## 4. 渠道报价可比性
-
-| output_evidence_id | 比较字段 | 报价 A | 报价 B | 是否一致/可转换 | parent_evidence_ids | source_type | temporal_scope | estimation_status | transformation_type |
-|---|---|---|---|---|---|---|---|---|---|
-| `{{OUTPUT_EVIDENCE_ID}}` | 币对与方向 | `{{VALUE_A}}` | `{{VALUE_B}}` | `{{STATUS}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `point_in_time` | `not_applicable` | `comparability_assessment` |
-| `{{OUTPUT_EVIDENCE_ID}}` | 原始金额 | `{{VALUE_A}}` | `{{VALUE_B}}` | `{{STATUS}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `point_in_time` | `not_applicable` | `comparability_assessment` |
-| `{{OUTPUT_EVIDENCE_ID}}` | 报价时间 | `{{VALUE_A}}` | `{{VALUE_B}}` | `{{STATUS}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `point_in_time` | `not_applicable` | `comparability_assessment` |
-| `{{OUTPUT_EVIDENCE_ID}}` | 结算速度 | `{{VALUE_A}}` | `{{VALUE_B}}` | `{{STATUS}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `point_in_time` | `not_applicable` | `comparability_assessment` |
-| `{{OUTPUT_EVIDENCE_ID}}` | 税费/提现条件 | `{{VALUE_A}}` | `{{VALUE_B}}` | `{{STATUS}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `point_in_time` | `not_applicable` | `comparability_assessment` |
-| `{{OUTPUT_EVIDENCE_ID}}` | 毛额/净额及含费口径 | `{{VALUE_A}}` | `{{VALUE_B}}` | `{{STATUS}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `point_in_time` | `not_applicable` | `comparability_assessment` |
-
-- `comparability_status`: `{{COMPARABILITY_STATUS}}`
-- 不可比说明：`{{INCOMPARABILITY_REASON}}`
-
-## 5. 实际金额差额
-
-| output_evidence_id | component | amount/currency | 证据或公式 | parent_evidence_ids | source_type | temporal_scope | estimation_status | transformation_type | 状态 |
-|---|---|---|---|---|---|---|---|---|---|
-| `{{OUTPUT_EVIDENCE_ID}}` | `rate_spread` | `{{AMOUNT_AND_CURRENCY}}` | `{{EVIDENCE_OR_FORMULA}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `period` | `not_applicable` | `difference_decomposition` | `{{STATUS}}` |
-| `{{OUTPUT_EVIDENCE_ID}}` | `explicit_fee` | `{{AMOUNT_AND_CURRENCY}}` | `{{EVIDENCE_OR_FORMULA}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `period` | `not_applicable` | `difference_decomposition` | `{{STATUS}}` |
-| `{{OUTPUT_EVIDENCE_ID}}` | `other_deduction` | `{{AMOUNT_AND_CURRENCY}}` | `{{EVIDENCE_OR_FORMULA}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `period` | `not_applicable` | `difference_decomposition` | `{{STATUS}}` |
-| `{{OUTPUT_EVIDENCE_ID}}` | `unexplained_difference` | `{{AMOUNT_AND_CURRENCY}}` | `{{EVIDENCE_OR_FORMULA}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `period` | `not_applicable` | `difference_decomposition` | `{{STATUS}}` |
-
-不要把 `unexplained_difference` 自动命名为汇损、手续费、税款或异常。
-
-## 6. 未来情景
-
-- `scenario_id`: `{{SCENARIO_ID}}`
-- `output_evidence_id`: `{{OUTPUT_EVIDENCE_ID}}`
-- `scenario_rate`: `{{SCENARIO_RATE}}`
-- `quote_direction`: `{{QUOTE_DIRECTION}}`
-- `effective_period`: `{{EFFECTIVE_PERIOD}}`
-- `estimation_status`: `scenario_only`
-- `source_type`: `agent`
-- `temporal_scope`: `scenario`
-- `transformation_type`: `scenario_construction`
-- `parent_evidence_ids`: `{{PARENT_EVIDENCE_IDS}}`
-- `assumption_source`: `{{ASSUMPTION_SOURCE}}`
-- `limitations`: `{{LIMITATIONS}}`
-
-没有未来情景时填 `not_queried`，不要生成预测。
-
-## 7. 证据登记
-
-| evidence_id | source_type | temporal_scope | estimation_status | transformation_type | source locator | limitations |
+| 比较对象 | 币对/方向 | 原始金额 | 时间/速度 | gross/net 与费用 | 可比性 | 采用方式 |
 |---|---|---|---|---|---|---|
-| `{{EVIDENCE_ID}}` | `{{SOURCE_TYPE}}` | `{{TEMPORAL_SCOPE}}` | `{{ESTIMATION_STATUS}}` | `{{TRANSFORMATION_TYPE}}` | `{{SOURCE_LOCATOR}}` | `{{LIMITATIONS}}` |
+| `<渠道A vs B/时期A vs B>` | `<内容>` | `<内容>` | `<内容>` | `<内容>` | `<完全/部分/不可比>` | `<数值/方向/分开>` |
 
-## 8. Agent 输出谱系
+## 5. 差额分解
 
-| output_evidence_id | output_type | parent_evidence_ids | source_type | temporal_scope | estimation_status | transformation_type | 结论上限 | limitations |
-|---|---|---|---|---|---|---|---|---|
-| `{{OUTPUT_EVIDENCE_ID}}` | `{{OUTPUT_TYPE}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `{{TEMPORAL_SCOPE}}` | `{{ESTIMATION_STATUS}}` | `{{TRANSFORMATION_TYPE}}` | `{{CONCLUSION_LIMIT}}` | `{{LIMITATIONS}}` |
+| 项目 | 金额/币种 | 公式或直接材料 | 已解释/未解释 | 限制 |
+|---|---|---|---|---|
+| `<汇率影响/渠道费/银行费/税费/其他/四舍五入/未解释>` | `<金额>` | `<内容>` | `<内容>` | `<内容>` |
 
-## 9. 缺口与下一责任方
+核对：`预期到账 - 实际到账 = 各解释项 + 未解释差额`
 
-| gap_id | output_evidence_id | 缺失/冲突 | missing_status | 对分析的影响 | owner | 下一步 | parent_evidence_ids | source_type | temporal_scope | estimation_status | transformation_type |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| `{{GAP_ID}}` | `{{OUTPUT_EVIDENCE_ID}}` | `{{GAP}}` | `{{MISSING_STATUS}}` | `{{IMPACT}}` | `{{OWNER}}` | `{{NEXT_STEP}}` | `{{PARENT_EVIDENCE_IDS}}` | `agent` | `{{TEMPORAL_SCOPE}}` | `not_applicable` | `gap_classification` |
+## 6. 情景
 
-## 10. 非执行声明
+| 情景 | 暴露源币金额 | 情景汇率 | 已知费用 | 目标币金额 | 相对基准影响 | 假设 |
+|---|---|---|---|---|---|---|
+| `<基准/升值/贬值>` | `<金额>` | `<汇率>` | `<费用>` | `<公式结果>` | `<金额>` | `<内容>` |
 
-本报告未执行汇率监控、换汇、划款、渠道切换或套保，也不构成会计、税务、法律、监管或投资建议。
+## 7. 结论与下一步
+
+- 当前可以解释：
+- 未解释差额：
+- 最大口径风险：
+- 最小补证动作：
+- 可改进的对账控制：
+
+## 8. 交付前检查
+
+- [ ] 交易链联接有直接材料
+- [ ] 币对、方向、时间和 gross/net 清楚
+- [ ] 四类汇率未混写
+- [ ] 可比性通过后才比较
+- [ ] 未解释差额未被强行归类
+- [ ] 情景未写成预测
+- [ ] 未调用三个市场研究 MCP
+- [ ] 未交易或划款
+- [ ] 正式文件位于 `outputs/`

@@ -1,111 +1,88 @@
 <!--
-文件功能：定义 Amazon Review 请求就绪核对的状态、原因、政策窗口和反操纵字段。
-职责边界：只约束人工执行前的证据判断，不授权发送、排程、批量触发或评价引导。
-重要关联：由 ../SKILL.md 在就绪核对前读取；正式字段落入 ../assets/templates/review-request-readiness-template.md。
+文件功能：提供 Amazon Review 请求就绪核对、政策窗口计算和反操纵判断方法。
+职责边界：只支持人工执行前判断，不授权发送、排程、批量触发或评价引导。
+重要关联：由 ../SKILL.md 在就绪核对前读取；正式交付结构见 ../assets/templates/review-request-readiness-template.md。
 -->
 
-# Review 请求就绪合同
+# Review 请求就绪方法
 
-## 一、订单范围
+## 1. 为什么必须逐笔判断
 
-| 字段 | 要求 |
-|---|---|
-| `case_id` | 当前任务稳定 ID |
-| `order_id_masked` | 单笔订单掩码标识 |
-| `marketplace` | Amazon 站点 |
-| `observation_cutoff` / `timezone` | 本次判断时点 |
-| `human_reviewer` | 授权人工责任人 |
-| `execution_status` | 恒为 `not_executed` |
-| `request_status` | 恒为 `not_executed` |
+资格依赖订单、站点、政策版本、履约锚点、既有请求和敏感案件。批量平均值不能证明某笔订单可请求。
 
-## 二、顶层状态
+每笔订单只有两个业务结果：
 
-只允许：
+- 当前材料足够，可交授权人员进一步人工执行；
+- 当前存在证据、政策或合规阻塞。
 
-```text
-human_execution_ready
-blocked
-```
+两者都不表示本 Skill 已执行请求。
 
-`human_execution_ready` 不表示已发送或一定合规；它表示当前证据包通过本 Skill 的人工执行前门禁。
+## 2. 政策窗口计算
 
-## 三、reason_code
+窗口计算需要四个元素：
 
-| Reason code | 顶层状态 | 使用条件 |
-|---|---|---|
-| `evidence_complete` | human_execution_ready | 所有必需证据、政策、窗口、重复与敏感案件检查通过 |
-| `needs_policy_evidence` | blocked | 缺当前、适站点、可定位政策证据 |
-| `needs_order_evidence` | blocked | 缺订单身份或状态事实 |
-| `needs_delivery_evidence` | blocked | 缺政策所需履约/送达锚点 |
-| `already_requested` | blocked | 可信记录证明已经请求 |
-| `outside_confirmed_policy_window` | blocked | 当前政策和时间证据共同证明不在窗口 |
-| `policy_exclusion` | blocked | 当前政策明确排除 |
-| `active_sensitive_case` | blocked | 有活跃高风险售后/索赔/安全案件 |
-| `policy_conflict` | blocked | 当前政策来源或适用性冲突 |
-| `record_conflict` | blocked | 订单、送达、请求或案件记录冲突 |
-| `out_of_scope` | blocked | 直接发送、激励、引导或选择性请求 |
+1. 当前适用政策；
+2. 政策规定的锚点事件；
+3. 该订单锚点的直接时间记录；
+4. 本次观察时间。
 
-不得在没有政策 Evidence 的情况下使用 `outside_confirmed_policy_window`。
+所有时间保留时区，明确区间边界是否包含。若政策写法或边界不清，交人工或第09专家复核。
 
-## 四、政策证据
+### 正例
 
-| 字段 | 要求 |
-|---|---|
-| `policy_evidence_id` | 第 09 专家或用户材料中的稳定 ID |
-| `marketplace` / `applicable_scope` | 必须匹配当前订单 |
-| `source_locator` | 原文、页码或稳定定位 |
-| `published_or_updated_at` | 来源明确时记录 |
-| `verified_at` | 本次上游核验时间 |
-| `window_anchor` | 只用政策明确事件 |
-| `window_start_rule` / `window_end_rule` | 原规则，不写死候选 Skill 数值 |
-| `boundary_inclusion` | inclusive / exclusive / unclear |
-| `exclusions` | 当前政策明确排除 |
-| `limitations` | 地区、语言、对象、时效与冲突 |
+政策明确以“送达时间”为锚点，订单记录提供带时区的实际送达时间；计算过程展示起止边界和当前时点。
 
-## 五、窗口计算
+### 反例
 
-| 字段 | 要求 |
-|---|---|
-| `calculation_id` | 稳定 ID |
-| `anchor_evidence_id` | 订单/履约/送达原始 Evidence |
-| `anchor_at` / `anchor_timezone` | 未知不补 |
-| `policy_evidence_id` | 当前政策依据 |
-| `calculation_rule` | 可复核表达式 |
-| `calculated_start` / `calculated_end` | 带时区 |
-| `observation_cutoff` | 本次判断时点 |
-| `boundary_review` | not_required / pending / approved |
-| `calculation_status` | supported / missing / conflicted |
+缺实际送达记录，于是用发货日加预计运输天数推算窗口。
 
-## 六、重复与敏感案件
+## 3. 重复请求判断
 
-请求历史必须记录覆盖时间、导出条件、原始状态和 Evidence IDs。未返回记录不等于零次：
+“没有看到”与“完整历史明确没有”不同。要检查：
 
-```text
-not_returned / not_queried / parse_failed / missing / conflicted / true_zero
-```
+- 历史记录覆盖的时间；
+- 查询或导出的筛选条件；
+- 如何与当前订单匹配；
+- 失败、待处理或未知记录是否也属于尝试；
+- 数据是否可能延迟。
 
-敏感案件至少核对退货退款争议、A-to-z、payment chargeback、法律、安全和账户风险；只记录证据明确状态。
+覆盖不完整时，应阻塞并补证。
 
-## 七、反操纵规则
+## 4. 敏感案件
 
-以下情况一律不能通过门禁：
+活跃退货退款、A-to-z、拒付、伤害、安全或法律案件不宜被普通 Review 请求流程覆盖。应先由相应责任方处理，并根据当前政策决定后续资格。
 
-- 激励、补偿或利益交换；
-- 正面/五星引导；
-- 先评价后服务；
-- 依据满意度或评分预测选择订单；
-- 只请求可能好评者或排除可能差评者；
-- 将 Review 与 Feedback、问答或客服满意度混淆；
-- 直接发送或排程。
+不要把“买家看起来满意”作为取消敏感案件核对的理由。
 
-## 八、四轴与谱系
+## 5. 反选择性与反激励
 
-每条来源和 Agent 输出分别记录：
+资格判断不能使用：
 
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- `parent_evidence_ids`，仅 Agent 输出
+- 星级倾向、情绪或满意度预测；
+- 订单价值或客户价值；
+- 已有正面反馈；
+- 是否可能给差评；
+- 退款、赠品、补偿或其他利益交换。
 
-所有就绪判断必须能回溯至订单、政策、请求历史和案件状态 Evidence。
+选择性只联系预期好评者会扭曲评价体系，即使话术本身中性也不合格。
+
+## 6. 结论表达
+
+可交人工继续时，说明通过了哪些门槛，并再次声明未执行。
+
+阻塞时应具体说明：
+
+- 缺哪个订单或政策材料；
+- 哪个时间无法计算；
+- 哪条记录冲突；
+- 是否已有请求；
+- 哪个敏感案件或政策排除生效；
+- 最小补证动作与责任人。
+
+不要只输出一个代码而不解释业务影响。
+
+## 7. 三 MCP 边界
+
+三个市场研究 MCP 不能提供订单、送达、请求历史、政策窗口或 Review 请求资格证据。公开 Review/VOC 也不能用于筛选订单或证明资格。
+
+就绪判断只基于合法订单/请求材料与当前政策依据，并展示计算过程和限制。

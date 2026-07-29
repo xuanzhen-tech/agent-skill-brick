@@ -33,7 +33,7 @@
 
 ### 季节性
 
-- 证据等级：`not_assessed / insufficient_history / single_cycle_candidate / recurrent_candidate / recurrent_pattern / unstable_or_broken`
+- 当前业务判断：尚未研究 / 历史不足一周期 / 单周期候选 / 多周期重复候选 / 可复核重复模式 / 模式不稳定
 - 历史高需求窗口：
 - 历史低需求窗口：
 - 周期数量：
@@ -62,7 +62,7 @@
 | 佐证指标要求 | |
 | 季节性判断规则 | |
 | 异常材料性规则 | |
-| 允许的数据源 | SIF MCP、用户对话、`uploads/`、上游 `outputs/` |
+| 允许的数据源 | SIF/SellerSprite/Sorftime MCP、用户对话、`uploads/`、上游 `outputs/` |
 | 禁止的数据源 | Web、抓取、其他 MCP/API |
 
 ## 3. 数据覆盖
@@ -109,12 +109,12 @@
 
 ### 提前量证据
 
-| 变量 | 数值 | 单位 | 来源 | Evidence ID | As of | 用户确认状态 |
-|---|---:|---|---|---|---|---|
-| 生产提前量 | | | | | | `confirmed / unconfirmed / missing` |
-| 运输提前量 | | | | | | |
-| 入仓提前量 | | | | | | |
-| 缓冲 | | | | | | |
+| 变量 | 数值 | 单位 | 来源与原始位置 | 截至时间 | 用户确认及依据 |
+|---|---:|---|---|---|---|
+| 生产提前量 | | | | | 已确认/待确认/缺失 |
+| 运输提前量 | | | | | |
+| 入仓提前量 | | | | | |
+| 缓冲 | | | | | |
 
 ### 倒推结果
 
@@ -126,13 +126,13 @@
 
 ## 9. 情景而非保证
 
-| 情景 | 来源 | 时间范围 | 估算状态 | 变换类型 | Horizon | 假设 | 历史依据 | parent_evidence_ids | 触发信号 | 失效条件 | 用户确认 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 上行 | `agent` | `future` | `not_applicable / unknown` | `hypothesis` | | | | | | | |
-| 基准 | | | | | | | | | | | |
-| 下行 | | | | | | | | | | | |
+| 情景 | Horizon | 假设 | 历史依据与期间 | Agent 计算/判断 | 触发信号 | 失效条件 | 用户确认 |
+|---|---|---|---|---|---|---|---|
+| 上行 | | | | | | | |
+| 基准 | | | | | | | |
+| 下行 | | | | | | | |
 
-当前 SIF 路由不提供正式预测真相。未来情景固定为 `source_type=agent`、`transformation_type=hypothesis`，必须链接历史父证据；当前或历史供应商信号不得直接填入未来情景。
+供应商趋势或预测标签不构成正式预测真相。未来情景是 Agent 基于历史序列和用户提前量形成的条件化假设，必须说明历史依据、计算方式和不确定性。
 
 ## 10. 限制与下一证据
 
@@ -145,22 +145,20 @@
 建议字段：
 
 ```text
-series_id,collection_id,member_id,member_role,member_coverage_status,source_type,source_provider,source_path,evidence_id,parent_evidence_ids,parent_input_evidence_ids,upstream_source_file,upstream_evidence_id,upstream_source_type,upstream_temporal_scope,upstream_estimation_status,upstream_transformation_type,source_tool,agent_request_id,tool_call_id,provider_request_id,raw_result_locator,query_id,marketplace,object_type,object_id,metric,metric_meaning,period_start,period_end,granularity,value,unit,temporal_scope,estimation_status,transformation_type,coverage_status,period_change,yoy,rolling_baseline,seasonal_index,break_id,notes
+series_name,collection_member,member_role,source_file_or_provider,exact_tool_if_mcp,raw_result_location,marketplace,object_type,object,metric,metric_meaning,period_start,period_end,granularity,value,unit,reported_estimated_or_forecast,query_scope_and_pagination,coverage_and_missing_periods,period_change,yoy,rolling_baseline,seasonal_index,structural_break,calculation_notes
 ```
 
-`agent_request_id` 与 `tool_call_id` 只填写当前 AgentTool 调用上下文暴露的对应真实值；仅当该上下文未暴露对应字段时写 `not_returned`。`provider_request_id` 只填写 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三类 ID 不得互代。任何传入的 `arguments.country` 都必须把其直接父 Evidence ID 写入 `parent_input_evidence_ids`。
-
-上游序列在本层使用 `source_type=upstream_output`，并填写全部 `upstream_*` 谱系列；原时间或估算轴缺失时使用 `unknown`，原来源或处理轴缺失时保留空值并把 `coverage_status` 降为 `partial`。
+站点映射到本次 schema 实际字段；SIF 的 `arguments.country` 必须能回到用户或上游依据。上游序列保留原文件、版本、期间、数值性质和原有限制。
 
 ## 附表 B：`period-register.md`
 
 | 期间 | 序列 | 集合成员 | 状态 | 缺失/部分原因 | 是否纳入比较 | 说明 |
 |---|---|---|---|---|---|---|
-| | | | `complete / partial / not_returned / not_queried / parse_failed / missing / conflicted / true_zero / break` | | | |
+| | | | 完整/部分/未返回/未查询/解析失败/缺失/冲突/明确零值/结构断点 | | | |
 
 ## 附表 C：`coverage-and-query-log.md`
 
-| `query_id` | 时间 | 工具 | 参数摘要 | 请求字段 | 返回覆盖 | 状态 | 重试/修正 |
+| 查询对象 | 时间 | 供应商与精确工具 | 参数依据与摘要 | 请求字段 | 返回覆盖 | 失败或缺口 | 重试/修正 |
 |---|---|---|---|---|---|---|---|
 | | | | | | | `ok / partial / empty / tool_error / schema_drift` | |
 
@@ -170,7 +168,8 @@ series_id,collection_id,member_id,member_role,member_coverage_status,source_type
 - [ ] 原始与派生字段可追溯
 - [ ] 未结束期间未参与完整期间比较
 - [ ] 不足两个完整可比周期时没有声称重复季节性
-- [ ] 无预设材料性或不同语义佐证时最高为 `recurrent_candidate`
+- [ ] 无预设材料性或不同语义佐证时最多称为“重复候选”
 - [ ] 预测与历史已分开
-- [ ] 没有使用 SIF 之外的外部业务数据
+- [ ] 只使用三个外层 MCP 或合法用户/上游证据
+- [ ] 同类材料性序列可比后才对照，冲突、截断和部分供应商覆盖已披露
 - [ ] 没有给无输入支撑的备货数量、日期或最终 Go

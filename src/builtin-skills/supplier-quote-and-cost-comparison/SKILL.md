@@ -24,7 +24,7 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 
 结果可以是 `not_comparable`。保持不可比比用假设强行排出名次更可靠。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -33,11 +33,11 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 - 用户明确批准的同币转换规则、汇率来源、基准时点和适用范围；
 - 合格责任方确认的 Incoterms、税费、测试或运输责任边界。
 
-本 Skill 不调用 SIF。ASIN 当前画像和探索性供应商采购上限都不能替代真实供应商报价、MOQ、币种、Incoterms、交期、付款、工厂条款、landed cost 或第14利润真相。
+本 Skill 不调用三个 MCP。SIF/SellerSprite 市场价格、Sorftime/1688 挂牌价格和探索性采购上限都不能替代真实供应商报价、MOQ、币种、Incoterms、交期、付款、工厂条款、landed cost 或第14利润真相。
 
 ### 外部数据边界
 
-- 不访问 Web、1688、供应商平台、汇率 API、物流 API、其他 MCP/API；
+- 不访问 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`、Web、供应商平台、汇率 API、物流 API 或其他 MCP/API；
 - 不向供应商自动询价，不读取邮箱或聊天账户；
 - 不猜当前汇率、运费、关税、税率、保险或平台费；
 - 合法输入不足时要求重报价或责任方补充，不静默换源。
@@ -49,21 +49,17 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 - `outputs/procurement/<case-id>/03-quote-comparison/` 存放正式比较、差异账本和证据；
 - 原始报价保留原版本与路径，归一表不得覆盖原文件。
 
-### 证据谱系
+### 证据与比较
 
-每份原始报价作为 `input_evidence` 记录：
+每份原始报价保留：
 
 - 报价 ID、供应商候选 ID、来源路径；
 - 报价日期、版本、有效期；
 - 产品/规格版本、币种、单位和数量阶梯；
 - Incoterms 规则、版本、指定地点；
-- `source_path` 和限制；
-- `source_type`：`user_input` 或 `upstream_output`；
-- `temporal_scope`：`current`、`historical`、`future`、`mixed` 或 `unknown`；
-- `estimation_status`：`reported`、`estimated`、`forecast`、`mixed` 或 `unknown`；
-- `transformation_type`：原始报价为 `raw`，合法整理可为 `normalized`。
+- 来源路径、提供者和限制。
 
-每个标准化值、换算、总额、差异和可比性判断是独立 `agent_output`，记录公式、输入值、单位、舍入、`parent_evidence_ids` 和 `transformation_type`。
+每个标准化值、换算、总额、差异和可比性判断都要引用实际报价项，写明公式、输入值、单位、汇率日期、舍入和限制；不得只给最终排名。
 
 ## 启动检查
 
@@ -80,16 +76,9 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 
 只有口头“每件大约多少钱”时，可登记为线索，但不能形成正式排名。
 
-### 比较状态
+### 启动判断
 
-- `comparable`：核心对象和范围一致，可以直接比较；
-- `comparable_with_adjustments`：使用已证转换或明确调整后可比；
-- `partially_comparable`：只有部分费用或情景可比；
-- `not_comparable`：关键对象、单位、币种、范围或有效性无法统一；
-- `expired`：报价仅保留历史参考；
-- `conflicted`：同一报价内部或跨文件字段冲突；
-- `blocked`：报价不可读或无法识别采购对象；
-- `out_of_scope`：请求抓取、询价、谈判执行、下单或完整利润结论。
+先判断核心采购对象、数量、单位、币种、交付范围和有效期是否一致。使用了可验证转换或明确调整时展示完整过程；只有部分费用/情景可比时只比较该部分。报价过期、内部或跨文件冲突、不可读或无法识别采购对象时，分别说明限制，不强行排名。抓取、代询价、谈判执行、下单和完整利润结论不在范围内。
 
 ## 执行流程
 
@@ -207,7 +196,7 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 
 若用户问保本价、利润、到岸总成本或促销空间：
 
-- 将报价范围成本、未知项和证据谱系交第14专家；
+- 将报价范围成本、未知项和直接判断依据交第14专家；
 - 不补造关税、物流、平台费、退货率或汇率；
 - 保留“采购报价成本”和“完整经营成本”的边界。
 
@@ -220,7 +209,7 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 - `expired_quote`：只作历史证据，不作为当前选择依据；
 - `conflicting_versions`：冻结各版本，要求确认有效版本；
 - `unknown_cost`：不按零处理；
-- `out_of_scope`：抓取报价、外联、谈判、下单、关税或利润定论。
+- 当任务要求抓取报价、外联、谈判、下单，或直接给出关税与利润定论时，当前 Agent 缺少外部执行权或相应专业输入，因而不能声称报价已获取、交易已推进或财务结论已成立；降级为可比口径、待补输入、谈判问题清单和需转交对应专家的事项。
 
 ## 正式交付
 
@@ -229,7 +218,7 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 1. `supplier-quote-comparison.md`：范围、状态、情景、可比性、成本和差异；
 2. `quote-normalization-ledger.csv`：原值、转换、公式、父证据和状态；
 3. `quote-gap-and-requote-list.md`：缺失字段和重报价要求；
-4. `quote-evidence-ledger.md`：输入证据、Agent 输出和四轴。
+4. `quote-evidence-ledger.md`：原始报价、直接依据、换算过程和限制。
 
 使用 `assets/templates/supplier-quote-comparison-template.md`。关键口径不可比时，报告标题和摘要必须明确 `not_comparable`，不得保留误导性排名。
 
@@ -244,7 +233,7 @@ description: 将用户已有供应商报价按产品版本、数量、币种、�
 - 没有把 quoted scope 称为 landed cost 或利润；
 - 不可比时明确 `not_comparable`；
 - 没有固定权重、抓价、自动询价或下单；
-- 证据双层谱系完整，工作区边界满足。
+- 每项成本与比较判断均能回到报价原文，并写明计算、差异、限制和下一责任人。
 
 ## 资源读取
 

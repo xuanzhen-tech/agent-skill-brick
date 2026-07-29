@@ -5,7 +5,7 @@ description: 对用户已有的供应商候选、主体资料、证照、样品�
 
 <!--
 文件功能：定义已有供应商候选的身份分离、证据分级、能力适配、风险信号和人工核验流程。
-职责边界：只评价合法输入中的候选和证据，不搜索新供应商，不调用企业查询或 1688，不把陈述升级为已核验事实，也不输出无条件信任结论。
+职责边界：评价合法输入中的候选和证据；仅在用户明确要求候选线索时允许用 Sorftime 1688 工具形成待核验候选，不调用企业查询，不把平台陈述升级为已核验身份、资质或能力，也不输出无条件信任结论。
 重要关联：证据等级、身份冲突和判定状态见 references/supplier-evidence-and-verification-contract.md；正式交付使用 assets/templates/supplier-evaluation-template.md；规格来源可消费 supplier-sourcing-readiness。
 -->
 
@@ -23,7 +23,7 @@ description: 对用户已有的供应商候选、主体资料、证照、样品�
 
 本 Skill 不给“绝对可信”“一定是工厂”“零风险”等结论。完成意味着证据和决策条件清楚，不意味着供应商已经获批。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -32,37 +32,50 @@ description: 对用户已有的供应商候选、主体资料、证照、样品�
 - 可信上游 `outputs/` 中的采购规格、RFQ、报价比较、质量记录和已批准核验结果；
 - 用户或合格责任方提供的现场审核、视频验厂、第三方测试、引用核验和交易记录。
 
-只分析输入中已经存在的候选。一个名称、网址、名片或聊天账号不足以自动确立法定身份。
+默认只分析输入中已经存在的候选。用户明确要求从 1688 补充候选线索时，可以新增 `candidate_lead`，但线索本身不自动进入“已尽调供应商”集合。
 
 ### 外部数据边界
 
-- 不使用 Web、浏览器、OSINT、企业搜索、1688、供应商平台、supplyflow 或其他 MCP/API；
-- SIF 只有 ASIN 市场画像与探索性采购上限，不具备供应商主体、联系人、资质、询价、报价、MOQ、产能、交期、验厂或采购执行事实，不用于本 Skill；
+- 只允许两类外部背景：`sorftime_mcp` 的 `ali1688_product_search`、`ali1688_product_request`、`ali1688_similar_product`、`ali1688_product_search_from_image`、`ali1688_product_variations` 候选线索，以及 SIF/SellerSprite 的 Amazon 市场需求/售价反向验证；不使用 Web、浏览器、OSINT、企业搜索、其它供应商平台、supplyflow 或其它 MCP/API；
+- SIF 只可通过 `sif_mcp` 使用 `market_get_asin_profile`，SellerSprite 只可通过 `sellersprite_mcp` 使用 `product_research`、`competitor_lookup` 或 `asin_detail` 反向验证 Amazon 市场需求/售价背景；Sorftime 1688 只通过 `sorftime_mcp` 提供平台挂牌商品、店铺/供应商名称陈述、SKU 或相似货源线索。三者都不证明法定主体、联系人、资质、MOQ、正式报价、产能、交期、验厂、质量或合同履约；
 - 不索要或保存平台密钥；
 - 若关键主体或能力只能通过外部核验确认，生成核验任务并交给用户或合格责任方，不静默换源。
+
+### 三 MCP 候选线索合同
+
+- 用户没有明确要求新增候选时，不调用三个 MCP；
+- 工具名未知时先通过对应外层工具执行 `action=search`；已知上述精确工具名可直接 `describe`。本任务每个内层工具首次 `call` 前必须执行实时 `describe`，再由同一外层工具用相同精确 `name` 和符合实时 `inputSchema` 的 `arguments` 调用；
+- 以图搜货必须使用用户提供或可信上游可追溯的 `image_url`，不得自行上传、外传或伪造图片地址；
+- 平台/站点、商品 ID、查询词、图片、分页或筛选条件都必须来自父 Evidence，并映射到实时 schema 实际字段（如 `country|marketplace|amz_site|keyword_support_site|site`）；只有 schema 无法控制站点且默认/覆盖与目标不一致时才关闭该分支，不得依赖 `US`、`Unknow` 或 `UnKonw` 默认值；
+- Sorftime 非 Amazon 能力只有任务平台明确为 1688 寻源时才使用；
+- 三个目录均无 `outputSchema`；字段只按真实响应验收，不拼 Gateway、HTTP、shell，不索取密钥。
+
+Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配；其他候选仍须实时 `describe`，副作用无法确认时失败关闭。
+
+每次 MCP 业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造参数时不调用。未查询、未返回、解析失败、字段缺失或冲突都不能补成零。跨挂牌或跨商品对照先核对主体、规格、单位、币种、时间和定义；真正可比才比较且不平均，部分可比只作方向参考，冲突分列。Sorftime 1688 是独有单源线索分支，失败时只说明该来源不可用和当前没有相应证据，不写成多源覆盖不足，也不得宣称完成寻源或尽调。Agent 形成的未验证候选、身份拆分、匹配和风险信号必须直接引用所用证据。
 
 ### 工作区
 
 - `uploads/` 只读；
 - `temp/procurement/<case-id>/02-supplier-evaluation/` 存放候选身份拆分、证据索引、冲突表和评估草稿；
 - `outputs/procurement/<case-id>/02-supplier-evaluation/` 存放正式评估；
-- 身份证件、银行信息等敏感资料只在任务所需范围引用，正式报告尽量记录证据 ID 和掩码定位。
+- 身份证件、银行信息等敏感资料只在任务所需范围引用，正式报告尽量只记录脱敏后的文件、页码或字段位置。
 
-### 双层证据谱系
+### 证据与判断
 
-输入 `input_evidence` 与 Agent 正式派生对象分开。每条输入证据记录来源路径、提供者、日期、版本、适用主体、有效期、原始四轴和限制；输入证据的轴值不能代替派生对象自己的轴值。
+原始材料与 Agent 判断分开保存。每份材料说明由谁提供、对应哪个主体、何时有效、能证明什么以及不能证明什么；不得用后来形成的判断覆盖原文件或供应商陈述。
 
-每个正式派生对象必须在对象本体直接保存五项血缘字段，不能只在报告末尾 Agent 输出账本中补写：
+正式评估围绕五类有业务意义的记录展开：
 
-| 派生对象 | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 对象载荷 |
-|---|---|---|---|---|---|---|---|
-| `identity_link` | `identity_link_id` | 支撑主体关系的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `coding \| inference` | 两端身份、关系状态、核验状态和限制 |
-| `match` | `match_id` | 支撑要求匹配的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `coding \| inference` | Requirement/Candidate IDs、匹配状态和核验动作 |
-| `gap` | `gap_id` | 支撑缺失或冲突判断的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `coding \| inference` | 缺口、影响范围、所需证据、责任人和状态 |
-| `risk_signal` | `signal_id` | 支撑风险观察的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `inference \| hypothesis` | 观察、潜在影响、替代解释、核验和决策闸门 |
-| `decision` | `decision_id` | 支撑阶段决策的 Evidence/Match/Gap/Risk IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | 固定 `inference` | 决策范围、阶段状态、条件、未决风险、批准和复核触发 |
+| 记录 | 必须回答 | 直接依据 | 限制与下一步 |
+|---|---|---|---|
+| 身份关系 | 两个名称、地址、收款人或联系人是否指向同一主体 | 支撑或冲突该关系的材料 | 不能确认时保持拆分，并指定核验责任人 |
+| 要求匹配 | 候选对具体采购要求支持到什么程度 | Requirement 与候选材料 | 区分已证实、供应商陈述、部分支持和未评估 |
+| 证据缺口 | 缺什么、影响哪个决策 | 已有材料与缺失项 | 写清所需证据、责任人和完成标准 |
+| 风险信号 | 观察到什么、可能影响什么 | 可定位的原始材料 | 保留替代解释，不把信号写成已发生事实 |
+| 阶段决策 | 当前可进入询价、打样还是继续核验 | 上述关系、匹配、缺口和风险 | 写明适用范围、条件、未决风险和复核触发 |
 
-所有派生对象还必须保留不确定性，且不得覆盖原始文件或供应商陈述。对象轴、时间轴、单位轴或口径轴不能替代上述五项字段。
+每条判断都直接引用实际依据，并说明推理理由、不确定性和结论上限；不能只在报告末尾放一张通用血缘表。
 
 证据合同见 `references/supplier-evidence-and-verification-contract.md`。
 
@@ -72,22 +85,16 @@ description: 对用户已有的供应商候选、主体资料、证照、样品�
 
 至少需要：
 
-1. 一个用户明确提供的候选供应商；
+1. 一个用户明确提供的候选供应商，或一个由本包/可信上游保留 Sorftime 实际工具、查询范围、原始结果定位和限制的未验证 1688 候选线索；
 2. 候选来源和至少一种可定位资料；
 3. 本次采购对象及关键 `must` 要求；
 4. 用户希望做出的决策，例如是否进入询价、样品或进一步核验。
 
-没有候选时转交 `supplier-sourcing-readiness`，不得自行搜索或补造。
+没有候选且用户未明确要求 1688 线索时转交 `supplier-sourcing-readiness`，不得自行搜索或补造。
 
-### 评估状态
+### 启动判断
 
-- `evidence_ready`：候选身份、规格和关键证据足以评估；
-- `partial`：可以评估部分维度，其余明确缺口；
-- `identity_conflict`：名称、主体、地址、账户或角色不能一致对应；
-- `stale_evidence`：关键证照、审计或样品记录过期；
-- `verification_required`：需要用户或合格责任方外部确认；
-- `blocked`：无法确认候选或采购对象；
-- `out_of_scope`：请求搜索、监控、秘密调查、直接联系或保证可信。
+先判断候选身份、采购规格和关键证据能支持哪些评估维度。名称、主体、地址、账户或角色不能对应，证照/审计/样品记录过期，或需要合格责任方外部确认时，逐项说明受影响判断和下一步。无法确认候选或采购对象时阻塞；搜索、监控、秘密调查、直接联系和保证可信不在范围内。
 
 ## 执行流程
 
@@ -99,7 +106,7 @@ description: 对用户已有的供应商候选、主体资料、证照、样品�
 - 法定主体名称和注册地陈述；
 - 工厂、贸易公司、收款主体和合同主体；
 - 品牌、网站、店铺、邮箱域名和联系人；
-- 每个身份字段的证据 ID；
+- 每个身份字段对应的原始文件、页码或字段位置；
 - 哪些字段是自述、文件陈述或人工核验。
 
 不同法定名称、地址、收款人或联系人不得仅凭相似名称自动合并。冲突保留为独立记录。
@@ -200,7 +207,7 @@ Agent 不能仅凭图片外观宣布文件真伪。需要向签发机构、政�
 - `document_not_verifiable`：说明 Agent 只能读到什么，不能宣布真伪；
 - `stale_or_expired`：保留历史价值，但当前状态不得写已有效；
 - `insufficient_evidence`：输出缺口与核验计划；
-- `out_of_scope`：外部 OSINT、供应商联系、验厂、法律结论或可信保证。
+- 当任务要求外部 OSINT、供应商联系、验厂、法律结论或可信保证时，当前 Agent 无法完成现场或权威核验，因而不能把材料审阅写成真实性或合规性保证；降级为证据缺口、核验问题清单和需转交人工或专业机构的事项。
 
 ## 正式交付
 
@@ -215,7 +222,9 @@ Agent 不能仅凭图片外观宣布文件真伪。需要向签发机构、政�
 
 ## 质量门
 
-- 只评估用户已有候选；
+- 按 `references/supplier-evidence-and-verification-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；压缩或截断的候选线索不得声称候选全量，须缩小范围或按内层分页。仍不完整时，说明 Sorftime 实际覆盖的页码与候选、缺失的范围、因此不能判断的事项，以及继续分页所需条件。
+
+- 只评估用户已有候选，或用户明确要求后形成且保留实际工具、查询范围、原始结果定位和限制的未验证候选线索；
 - 法定主体、工厂、贸易商、联系人、合同和收款身份分开；
 - 每项供应商陈述都保留 `reported` 状态；
 - 身份冲突未被自动合并；
@@ -223,7 +232,7 @@ Agent 不能仅凭图片外观宣布文件真伪。需要向签发机构、政�
 - 没有固定万能权重或综合可信分；
 - 风险信号含证据、影响、替代解释和核验动作；
 - 阶段结论带条件、范围和批准责任；
-- 无 OSINT、1688、企业搜索或其他外部回退；
+- 无 OSINT、企业搜索或其他外部回退；1688 只限上述 Sorftime 未核验候选线索分支；
 - 证据与推断双层记录，`uploads/` 未改变。
 
 ## 资源读取

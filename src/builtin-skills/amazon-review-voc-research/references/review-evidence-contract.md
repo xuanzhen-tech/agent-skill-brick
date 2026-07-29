@@ -1,6 +1,6 @@
 <!--
-文件功能：定义 Amazon 评论 VOC 的允许来源、证据行、匿名化、去重、覆盖与对象血缘合同。
-职责边界：只处理用户、uploads 或可信上游已提供的评论，不从 SIF 或其他外部来源取数，不定义主题代码，也不补造缺失字段。
+文件功能：定义 Amazon 评论 VOC 的允许来源、匿名化、去重、覆盖与可复核业务证据。
+职责边界：只处理用户、uploads、可信上游或 SellerSprite/Sorftime 只读 MCP 的合格逐条评论；不从 SIF、网页或非 Amazon 平台取数，不定义主题代码，也不补造缺失字段。
 关联关系：由 ../SKILL.md 的就绪闸门、规范化、覆盖和交付阶段读取；编码规则见 review-coding-method.md。
 -->
 
@@ -10,91 +10,61 @@
 
 正式评论原文只接受：
 
-- `user_input`：用户对话或 `uploads/`；
-- `upstream_output`：可信上游 `outputs/`；
-- `agent`：只用于规范化、编码、计算、推断和假设，不是新评论正文来源。
+- 用户对话或 `uploads/`；
+- 可信上游 `outputs/`；
+- SellerSprite `review` 或 Sorftime `product_reviews` 的逐条正文结果；
+- Agent 只负责清洗、编码、计数、洞察和待验证假设，不是新评论正文来源。
 
-SIF 当前没有评论正文能力。禁止用 SIF 的 ASIN、关键词、流量、广告或任何供应商结构替代评论。
+SIF 没有评论正文能力。禁止用 SIF 的 ASIN、关键词、流量、广告替代评论；Sorftime `product_customers_say` 只能作为供应商摘要旁证，不是记录级评论来源。
 
-## 四轴与对象血缘
+MCP 取数仅允许外层 `sellersprite_mcp`、`sorftime_mcp`，按 `search → describe → call` 使用；首次调用每个内层工具前必须 `describe`。两者均无机器级 `outputSchema`，真实字段逐项验收。Sorftime 必须通过 Amazon 平台门禁并采用 `../SKILL.md` 的精确写风险名单；本 reference 不重复名单，其他候选实时 `describe` 后仍无法确认副作用时失败关闭。
 
-| 轴 | 允许值 |
-|---|---|
-| `source_type` | `user_input / upstream_output / agent` |
-| `temporal_scope` | `current / historical / future / mixed / not_applicable / unknown` |
-| `estimation_status` | `reported / estimated / forecast / mixed / not_applicable / unknown` |
-| `transformation_type` | `reported / normalized / calculation / coding / inference / hypothesis` |
+## 评论处理链
 
-来源材料中原样保留的评论记录使用 `transformation_type=reported`。Agent 派生对象必须使用 `source_type=agent`，并列出直接 `parent_evidence_ids`；不得覆盖原始证据。
+来源评论、清洗摘录、主题编码、分层计数、洞察和待验证假设分开记录。每一层都说明直接依据、Agent 做过的处理和局限，不覆盖上一层。
 
-字段状态只允许：
-
-```text
-not_returned | not_queried | parse_failed | missing | conflicted | true_zero
-```
-
-来源不含某字段写 `not_returned`；字段存在但本次未解析写 `not_queried`；解析失败写 `parse_failed`。不得使用 0、false 或空字符串代替未知。
+来源不含某字段时写明“来源未返回”，本次没有读取时写“未查询”，读取失败时写“解析失败”。不得使用 0、false 或空字符串代替未知；只有来源明确给出零值时才可作为零证据。
 
 ## 来源登记
 
-```text
-source_record_id
-source_type
-source_path
-source_version_or_modified_at
-provided_at
-marketplace
-asin_scope
-period_scope
-sampling_or_export_scope
-available_fields
-missing_fields
-parse_status
-limitations
-```
+每个来源登记：
 
-文件修改时间只能证明文件状态，不能冒充评论日期或数据期间。
+- 文件路径与版本，或 MCP 供应商与精确工具；
+- 提供/取数时间、Amazon 站点、ASIN 范围和评论期间；
+- 实际筛选、导出或分页范围；
+- 可用字段、缺失字段、解析结果和原始结果位置；
+- 样本限制、压缩/截断和其他覆盖限制。
 
-## 上游证据链
+文件修改时间只能证明文件状态，不能冒充评论日期或数据期间。调用参数要能回到用户或上游依据；请求 ID 只在真实返回且排错确实需要时保留。结果出现 `[agent-tool-result-compressed]` 或 `[agent-cli-tool-result-truncated]` 时，缩小对象/期间/字段或按内层工具 schema 分页，不得声称全量。
 
-`source_type=upstream_output` 时同时保留：
+覆盖必须显式说明：
 
-```text
-upstream_source_file
-upstream_evidence_id
-upstream_source_type
-upstream_temporal_scope
-upstream_estimation_status
-upstream_transformation_type
-```
+- Sorftime `product_reviews` 的已证合同仅覆盖最近一年且最多 100 条，是有限样本，不得称为全量评论；
+- Sorftime `product_customers_say` 是页面“Customers Say”摘要转取，只能作为摘要旁证；
+- SellerSprite `review` 虽支持星级、类型、时间和分页筛选，但目录未证明完整总体覆盖；必须记录实际页数、筛选和截断状态；
+- 两源没有共同且可证明的抽样框时，分别报告分母和主题，不合并为自然总体比例。
 
-上游缺少时间或估算轴时写 `unknown`；缺少来源或转换轴时保持缺口并将记录降级，不从结论文字补造。
+## 上游评论材料
+
+使用上游 `outputs/` 时保留上游文件、证据编号、版本、站点/ASIN/期间、样本范围、原有限制和上游做过的清洗或去重。缺少可定位来源、期间或处理说明时保持缺口并降级，不从结论文字补造。
 
 ## 正式评论证据行
 
 | 字段 | 语义 | 规则 |
 |---|---|---|
-| `evidence_id` | 本案例匿名稳定编号 | 使用 `REV-0001` 等编号 |
-| `source_type` | `user_input/upstream_output/agent` | 来源评论不能是 `agent` |
-| `source_record_id` | 对应来源登记 | 必须可定位 |
-| `parent_evidence_ids` | 直接父证据 | 原始来源记录为空；派生记录必填 |
-| `temporal_scope` | 时间轴 | 评论日期可解释时为 `historical` |
-| `estimation_status` | 估算轴 | 按来源元数据填写，无法确认写 `unknown` |
-| `transformation_type` | 转换轴 | 原样为 `reported`；匿名化/摘录/去重为 `normalized` |
-| `marketplace` | Amazon 站点 | 不同站点不得空值合并 |
-| `asin` | 评论所属 ASIN | 无法对应时阻断 |
-| `review_date` | 来源提供的评论日期 | 不可用文件或导入时间代替 |
-| `rating_raw` | 原始评分 | 保留量表 |
-| `verified_raw` | Verified Purchase | 缺失用六态 |
-| `vine_raw` | Vine | 缺失用六态 |
-| `media_raw` | 媒体标记 | 不代表观察了媒体内容 |
-| `title_excerpt` | 有界标题摘录 | 删除作者身份 |
-| `text_excerpt` | 支持复核的有界正文摘录 | 不改写语气 |
-| `language` | 来源语言或 Agent 派生语言记录 | 派生识别另建 `inference` |
-| `duplicate_count` | 合并记录数 | 至少为 1 |
-| `evidence_location` | workspace 内证据位置 | 不指向外部网页 |
-| `field_states` | 六态字段状态 | 不用空值代替 |
-| `limitations` | 口径限制 | 必填 |
+| 内容 | 业务含义 | 规则 |
+|---|---|---|
+| 匿名评论编号 | 本案例稳定编号 | 使用 `REV-0001` 等编号 |
+| 来源登记 | 对应文件或 MCP 查询 | 必须可定位 |
+| Amazon 站点与 ASIN | 评论所属对象 | 无法对应时阻断 |
+| 评论日期 | 来源提供的评论日期 | 不可用文件或导入时间代替 |
+| 原始评分 | 来源量表 | 保留量表，不跨量表混算 |
+| Verified Purchase / Vine / 媒体标记 | 来源原字段 | 未返回时如实说明；媒体标记不代表观察了媒体内容 |
+| 标题与正文摘录 | 支持复核的有界摘录 | 删除作者身份，不改写语气 |
+| 语言 | 来源语言或 Agent 识别 | Agent 识别要说明方法与不确定性 |
+| 重复数量 | 合并记录数 | 至少为 1，并保留各来源依据 |
+| 证据位置 | workspace 内原文定位 | 不指向外部网页 |
+| 限制 | 抽样、字段、截断和处理限制 | 必填 |
 
 ## 禁止字段
 
@@ -106,31 +76,11 @@ upstream_transformation_type
 2. 没有稳定 ID 时，规范化 ASIN、评论日期、评分、标题和正文后组合判重。
 3. 仅空格、大小写、标点或转义差异可视为同一文本；翻译、摘要或语义相似不能自动合并。
 4. 不使用作者身份作为判重条件。
-5. 同一评论在多个来源出现时保留一条规范化证据，并记录所有直接父 evidence ID。
+5. 同一评论在多个来源出现时保留一条规范化记录，并记录所有评论来源、原始行号或工具结果位置。
 
 ## 覆盖账本
 
-```text
-coverage_id
-source_record_ids
-marketplace
-asin
-period
-star_bucket
-verified_bucket
-vine_bucket
-media_bucket
-language_bucket
-provided_count
-deduplicated_count
-truncated
-field_states
-comparability
-parent_evidence_ids
-notes
-```
-
-覆盖与计数使用 `source_type=agent`、`transformation_type=calculation`。样本范围只描述已提供材料，不能写为 Amazon 全量覆盖。
+按来源、站点、ASIN、期间、星级、Verified Purchase、Vine、媒体和语言分层记录提供数量、去重后数量、是否截断、缺失字段与可比性。说明去重规则和直接依据。样本范围只描述已提供材料，不能写为 Amazon 全量覆盖。
 
 ## 可比性
 
@@ -143,7 +93,7 @@ notes
 - 关键字段覆盖一致；
 - 去重规则一致。
 
-任一条件不满足时设为 `limited` 或 `not_comparable`，只并列展示，不计算强弱差异。
+任一条件不满足时说明比较受限或不可比较，只并列展示，不计算强弱差异。
 
 ## 就绪判断
 

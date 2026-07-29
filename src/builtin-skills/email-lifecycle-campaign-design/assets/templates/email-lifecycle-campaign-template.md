@@ -1,112 +1,75 @@
 <!--
-文件功能：提供邮件生命周期、permission、audience、流程节点、内容草稿与测量交接的正式模板。
-职责边界：模板只承载待人工审核的静态设计，不表示名单已上传、ESP 已配置、邮件已排程或已发送。
-重要关联：字段语义见 references/email-lifecycle-evidence-contract.md；生成前遵守上级 SKILL.md。
+文件功能：提供邮件生命周期受众门禁、流程、内容与测量交接模板。
+职责边界：模板不表示联系人已导入、流程已上线或邮件已发送。
+重要关联：由 ../../SKILL.md 物化；判断方法见 ../../references/email-lifecycle-evidence-contract.md。
 -->
 
 # 邮件生命周期 Campaign 设计
 
-## 1. 状态摘要
+> 本设计尚未连接 ESP、上传名单、排程或发送。
 
-| 字段 | 值 |
-|---|---|
-| Campaign / Lifecycle ID |  |
-| Marketplace / Locale |  |
-| Audience Scope |  |
-| Goal / Planning Period / Timezone |  |
-| Owner / Reviewer |  |
-| Generated At / Version |  |
-| Result Status | `draft_for_review / blocked / out_of_scope` |
-| Reason Codes | `[none]` |
-| Campaign Status | `draft_for_review / not_created` |
-| Send Status | `not_sent` |
-| Schedule Status | `not_scheduled` |
+## 1. Campaign 范围
 
-## 2. Lifecycle 与 Audience
+- 市场/语言/品牌/商品：
+- 生命周期场景：
+- 业务目标与目标行为：
+- 合规/同意责任人：
+- ESP 实现与审核责任人：
+- 可用一方事件：
+- 关键限制：
 
-| Object ID | Type | Definition | Version | Source Evidence ID | Source Type | Source Locator | Applicable Scope | Temporal Scope | Estimation Status | Transformation Type | Currentness | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | lifecycle / audience |  |  |  |  |  |  |  |  |  |  |  |
+## 2. Consent 与 suppression
 
-## 3. Consent / Suppression
+| 规则 | 当前定义与直接材料 | 何时检查 | 命中后的动作 | 责任人 | 缺口 |
+|---|---|---|---|---|---|
+| `<同意/退订/退信/投诉/地区/敏感案件/内部排除>` | `<内容>` | `<进入/每次发送/周期复核>` | `<阻塞/退出/升级>` | `<责任人>` | `<内容>` |
 
-| Permission Set ID | Source Evidence ID | Type | Audience / Purpose / Jurisdiction | Source Type | Source Locator | Temporal Scope | Estimation Status | Transformation Type | Updated / Verified | Valid Until | Coverage | Parent / Policy Evidence IDs | Status / Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  | consent / suppression |  |  |  |  |  |  |  |  |  |  |  |
+## 3. 受众资格
 
-## 4. Audience 规则
+| 必须满足 | 必须排除 | 观察窗口 | 数据延迟/重复处理 | 重新进入规则 | 冲突与责任方 |
+|---|---|---|---|---|---|
+| `<一方事实>` | `<排除>` | `<窗口>` | `<规则>` | `<规则>` | `<内容>` |
 
-| Agent Output ID | Audience Rule ID | Include | Exclude | Consent Requirement | Suppression Sets | Market / Locale | Missing Behavior | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  | `exclude_and_block / route_for_review` |  | `agent` |  |  |  |
+## 4. 生命周期与流程
 
-## 5. 流程图
+| 节点 | Trigger/进入条件 | Branch | Wait 及依据 | 发送前重核 | Exit/排除 | 与其他流程冲突 | Owner |
+|---|---|---|---|---|---|---|---|
+| `<节点>` | `<事件>` | `<分支事实>` | `<时间/业务依据/待定>` | `<规则>` | `<条件>` | `<优先级/静默>` | `<负责人>` |
 
-```mermaid
-flowchart TD
-    A["Trigger: <evidence-backed condition>"] --> B{"Eligibility and consent gate"}
-    B -->|Eligible| C["Message draft"]
-    B -->|Missing or conflicted| X["Blocked / human review"]
-    C --> D["User-approved wait rule"]
-    D --> E{"Exit or next branch"}
-```
+## 5. 邮件 brief 与草稿
 
-该图只描述静态逻辑，不创建自动流程。
+### `<邮件名称>`
 
-## 6. 流程节点
+- 所处阶段与主要任务：
+- 为什么此时联系：
+- 受众所需价值：
+- 核心信息与直接材料：
+- CTA：
+- 商品/价格/促销边界：
+- 所需视觉：
+- 语言/隐私/可访问性检查：
+- 草稿：
 
-| Agent Output ID | Node ID | Type | Condition / Rule | Source Fields | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Missing / Conflict Behavior | Next Node | Owner | Invalidation Trigger |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  | trigger / branch / exclusion / wait / exit / message |  |  |  | `agent` |  |  |  |  |  |  |  |
+## 6. 测量交接
 
-## 7. 内容草稿
+| 指标 | 业务定义 | 分子/分母 | 时间窗与去重 | 归因/因果限制 | 数据责任方 | 实验或复盘 |
+|---|---|---|---|---|---|---|
+| `<送达/点击/订单/收入/退订/投诉等>` | `<定义>` | `<公式>` | `<内容>` | `<限制>` | `<责任方>` | `<设计>` |
 
-| Agent Output ID | Draft ID | Node / Lifecycle | Content Intent | Subject / Preheader | Body / CTA | Claim IDs | Asset Requirement | Promotion Brief | Policy Evidence | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Send |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  |  | `agent` |  |  |  | `not_sent` |
+## 7. 上线前阻塞
 
-## 8. 声明证据
+| 问题 | 对流程的影响 | 最小补充或决定 | 负责人 |
+|---|---|---|---|
+| `<问题>` | `<影响>` | `<动作>` | `<负责人>` |
 
-| Agent Output ID | Statement ID | Draft Location | Text | Claim Evidence | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Support | Required Change |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  | `agent` |  |  |  | `supported / conditional / unsupported / conflicted` |  |
+## 8. 交付前检查
 
-## 9. 测量交接
-
-| Agent Output ID | Handoff ID | Measurement Question | Event Label | Intervention ID | Desired Metric | Required Exposure / Outcome Fields | Analysis Scope | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Owner |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  | `agent` |  |  |  | 第 13 专家 |
-
-## 10. Agent 派生记录
-
-每个 audience rule、trigger、branch、exclusion、wait、exit、draft segment、email draft、claim map entry 和 measurement handoff 必须各占一行。
-
-| Agent Output ID | Output Type | Campaign / Object ID | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Transformation Summary | Rule Version | Uncertainty | Human Review |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `agent` |  |  |  |  |  |  |  |
-
-`temporal_scope`、`estimation_status` 和 `transformation_type` 必须使用 `email-lifecycle-evidence-contract.md` 派生 schema 的允许值；四轴不可合并。
-
-## 11. 缺口与冲突
-
-| Gap ID | Agent Output ID | Affected Object | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Reason Code | Evidence State | Required Resolution | Owner | Campaign Effect |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `agent` |  | `not_applicable` | `gap_classification` |  |  |  |  |  |
-
-## 12. 人工审核
-
-- [ ] lifecycle/audience 来源、版本和范围明确
-- [ ] consent/suppression 已由第 09 或合格责任人提供当前证据
-- [ ] 缺失/冲突不会推定 eligible
-- [ ] wait/frequency/quiet period 均有用户或当前规则依据
-- [ ] 每个节点和草稿 statement 有 parent Evidence
-- [ ] 促销引用第 06 正式 brief
-- [ ] 视觉需求交给第 04
-- [ ] 测量问题交给第 13
-- [ ] 正式输出不含原始邮箱、名单、凭据或不必要 PII
-- [ ] 未调用 `email_send`、Web、shell 网络、ESP/CRM
-- [ ] `send_status=not_sent` 且 `schedule_status=not_scheduled`
-
-## 13. 未执行声明
-
-本工作包没有收集或构造邮箱，没有修改 consent/suppression，没有上传名单，没有连接或配置 ESP，没有创建后台自动化，也没有排程或发送任何邮件。
+- [ ] 同意与 suppression 在进入和发送前检查
+- [ ] 受众资格来自一方事实
+- [ ] Trigger、branch、wait、exit 和 re-entry 清楚
+- [ ] 等待和频次有业务依据或明确待定
+- [ ] 多流程冲突与静默期已设计
+- [ ] 邮件声明和优惠有当前材料
+- [ ] 指标有分母、窗口、去重和因果边界
+- [ ] 未连接 ESP、上传名单、排程或发送
+- [ ] 正式文件位于 `outputs/`

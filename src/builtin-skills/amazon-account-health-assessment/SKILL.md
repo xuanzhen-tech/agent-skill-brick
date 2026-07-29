@@ -1,11 +1,11 @@
 ---
 name: amazon-account-health-assessment
-description: 对用户上传或可信上游提供的 Amazon 账号健康快照、指标、通知和时间序列执行口径、状态、缺口、可比趋势与行动评估。适用于账号健康复盘、异常准备和整改优先级；不适用于 SP-API 拉取、登录 Seller Central、持续监控或自动告警，也不调用当前不具账号健康能力的 SIF MCP 补事实。
+description: 对用户上传或可信上游提供的 Amazon 账号健康快照、指标、通知和时间序列执行口径、状态、缺口、可比趋势与行动评估。适用于账号健康复盘、异常准备和整改优先级；不适用于 SP-API 拉取、登录 Seller Central、持续监控、自动告警，或用 SIF、SellerSprite、Sorftime 的公开市场数据补账号事实。
 ---
 
 <!--
 文件功能：定义账号健康快照、指标合同、阈值依据、可比趋势、问题和人工行动评估。
-职责边界：只分析用户、只读 uploads 或可信上游提供的账号材料；当前 SIF 没有账号健康工具，因而不调用 SIF，不拉取后台数据、不监控或提交整改；政策阈值必须来自用户或第09专家带日期输出。
+职责边界：只分析用户、只读 uploads 或可信上游提供的账号材料；SIF、SellerSprite、Sorftime 均没有账号健康、绩效通知或后台状态能力，本包不调用三者；不拉取后台数据、不监控或提交整改；政策阈值必须来自用户或第09专家带日期输出。
 重要关联：指标、快照和状态见 references/account-health-evidence-contract.md；正式交付使用 assets/templates/account-health-assessment-template.md；执法事件根因转交 amazon-account-enforcement-root-cause-analysis。
 -->
 
@@ -36,9 +36,9 @@ description: 对用户上传或可信上游提供的 Amazon 账号健康快照�
 
 人工导出的 Seller Central 资料标为 `user_uploaded_platform_export`，不得写成 Agent 通过 API 拉取。
 
-### 外部数据边界
+### 三 MCP 与外部数据边界
 
-- 不调用 `sif_mcp`；其当前关键词、ASIN、流量、销量、广告和供应商诊断能力不是账号健康、通知或整改事实；
+- 不调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；三者的公开 Listing、Review、商标、关键词、排名、销量、广告和市场观察不是账号健康、通知、阈值或整改事实；
 - 不调用 Amazon SP-API、Seller Central、coaxon、mansour、LinkFox、CrossPulse、Web、浏览器或其他 MCP/API；
 - 不读取 LWA/OAuth、Cookie、session 或账号密钥；
 - 不创建 webhook、Cron、轮询、后台监控或告警；
@@ -51,21 +51,9 @@ description: 对用户上传或可信上游提供的 Amazon 账号健康快照�
 - `outputs/account-risk/<case-id>/01-health-assessment/` 存放唯一正式评估；
 - 账号 ID、买家 PII、证件、银行、税务识别号和凭据只保留掩码/证据引用。
 
-### 双层谱系
+### 证据使用
 
-输入 `input_evidence` 记录：
-
-- `evidence_id`
-- `source_path`
-- `source_type`
-- `evidence_class=account_metric|policy_reference`
-- 账号/站点/期间/快照时间
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- 字段、版本和限制
-
-Agent 的指标重算、趋势编码、问题、优先级和行动建议是 `agent_output`，必须记录 `parent_evidence_ids`、公式、比较口径和结论上限。
+每个指标、通知和行动项都要能回到具体导出文件、截图或用户说明，并写明账号、站点、期间、快照时间、所用字段、版本和限制。Agent 的重算、趋势判断、优先级和建议必须紧邻说明公式、比较口径与直接依据，不能伪装成平台原始事实。
 
 ## 启动检查
 
@@ -80,66 +68,23 @@ Agent 的指标重算、趋势编码、问题、优先级和行动建议是 `age
 5. 用户希望做出的决策；
 6. 政策阈值依据，若要求判断是否越线。
 
-### 状态
-
-- `ready`
-- `ready_without_threshold_judgment`
-- `metric_not_computable`
-- `snapshot_not_comparable`
-- `policy_reference_missing`
-- `scope_conflict`
-- `partial`
-- `blocked`
-- `out_of_scope`
-
-### 来源缺失语义（与业务状态分列）
-
-业务 `result_status/calculation_status` 继续使用上述账号健康状态；每个快照、指标、分子、分母或阈值字段另记 `source_availability_status`，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。只有完整、可验证且口径匹配的来源明确为零时才可使用 `true_zero`。
-
-前五项不得写成 0、无指标、无违规或无风险，也不得替代 `metric_not_computable/snapshot_not_comparable/...` 等业务门禁。正例：完整账号快照明确某指标分子为 0，可记 `true_zero`，但仍需合法分母和定义才能判断指标。反例：分母字段未返回时记 `not_returned`，计算仍是 `metric_not_computable`，不得把分母补成 0。
+材料足够时进入完整评估；缺阈值依据时仍可报告观测值，但明确“不判断是否越线”；缺分子、分母或定义时不计算；快照口径不一致时分别展示；账号或站点冲突时先向用户确认。未返回、解析失败和真实零值必须在对应指标处用自然语言区分，不能把缺失补成 0。
 
 ## 执行流程
 
 ### 第一步：冻结账号与快照
 
-记录：
-
-- `account_scope_id_masked`
-- `marketplace_id`
-- profile/主体关系（若用户提供）；
-- `snapshot_id`
-- snapshot captured/reported time；
-- 指标覆盖期间和时区；
-- source path/version；
-- 是否完整导出、截图或人工摘录。
+先确认掩码后的账号、marketplace、快照时间、指标覆盖期间与时区，以及材料是完整导出、截图还是人工摘录。记录文件路径和版本，避免把不同账号、站点或期间混在一起。
 
 不同账号、站点或期间不得合并。
 
-### 第二步：建立证据类别
+### 第二步：分清材料能证明什么
 
-允许：
-
-- `account_metric`
-- `account_notification`
-- `policy_reference`
-- `corrective_action_evidence`
-- `agent_inference`
-
-SIF 供应商观察不进入本包。缺少可证明联接的材料不得跨账号或跨事件合并。
+账号指标只能证明对应快照中的数值，绩效通知只能证明平台在该时点发出的事项，政策文本用于解释阈值，行动记录用于证明整改进展。Agent 的解释与建议必须和这些原始材料分开。缺少可证明联接时不得跨账号或跨事件合并。
 
 ### 第三步：建立指标合同
 
-每个指标记录：
-
-- 指标名和来源原文；
-- 分子、分母；
-- 单位；
-- 期间、时区和快照时间；
-- 站点/账号范围；
-- 包含/排除；
-- 报告值；
-- 重算值；
-- 来源证据。
+对每个指标写清来源名称、定义、分子、分母、单位、期间、时区、账号/站点范围、包含与排除、平台报告值、重算值和直接依据。
 
 分母为零或缺失时 `not_computable`，不是 0。
 
@@ -178,31 +123,13 @@ SIF 供应商观察不进入本包。缺少可证明联接的材料不得跨账�
 
 ### 第七步：解释问题但不越界
 
-问题记录：
-
-- 可观察指标/通知；
-- 证据 IDs；
-- 影响范围；
-- 阈值状态；
-- 数据缺口；
-- 是否需要执法 RCA；
-- 立即的数据准备/控制动作；
-- 责任人。
+对每个问题写清可观察指标或通知、直接依据、影响范围、阈值是否有依据、数据缺口、是否需要执法 RCA、可立即执行的数据准备/控制动作和责任人。
 
 不从单个健康指标猜根因或侵权事实。
 
-### 第八步：形成行动状态
+### 第八步：区分建议与已执行
 
-允许：
-
-- `proposed`
-- `planned`
-- `user_claimed_in_progress`
-- `user_claimed_completed`
-- `verified_completed`
-- `blocked`
-
-只有执行证据可以标 `verified_completed`。
+分别说明行动是建议、已计划、用户称正在执行、用户称已完成、已有材料验证完成，还是因依赖缺失而阻断。只有可定位的执行证据才能写“已验证完成”。
 
 ### 第九步：路由
 
@@ -213,22 +140,17 @@ SIF 供应商观察不进入本包。缺少可证明联接的材料不得跨账�
 
 ### 第十步：一次性结论
 
-报告明确：
-
-- `assessment_mode=one_time`
-- `monitoring_status=not_running`
-- `as_of`
-- 下一次由人工提供什么快照。
+报告明确这是截至某一时间的一次性评估，没有后台监控；同时告诉用户下一次复核需要提供什么快照。
 
 ## 失败与降级
 
-- `missing_denominator`：指标 `not_computable`；
-- `missing_policy_reference`：不判断阈值；
-- `incomparable_snapshots`：分别描述，不算趋势；
-- `screenshot_partial`：标覆盖限制；
-- `scope_conflict`：暂停聚合；
-- `monitoring_requested`：只给人工数据准备，不声称后台运行；
-- `out_of_scope`：拉取、登录、自动告警、申诉提交或账号恢复保证。
+- 缺分母或定义：说明无法计算，并列出所需字段；
+- 缺政策阈值：只报告观测值，不判断是否越线；
+- 快照不可比：分别描述，不计算趋势；
+- 只有局部截图：明确未覆盖范围；
+- 账号或站点冲突：暂停聚合并向用户确认；
+- 用户要求监控：只给人工快照准备清单，不声称后台运行；
+- 拉取、登录、自动告警、申诉提交或账号恢复保证：说明超出本 Skill 范围。
 
 ## 正式交付
 
@@ -252,9 +174,15 @@ SIF 供应商观察不进入本包。缺少可证明联接的材料不得跨账�
 - SIF 未被调用且供应商观察未进入账号事实；
 - 没有 SP-API、登录、监控或告警；
 - 行动建议未冒充执行；
-- 双层谱系、敏感信息和工作区合同完整。
+- 关键指标、判断和建议都能回到直接依据，敏感信息与工作区边界完整。
 
 ## 资源读取
 
 - 建立快照、指标、阈值和趋势前读取 `references/account-health-evidence-contract.md`。
 - 写正式评估前读取或物化 `assets/templates/account-health-assessment-template.md`。
+
+## 三 MCP no-call 最终门
+
+- 本任务禁止调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；公共商品与市场数据不能证明 Account Health、绩效通知、后台阈值、整改状态或账号安全。
+- 所有重算、趋势编码和优先级只基于用户材料或可信上游，并明确说明直接依据与推导。
+- 三 MCP 可见、不可见、失败或目录变化都不触发回退；禁止 Gateway、HTTP、shell、Web、浏览器和其他外部来源。

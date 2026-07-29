@@ -1,11 +1,11 @@
 ---
 name: supplier-sourcing-readiness
-description: 把产品目标、技术规格、质量要求、MOQ、成本范围、交付节奏和商业限制整理成可外发 RFQ、供应商搜索要求与候选池字段。适用于采购寻源启动、需求澄清、RFQ 准备和候选评估前的数据就绪；不适用于搜索、推荐或虚构供应商，也不执行询价、验厂、下单或外部 OSINT。
+description: 把产品目标、技术规格、质量要求、MOQ、成本范围、交付节奏和商业限制整理成可外发 RFQ、供应商搜索要求与候选池字段，并在用户明确要求时建立可追溯的 1688 待核验候选线索。适用于采购寻源启动、需求澄清、RFQ 准备和候选评估前的数据就绪；不适用于把平台线索当作已寻源、已核验或直接推荐的供应商，也不执行询价、验厂、下单或外部 OSINT。
 ---
 
 <!--
 文件功能：定义供应商寻源启动前的规格冻结、证据整理、RFQ 编制、候选池字段和数据就绪流程。
-职责边界：只形成寻源准备材料，不搜索、推荐或核验供应商，不调用 1688、企业搜索、Web 或其他采购平台；SIF 仅可补充 ASIN 市场画像或探索性采购上限，不能成为供应商事实。
+职责边界：形成寻源准备材料，并仅在用户明确要求候选线索时通过 Sorftime 1688 工具建立待核验候选；不推荐或核验供应商，不调用企业搜索/Web；SIF、SellerSprite 只反向验证 Amazon 市场需求/售价，不能成为供应商事实。
 重要关联：字段、状态和证据合同见 references/sourcing-readiness-contract.md；正式交付使用 assets/templates/supplier-sourcing-readiness-template.md；已有候选的核验转交 supplier-evaluation-and-due-diligence。
 -->
 
@@ -24,61 +24,52 @@ description: 把产品目标、技术规格、质量要求、MOQ、成本范围�
 
 没有任何候选供应商也可以完成本 Skill。完成状态只能是“寻源材料已就绪”或“仍有缺口”，不得写成“已经寻得供应商”。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
 - 用户对话及只读 `uploads/` 中的产品 brief、图纸、BOM、包装要求、测试要求、采购历史、样品反馈和合同约束；
-- 可信上游 `outputs/` 中带版本、日期和证据 ID 的产品定位、需求研究、销量情景、利润边界或合规要求；
+- 可信上游 `outputs/` 中带版本、日期和原始文件或字段位置的产品定位、需求研究、销量情景、利润边界或合规要求；
 - 可选通过外层 `sif_mcp` 路由 `market_get_asin_profile`，仅用于目标或可比 ASIN 的当前市场画像；
 - 可选通过外层 `sif_mcp` 路由 `market_estimate_profit_threshold`，仅在全部正式输入均有可信父证据时形成探索性采购成本上限；
+- 可选通过 `sellersprite_mcp` 使用 `product_research`、`competitor_lookup` 或 `asin_detail` 反向验证 Amazon 市场需求/售价；
+- 用户明确要求 1688 候选线索时，可通过 `sorftime_mcp` 使用 `ali1688_product_search`、`ali1688_product_request`、`ali1688_similar_product`、`ali1688_product_search_from_image`、`ali1688_product_variations`；
 - 用户确认的采购数量、目标日期、交付地点、币种、Incoterms 偏好和审批规则。
 
 不得把商品需求线索、公开 Listing 或供应商宣传语当成工厂身份、产能、报价、认证或履约事实。
 
-### 唯一外部业务数据源
+### 三 MCP 外部数据路由
 
-- 新外部业务数据只允许来自上述两个 SIF 工具；
-- 每个工具首次使用前的 `describe`、机器 `inputSchema` 和实际响应是接口真相；
-- 不使用 Web、浏览器、1688、企业查询、OSINT、supplyflow、其他 MCP/API 或搜索引擎；
+- 新外部业务数据只允许来自上述明确路由；
+- 工具名未知时先在对应外层工具 `search`；已知精确工具名可直接 `describe`。每任务每工具首次 `call` 前必须实时 `describe`，再由同一外层工具以相同精确 `name` 和符合实时 `inputSchema` 的 `arguments` 执行 `call`；
+- 不使用 Web、浏览器、企业查询、OSINT、supplyflow、未列明 MCP/API 或搜索引擎；
 - 不读取或索要第三方密钥，不安装采购插件，不静默换源；
-- SIF 工具不可见、参数无法合法构造或结果不足时，改用已有合法输入；仍不足则失败关闭。
+- 计划比较多个 Amazon 市场来源而其中一个无法取数时，明确写出缺少的来源、受影响的需求或售价判断，以及下一步所需数据。Sorftime 1688 是独有的候选线索来源；调用失败时只说明当前没有 1688 候选证据，并列出重新查询所需条件，不得伪称仍完成了多源核验。只有语义和范围真正可比时才使用其它来源对照，仍不足则停止相应判断。
 
-SIF 不是供应商数据库。即使返回 ASIN 画像或探索性采购上限，也不得生成供应商名称、联系方式、工厂地址、资质、MOQ、报价、产能、样品、交期、付款或履约结论；供应商阈值也不得写成真实报价、landed cost 或第14利润真相。
+SIF/SellerSprite 不是供应商数据库。Sorftime 1688 虽可返回候选商品/供应商陈述、SKU、相似货源或挂牌价格，也不得把它们升级为法定身份、联系方式可信性、资质、MOQ、正式报价、产能、样品、交期、付款或履约结论；挂牌价和供应商阈值都不得写成真实报价、landed cost 或第14利润真相。
 
-### 工作区合同
+### 工作区
 
 - `uploads/` 只读，不移动、覆盖、重命名或补写原文件；
 - `temp/procurement/<case-id>/01-sourcing-readiness/` 存放字段抽取、冲突清单、规格草稿和 RFQ 草稿；
 - `outputs/procurement/<case-id>/01-sourcing-readiness/` 存放唯一正式交付；
 - 正式回复只链接 `outputs/`，不把 `temp/` 草稿冒充最终结果。
 
-### 双层证据谱系
+### 证据与判断
 
-输入事实建立 `input_evidence`：
+输入事实保留来源路径、提供日期和版本、适用产品/市场范围，以及它能证明和不能证明的内容。Agent 不能覆盖原始证据，也不能把未来目标伪装成当前事实。
 
-- `evidence_id`
-- `source_path`
-- `source_type`
-- `source_date`
-- `source_version`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- `scope`
-- `limitations`
+寻源准备围绕五类有业务意义的记录展开：
 
-Agent 产生的正式对象在对象本体中直接保存以下五项血缘字段，不能只在报告末尾 `agent_output` 总账中补写：
+| 记录 | 必须回答 | 直接依据 | 限制与下一步 |
+|---|---|---|---|
+| 采购要求 | 买什么、必须满足什么、怎样验收 | 用户材料、规格和批准记录 | 未确认数值保持待定 |
+| 缺口 | 哪个决策因什么信息缺失或冲突而受阻 | 已有要求与缺失材料 | 写明责任人和完成标准 |
+| RFQ 条款 | 要向供应商问什么、用什么格式回答 | 已确认要求和缺口 | 未获外发授权时只生成草稿 |
+| 假设 | 为何暂时这样规划、影响什么 | 用户指令或可定位事实 | 写明批准状态和失效触发 |
+| 候选线索 | 外部挂牌提供了什么待核验信息 | 原始调用和挂牌返回 | 始终标为线索，不升级为已核验供应商 |
 
-| 派生对象 | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 对象载荷 |
-|---|---|---|---|---|---|---|---|
-| `normalized_requirement` | `requirement_id` | 支撑要求值、优先级和验收方式的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `normalized \| inference` | 对象、类别、要求、值/单位/公差、验收、批准和状态 |
-| `gap` | `gap_id` | 支撑缺失或冲突判断的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `coding \| inference` | 缺口、影响、所需证据/决定、责任人、截止和状态 |
-| `rfq_clause` | `clause_id` | 支撑外发条款内容和范围的 Evidence/Requirement IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `normalized \| inference` | 条款类别、精确问题、供应商响应格式、外发授权和限制 |
-| `assumption` | `assumption_id` | 支撑采购假设的 Evidence/Instruction IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | 固定 `hypothesis` | 假设、适用情景、影响、批准状态和失效触发 |
-| `candidate_field` | `candidate_field_id` | 支撑字段值或待核验状态的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `normalized \| coding` | Candidate ID、字段名、字段值/状态、提供者和核验要求 |
-
-四轴取值以 `references/sourcing-readiness-contract.md` 为准。五类对象的轴值必须逐条赋值，不能从输入证据继承；Agent 的推断不能覆盖原始证据，未来目标不能伪装成当前事实，对象轴、时间轴、单位轴或口径轴也不能替代上述五项字段。
+每条记录都直接引用实际依据，并说明判断理由、限制、下一责任人和所需核验；不能只在报告末尾放通用血缘表。
 
 ## 启动检查
 
@@ -95,35 +86,33 @@ Agent 产生的正式对象在对象本体中直接保存以下五项血缘字�
 
 只有商品名称而没有可验证规格时，不得直接生成可外发 RFQ，只能输出需求澄清表。
 
-### 就绪状态
+### 启动判断
 
-- `ready_for_rfq`：硬约束、验收方式、数量、地点、时间与报价口径足够；
-- `ready_with_assumptions`：允许外发，但假设已显式标注且需供应商回应；
-- `clarification_required`：缺少会改变供应商范围或报价的关键事实；
-- `conflicted`：来源之间的规格、数量、日期或责任方冲突；
-- `blocked`：无法确认采购对象或合法输入不可读；
-- `out_of_scope`：请求要求搜索、背调、联系、询价、下单或保证供应商可靠。
+硬约束、验收方式、数量、地点、时间和报价口径齐全时，才形成可外发 RFQ。允许带假设外发时，逐项标明假设并要求供应商回应。会改变供应商范围或报价的关键事实缺失、规格/数量/日期/责任方冲突时，说明缺口和下一责任人；无法确认采购对象时阻塞。背调、联系、代询价、下单和保证供应商可靠不在范围内。
 
-## SIF 工具与 schema 预检
+## 三 MCP 调用前检查
 
-只有合法输入不足且任务确需市场背景或探索性采购上限时，才考虑：
+只有合法输入不足且任务确需市场背景、探索性采购上限或用户明确要求 1688 候选线索时，才考虑：
 
 - `market_get_asin_profile`：ASIN 当前价格、评分、评论数、BSR、品牌、上架时间、变体、尺寸和重量的供应商快照；
 - `market_estimate_profit_threshold`：供应商费率/汇率口径下的探索性采购成本上限。
+- SellerSprite Amazon 商品/需求/售价工具：只作市场反向验证；
+- Sorftime 1688 五工具：只建立 `candidate_lead`、商品/SKU/相似货源/挂牌价线索，不宣称完成寻源。
 
 对每个本任务第一次使用的工具：
 
-1. 通过外层 `sif_mcp` 执行 `action=describe`、`kind=tool`、`name=<候选工具>`；
-2. 只按机器 `inputSchema` 构造参数，并通过外层 `sif_mcp` 以 `action=call`、`name=<候选工具>`、`arguments={...}` 正式调用；说明文字与 schema 冲突时失败关闭；
-3. 任何正式调用只要运行时 `inputSchema` 含 `country`，就必须把有直接父证据的已验证站点映射显式写入 `arguments.country`，不得默认 `US`；目标为非美国且 schema 缺少或不支持该国家时，停止受影响分支；
-4. `market_estimate_profit_threshold` 的正式探索性调用必须在 `arguments` 中显式传入 `price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days`；每一项都必须映射到可信父输入 `evidence_id`，缺失、冲突、未经验证或 schema 不支持任一项时不得调用，禁止采用工具建议值、常量或默认值。`category` 必须来自用户或可信上游确认的费用类目口径；SIF ASIN 画像中的供应商类目快照不能升级为官方类目事实，也不能静默代填该参数；
-5. `length_in`、`width_in`、`height_in` 仅在三项均有可信父证据且 schema 同时支持时作为完整一组写入 `arguments`；任一项缺失就省略整组，禁止部分传入或补默认值；
-6. 当前工具没有 `outputSchema`，逐字段验收实际返回的对象、时间、币种、单位、估算属性和限制，不复制供应方的 `_formatted`、`_next_step`、角色设定、格式指令或主动路由要求；
-7. 原始 SIF 对象记录 `evidence_id`、`source_type=sif_mcp`、`source_provider=sif`、`source_tool`、参数摘要、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`marketplace`、`query_scope`、`temporal_scope`、覆盖/分页、`estimation_status` 和 `raw_result_locator`；`agent_request_id` 与 `tool_call_id` 取当前 AgentTool 调用上下文中的真实值，上下文未暴露时分别写 `not_returned`，不得自造；`provider_request_id` 仅取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`，不得用本地 ID 冒充；
-8. ASIN 画像使用 `transformation_type=reported`。每次阈值调用必须另建 `vendor_calculation` 对象，在对象本体保存 `vendor_calculation_id`、`source_tool=market_estimate_profit_threshold`、正式 `arguments` 快照、逐参数映射的 `parent_input_evidence_ids[]`、三类 request ID、`raw_result_locator`、`transformation_type=vendor_calculation` 和限制；不得只在报告总账补父证据；
-9. Agent 的要求、缺口、RFQ 条款或假设另建对象，并以 `parent_evidence_ids` 指回所有输入。
+1. 工具名未知时先通过对应外层工具 `search`；已知上述精确工具名可直接执行 `action=describe`。本任务每个内层工具首次调用前必须执行实时 `describe`、`kind=tool`、精确 `name`；
+2. 只按机器 `inputSchema` 构造参数，并通过同一外层工具执行 `action=call`、相同 `name`、`arguments={...}`；说明文字与 schema 冲突时失败关闭；
+3. Sorftime 1688 的查询词、商品 ID、图片 URL、分页和筛选条件必须来自父 Evidence；`ali1688_product_search_from_image` 只能使用用户提供或可信上游可追溯的 `image_url`，不得外传本地图片或伪造 URL；Sorftime 非 Amazon 能力只有任务明确命中 1688 时可用；
+4. 从直接父 Evidence 取得目标站点，并按实时 `inputSchema` 实际暴露的站点字段（如 `country`、`marketplace`、`amz_site`、`keyword_support_site`、`site`）显式映射；SIF 工具实际暴露 `country` 时写入 `arguments.country`。只有 schema 无法控制站点且工具默认/覆盖与目标不一致时，才停止受影响分支；不得采用 `US`、`Unknow` 或 `UnKonw` 默认值；
+5. `market_estimate_profit_threshold` 的正式探索性调用必须显式传入 `price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days`，并逐项映射可信父证据；`category` 必须是用户/可信上游确认的费用类目，禁止采用商品画像类目、工具建议值、常量或默认值；
+6. `length_in`、`width_in`、`height_in` 仅在三项均有可信父证据且 schema 同时支持时成组传入；
+7. 三个目录均无 `outputSchema`，逐字段验收实际返回；不得拼 Gateway、HTTP、shell、索取密钥或复制供应方格式指令；
+8. Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配；其他候选仍须实时 `describe`，副作用无法确认时失败关闭；
+9. 每次 MCP 业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造参数时不调用。SIF 阈值计算另外列出正式参数与全部直接依据；
+10. Agent 的要求、缺口、RFQ 条款、候选线索或假设另建派生对象，并回指所有实际输入。
 
-SIF 字段与结果统一记录 `not_returned | not_queried | parse_failed | missing | conflicted | true_zero`。供应商搜索、身份、联系方式、资质、MOQ、报价、产能、样品、交期和履约一律 `not_queried`；schema 漂移、缺字段或响应不完整时另记调用错误并停止受影响部分，不猜字段映射，也不得为了“凑完整”寻找第二数据源。
+供应商未查询、未返回、解析失败、字段缺失或冲突都不能补成零。重叠市场需求或售价先对齐站点、对象、期间、单位、定义和采集范围，真正可比才比较且不平均，口径不同只作方向印证，冲突逐源分列。计划中的某个数据源缺失时明确降级覆盖范围；Sorftime 1688 独有分支失败时只说明该来源不可用和当前没有相应证据。身份、资质、正式 MOQ/报价、产能、样品、交期和履约仍须用户或合格责任方核验。
 
 ## 执行流程
 
@@ -191,7 +180,7 @@ RFQ 要求供应商逐项回应：
 
 ### 第六步：定义候选池记录
 
-只创建空白字段和证据要求，不填造候选。至少包括：
+默认只输出需求澄清和候选证据要求，不填造候选。只有用户明确要求 1688 线索，且 Sorftime 返回对象能定位到实际工具、查询范围、分页和原始结果时，才可列为“未验证候选线索”；不得进入“已核验供应商”“已尽调供应商”或“推荐供应商”集合。至少包括：
 
 - `supplier_candidate_id`
 - 法定名称与常用名称
@@ -200,11 +189,11 @@ RFQ 要求供应商逐项回应：
 - 产品范围与工艺
 - 服务地区与语言
 - 声称的认证、产能和客户类型
-- 对应证据 ID
+- 对应的原始文件、段落或工具结果位置
 - 身份冲突和待核验项
 - 当前阶段与负责人
 
-没有用户提供候选时，候选池为空是合法结果。
+没有用户提供候选且用户未明确要求 1688 线索时，候选池为空是合法结果。明确要求后仍无可追溯返回时也保持为空，并记录对应 provider 的失败或无证据状态。
 
 ### 第七步：编制可外发 RFQ
 
@@ -236,14 +225,14 @@ RFQ 只包含已获授权外发的信息，并明确：
 - `missing_specification`：只交付规格澄清表，不生成完整 RFQ；
 - `conflicting_requirements`：并列冲突、影响和责任人，暂停对应条款；
 - `missing_quantity_or_location`：允许生成结构草稿，但报价状态为 `not_ready`;
-- `unsupported_supplier_search`：明确只能提供搜索要求和候选池字段；
-- `failed`：SIF 无权限、限流、超时、schema 漂移或解析失败时停止受影响背景分支，不换源；
-- `not_returned`：空数组或字段未返回时保持外部背景缺失，不补零、不生成供应商字段；
-- `not_queried`：用户/上游输入足够，或目标属于供应商搜索、身份、联系方式、资质、MOQ、报价、产能、样品、交期和履约时，不向 SIF 请求；
-- `parse_failed`：保留原字段与错误，不生成供应商结论；
+- `unsupported_supplier_search`：没有明确 1688 线索请求时，只提供搜索要求和候选池字段；已明确请求时也只能新增可追溯的 `unverified_lead`；
+- 任一 MCP 无权限、限流、超时、schema 漂移或解析失败时，停止受影响的市场背景或候选线索分支，并写明缺少哪个来源、不能判断什么、重新查询需要什么；1688 查询失败时只说明当前没有 1688 候选证据，不换源或伪称完成多源验证；
+- 当 SIF 返回空数组或未返回所需字段时，外部市场背景仍然缺失，不能据此补零或生成供应商信息；保留缺口，并列出继续准备寻源所需的补充输入；
+- 当用户或上游输入已经足够，或目标属于供应商搜索、身份、联系方式、资质、MOQ、报价、产能、样品、交期和履约时，SIF 查询不能验证这些供应商事实；直接使用已有输入，并把相应事实交由采购侧或候选供应商核验；
+- 当 SIF 返回内容无法正确解析时，相关字段不可用于寻源判断，不能据此形成供应商结论；保留原字段和错误信息，停止受影响的推断并要求重新查询或人工核验；
 - `missing`、`conflicted`、`true_zero`：分别保存缺失、冲突和有明确零证据的结果，不互相替代；
-- `partial_result`：保留已验证区块，未验证区块标为 `tbd`；
-- `out_of_scope`：供应商搜索、背调、外联、询价、下单、付款和履约操作。
+- 当只有部分区块完成验证时，整体寻源准备度仍不完整，未验证内容不能参与定案；交付已验证区块，把未验证区块保留为 `tbd` 并列出补证动作；
+- 当任务要求供应商搜索、背调、外联、询价、下单、付款或履约操作时，当前 Agent 无法代替采购执行这些动作，因而不能声称候选已核实或交易已推进；降级为寻源要求、核验清单和人工执行步骤。
 
 ## 正式交付
 
@@ -251,17 +240,19 @@ RFQ 只包含已获授权外发的信息，并明确：
 
 1. `sourcing-readiness.md`：范围、状态、约束、缺口、责任人和 go/no-go；
 2. `supplier-rfq.md`：可外发 RFQ；
-3. `supplier-candidate-register.csv`：空白或用户已有候选的结构化登记表；
-4. `sourcing-evidence-ledger.md`：输入证据、Agent 输出、父子关系和四轴。
+3. `supplier-candidate-register.csv`：空白、用户已有候选，或用户明确请求后形成的 `unverified_lead` 结构化登记表；
+4. `sourcing-evidence-ledger.md`：来源、直接依据、判断理由、限制和核验责任。
 
 使用 `assets/templates/supplier-sourcing-readiness-template.md`。若不具备外发条件，只生成 `sourcing-data-readiness.md`，不得用漂亮模板掩盖缺口。
 
 ## 质量门
 
+- 按 `references/sourcing-readiness-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；压缩/截断候选或市场结果不得声称全量，须缩小范围/按内层分页，仍不完整则记录精确 provider 覆盖状态。
+
 - 交付明确区分事实、目标、假设、供应商待答和缺口；
 - 每个硬约束都有来源、版本、单位和验收方式；
 - 没有搜索、推荐、联系或虚构供应商；
-- SIF 仅用于 ASIN 当前画像或探索性采购上限，没有成为供应商、报价、MOQ、交期、landed cost 或利润事实源；
+- SIF/SellerSprite 仅用于 Amazon 市场需求或售价背景，Sorftime 1688 仅在用户明确要求时形成可追溯 `unverified_lead`；三者都没有成为已寻得/已核验/已推荐供应商、正式报价、MOQ、交期、landed cost 或利润事实源；
 - 候选池允许为空，没有为了完整度补造记录；
 - 报价口径含币种、单位、有效期、MOQ、阶梯和 Incoterms；
 - 敏感信息、密钥和内部利润底线未被默认外发；

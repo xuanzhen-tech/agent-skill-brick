@@ -1,97 +1,61 @@
 <!--
-文件功能：提供海关商品事实、进口情景、候选编码、原产地、估价、税率/贸易救济证据、专业问题和 handoff 模板。
-职责边界：模板不是最终归类、关税计算或报关文件；占位值不得被当成确认编码或税率。
-重要关联：由 ../../SKILL.md 物化；字段和状态遵循 ../../references/customs-classification-readiness-contract.md。
+文件功能：提供商品事实、候选税则编码、原产地、估价、税率和专业确认的海关就绪模板。
+职责边界：不自行确定编码、税率、原产地、申报价或应缴金额，也不执行报关。
+重要关联：由 ../../SKILL.md 物化，判断方法见 ../../references/customs-classification-readiness-contract.md。
 -->
 
 # 海关分类与税费就绪包
 
-## A. 元数据与结论上限
+## 1. 进口情景
 
-| 字段 | 内容 |
-|---|---|
-| `case_id` | `<case-id>` |
-| `product/variant/version` | `<values>` |
-| `destination/planned date` | `<values>` |
-| `status` | `<ready_for_customs_broker_review/product_facts_partial/candidate_code_missing/conflicted/blocked>` |
-| `conclusion_limit` | `not_a_final_classification_or_duty_calculation` |
+- 商品、型号与版本：
+- 进口国家/地区：
+- 进口主体与交易关系：
+- 计划进口时间：
+- 结论上限：
 
-## B. 商品事实
+## 2. 商品事实
 
-| Fact ID | Field | Value/Unit | Product/Variant | Version | Evidence IDs | Status |
-|---|---|---|---|---|---|---|
-| `<id>` | `<material/function/use/set/etc>` | `<value>` | `<scope>` | `<version>` | `<ids>` | `<confirmed/conflicted/missing>` |
+| 事实 | 已确认内容 | 直接依据 | 版本与适用范围 | 冲突或未知 | 责任方 |
+|---|---|---|---|---|---|
+| 材料/成分/工艺/功能/用途/部件/套装/包装 |  |  |  |  |  |
 
-## C. 进口情景
+## 3. 候选编码
 
-| Scenario ID | Destination | Date | Importer/Declarant | Origin Reported | Goods State/Quantity | Incoterm/Version/Place | Invoice Currency/Value Evidence |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<jurisdiction>` | `<date>` | `<roles>` | `<origin>` | `<state/value>` | `<values>` | `<ids>` |
+| 候选编码与体系 | 辖区、位数与版本日期 | 候选描述/原文位置 | 支持事实 | 反对或缺失事实 | 专业问题 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## D. 候选编码
+## 4. 原产地与估价
 
-| Candidate ID | Code/Level | Tariff Schedule/Version/Effective | Provided By | Goods Description | Reasoning Reported | Alternative/Exclusion | Evidence IDs | Status |
-|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<code/level>` | `<values>` | `<owner>` | `<description>` | `<reported>` | `<values>` | `<ids>` | `<candidate_for_review/conflicted/insufficient_basis/confirmed_by_qualified_owner>` |
+| 主题 | 当前事实 | 适用规则或专业依据 | 缺失/冲突 | 不能下的结论 | 责任方 |
+|---|---|---|---|---|---|
+| 原产地 |  |  |  |  |  |
+| 海关估价 |  |  |  |  |  |
 
-## E. 原产地
+## 5. 税率与贸易措施
 
-| Origin Record ID | Claimed Origin | Materials/Production Steps/Locations | Evidence | Preferential/Non-Preferential Scope | Rule/Opinion Evidence | Gap | Qualified Owner |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<origin>` | `<facts>` | `<ids>` | `<scope>` | `<ids>` | `<gap>` | `<owner>` |
+| 编码/原产地 | 税率或措施 | 辖区与适用日期 | 条件与例外 | 来源/专业确认 | 当前限制 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## F. 估价
+## 6. 待核验外部商品线索（如使用）
 
-| Valuation ID | Transaction Price/Currency | Related Parties | Assists/Moulds/Royalties/Commissions/Packaging/Freight Facts | Incoterm | Authority/Opinion IDs | Unknowns | Qualified Owner |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<value>` | `<facts>` | `<facts>` | `<values>` | `<ids>` | `<unknowns>` | `<owner>` |
+| 上游提供方与精确工具 | 商品/范围/时间 | 页面或挂牌陈述 | 可用于补什么问题 | 不能证明 | 原始结果位置 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## G. 税率与贸易救济证据
+## 7. 专业确认与下游交接
 
-| Evidence ID | Code/Tariff Version | Rate/Type/Basis Reported | Origin/Producer/Exporter Scope | Effective Date | Source Path | Confirmed By | Limitations |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<values>` | `<reported values>` | `<scope>` | `<date>` | `<path>` | `<qualified owner/unknown>` | `<limits>` |
-
-## H. 专业问题
-
-| Question ID | Closed Question | Product/Scenario/Candidate IDs | Existing Evidence | Decision Needed | Qualified Owner | Due/Gate |
-|---|---|---|---|---|---|---|
-| `<id>` | `<question>` | `<ids>` | `<ids>` | `<decision>` | `<owner>` | `<date/hold>` |
-
-## I. 08/14 Handoff
-
-| Field | Value |
-|---|---|
-| `confirmed classification evidence id` | `<id/pending>` |
-| `product/jurisdiction/date scope` | `<scope>` |
-| `origin/valuation status` | `<values>` |
-| `rate/additional charge source/effective date` | `<values>` |
-| `unresolved remedies/restrictions` | `<items>` |
-| `conclusion limitations` | `<limits>` |
-
-## J. 证据谱系
-
-| Record ID | Layer | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Scope | Limitations |
-|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<scope>` | `<limits>` |
-
-## K. 来源可用性与业务状态
-
-| Product/Code/Rate Field ID | `source_availability_status` | Business `result_status/candidate status` | Evidence Scope | Interpretation |
+| 需确认事项 | 最小材料 | 专业责任方 | 截止时间 | 确认后交给 08/14 的内容 |
 |---|---|---|---|---|
-| `<id>` | `<not_returned/not_queried/parse_failed/missing/conflicted/true_zero>` | `<customs status>` | `<ids/date/scope>` | `<bounded meaning>` |
+|  |  |  |  |  |
 
-前五种来源状态不得写成 0、无税费、无限制或无风险。正例：合格责任方以带日期税则确认附加税率为 0，记 `true_zero`；最终归类仍由责任方确认。反例：税率字段未返回，记 `not_returned`，不得补成 0%。
+## 8. 质量检查
 
-## L. 质量门
-
-- [ ] 商品、变体、辖区和日期明确
-- [ ] 候选编码有提供者、版本和证据
-- [ ] Agent 未自定 final code
-- [ ] 原产地、估价和 Incoterms 完整
-- [ ] 税率/贸易救济来自带日期依据
-- [ ] 未计算完税价格或应缴金额
-- [ ] Handoff 只传合格确认结论
-- [ ] 无 Web/HS API/报关/缴税
-- [ ] 来源六态与业务状态分列，前五项未补零
-- [ ] 正式文件位于 `outputs/`
+- [ ] 材料、功能和本质特征未由标题、类目或挂牌页推断。
+- [ ] 候选编码未写成最终 HS/税则编码。
+- [ ] 发货地或供应商所在地未自动写成原产地。
+- [ ] 采购价或平台售价未自动写成海关申报价。
+- [ ] 税率和贸易措施带辖区、编码、原产地、日期与条件。
+- [ ] 未计算税款、执行报关或调用三个 MCP。

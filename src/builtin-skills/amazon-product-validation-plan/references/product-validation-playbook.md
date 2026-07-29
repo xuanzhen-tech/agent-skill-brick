@@ -38,21 +38,21 @@
 
 | 假设类型 | 低成本测试 | 需要的证据 | 常见停止条件 |
 |---|---|---|---|
-| 需求 | SIF 关键词与销量观察复核 | 关键词需求、历史、销量观察与期间 | 趋势冲突或样本不足 |
+| 需求 | 三 MCP 的可比关键词与销量观察复核 | 关键词需求、历史、销量观察、供应商覆盖与期间 | 趋势冲突、不可比或样本不足 |
 | 竞争 | 竞品、集中度与新品份额对照 | 头部份额、上架时长、销量占比 | 新品无法获得份额 |
-| 差异化 | SIF 竞品/关键词结构、用户或可信上游材料与样品评审 | 明确问题、目标改进、可实现性 | 只有主观偏好 |
+| 差异化 | 三 MCP 竞品/关键词/Review 主题、用户或可信上游材料与样品评审 | 明确问题、目标改进、可实现性 | 只有主观偏好或把评论主题当产品事实 |
 | 经济 | 基准与用户指定压力情景 | 完整输入账本、CM3、完全负担贡献 | 关键成本缺失或压力情景为负 |
 | 供应 | 样品、MOQ、交期、质检与包装确认 | 用户或供应团队记录 | 无可接受样品或窗口不可达 |
 | 运营 | 预算、内容、关键词、库存与履约准备 | 负责人和完成证据 | 关键资源无人负责 |
 | 合规 | 交给用户指定的专业责任人核验 | 书面结论或批准 | 未核验前不进入不可逆支出 |
 
-SIF 只提供市场观察，且不含评论正文能力。供应、成本、样品、评论原文、合规和团队能力不应由 Agent 外部搜索补齐。
+三个 MCP 只提供供应商市场观察。SellerSprite `review` 与 Sorftime `product_reviews`/`product_customers_say` 可补评论主题，但不证明总体发生率、产品技术事实或合规声明；供应、成本、样品、合规和团队能力不得由外部供应商补齐。
 
-消费上游 `outputs/` 时，当前包装记录固定使用 `source_type=upstream_output`，并保留 `upstream_source_file`、`upstream_evidence_id`、`upstream_source_type`、`upstream_temporal_scope`、`upstream_estimation_status`、`upstream_transformation_type` 与 `upstream_limitations`；缺少任一谱系要素时，不得把对应假设升级为已验证。
+消费上游 `outputs/` 时，保留上游文件、证据编号、版本、数据期间、数值是报告/估算/预测还是 Agent 计算，以及原有限制；缺少可定位依据、数值性质或限制时，不得把对应假设升级为已验证。
 
-实际刷新 SIF 时，`agent_request_id` 与 `tool_call_id` 只取当前 AgentTool 调用上下文暴露的对应真实值；仅当该上下文确实未暴露对应字段时才写 `not_returned`。`provider_request_id` 只取 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`，三类 ID 不得互代。若 `inputSchema` 含 `country`，`arguments.country` 必须绑定直接父 Evidence ID 并写入 `parent_input_evidence_ids`；没有直接父证据就不调用，目标非 US 且不受支持时停止刷新。
+实际刷新 MCP 时，记录供应商与精确工具、站点、对象、期间、筛选/分页、原值、原始结果位置和关键参数依据；缺证据或 schema 不支持即停止该源。请求 ID 只在真实返回且排错确实需要时保留。
 
-每次刷新都记录整体 `result_state`，每个消费字段记录 `field_state`；两者只允许 `not_returned`、`not_queried`、`parse_failed`、`missing`、`conflicted`、`true_zero`。前五态不得补成 0，只有响应明确返回且语义可确认的零才是 `true_zero`。
+每次刷新和实际消费字段都说明成功返回、未查询、未返回、解析失败、资料缺失或来源冲突。以上情况不得补成 0；只有响应明确返回且语义可确认的零才可作为零证据。
 
 ## 三段门槛
 
@@ -69,7 +69,7 @@ SIF 只提供市场观察，且不含评论正文能力。供应、成本、样�
 ### G0 数据就绪
 
 - 站点、候选、期间和上游版本明确；
-- 所需 SIF 工具可见且已按 `describe` 核对机器 schema，或已有未过期冻结证据；
+- 所需外层 MCP 可见且每个内层工具已按 `describe` 核对机器 schema，或已有未过期冻结证据；部分供应商缺失及其对门槛的影响已说明；
 - 缺口和责任人明确。
 
 ### G1 市场成立
@@ -119,18 +119,4 @@ evidence_of_done
 
 ## 决策记录
 
-每次决策保留：
-
-```text
-decision_id
-date
-gate
-status = go | watch | kill | blocked
-evidence_ids
-decision_owner
-approved_spend
-next_review
-rationale
-```
-
-新证据追加新记录；不覆盖旧决策。
+每次决策保留日期、当前验证门、推进/观察/排除/阻塞结论、直接依据及原始位置、责任人、批准预算、下次复核时间和理由。新证据追加新记录，不覆盖旧决策。

@@ -1,10 +1,10 @@
 ---
 name: amazon-ad-budget-and-acos-planning
-description: 区分实际、目标和保本 ACoS 以及 TACoS，消费真实广告报表与第14专家已验证经济边界，并可把 SIF 关键词推广经济性作为外部供应商观察，形成透明预算情景和人工决策护栏。适用于预算规划、花费节奏复核和盈亏边界评估；不适用于固定预算比例、行业阈值、自动改预算/竞价、预测必然销量或用 SIF 观察代替一方销售与广告报表。
+description: 区分实际、目标和保本 ACoS 以及 TACoS，消费真实广告报表与第14专家已验证经济边界，并可按职责组合 SIF、SellerSprite 与 Sorftime 的关键词推广、PPC 或自然趋势作为外部供应商观察，形成透明预算情景和人工决策护栏。适用于预算规划、花费节奏复核和盈亏边界评估；不适用于固定预算比例、行业阈值、自动改预算/竞价、预测必然销量或用供应商观察代替一方销售与广告报表。
 ---
 
 <!--
-文件功能：定义实际/目标/保本 ACoS、TACoS、预算情景、花费节奏、经济护栏和人工决策状态。
+文件功能：定义实际/目标/保本 ACoS、TACoS、预算情景、花费节奏、经济护栏和人工建议沟通。
 职责边界：只计算和规划，不重建商品利润、不修改预算或竞价；保本边界必须消费第14专家或用户的已验证经济证据。
 重要关联：指标、经济输入和预算状态见 references/ad-budget-and-acos-contract.md；正式交付使用 assets/templates/ad-budget-acos-plan-template.md；报告质量依赖 amazon-ad-performance-diagnosis。
 -->
@@ -24,7 +24,7 @@ description: 区分实际、目标和保本 ACoS 以及 TACoS，消费真实广�
 
 本 Skill 不输出“行业标准 ACoS”或固定 70/20/10 预算结构。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -32,22 +32,25 @@ description: 区分实际、目标和保本 ACoS 以及 TACoS，消费真实广�
 - `amazon-ad-performance-diagnosis` 已验收的 spend、attributed sales/orders、期间和稳定 ID；
 - 第14专家 `amazon-pricing-margin-guardrails` 或用户提供的单位贡献、可广告贡献率、价格和成本边界；
 - 库存、促销、Listing 和现金限制的可信上游 `outputs/`；
-- 当前 Agent definitions 中真实存在的 `sif_mcp`，仅在已有一方广告报表、自有售价和第14贡献边界后，按需取得关键词推广经济性的外部供应商观察；
+- 已接入假设下的 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`，仅在已有一方广告报表、自有售价和第14贡献边界后，按需取得关键词推广、PPC 或自然排名的外部供应商观察；
 - 用户明确批准的情景假设。
 
-SIF 销量、流量、广告贡献或推广估计不能作为广告归因销售、总销售、预算消耗或实际 ACoS/TACoS 的一方分子或分母。
+三个 MCP 的销量、流量、广告贡献、PPC 或推广估计都不能作为广告归因销售、总销售、预算消耗或实际 ACoS/TACoS 的一方分子或分母。
 
 ### 外部数据边界
 
-- 新外部业务数据只允许通过当前 Agent 已注入的 `sif_mcp` 获取；其结果只作供应商观察，不是预算或广告账户事实；
+- 新外部市场数据只允许通过 `sif_mcp`、`sellersprite_mcp` 或 `sorftime_mcp` 获取；三者结果分别保存，只作供应商观察，不是预算或广告账户事实；
 - 若需要关键词出价/盈亏平衡背景，可把 `market_assess_keyword_promotion` 作为候选路由；先通过外层 `sif_mcp` 执行 `action=describe`、`kind=tool`、`name=market_assess_keyword_promotion`，再按当次机器 `inputSchema` 以 `action=call`、`name=market_assess_keyword_promotion`、`arguments={...}` 发起调用；
-- 正式调用的 `arguments` 必须显式包含已由父证据验证的 `own_price`、`own_margin` 与 `country`，并保存这三项各自的输入 `evidence_id`；任一项缺失、冲突或未经验证都不得调用。不得把 `country` 默认成 `US`；
-- 对任何 SIF 正式调用，只要运行时 `inputSchema` 含 `country`，就必须把有直接父证据的已验证站点映射显式写入 `arguments.country`，不得默认 `US`；目标为非美国且 schema 缺少或不支持该国家时，停止该外部观察分支；
-- 不调用 Amazon Ads API、SP-API、Seller Central、Sorftime、Keepa、Web、浏览器或其他 MCP/API；
+- SellerSprite 候选仅限 `keyword_research`、`keyword_miner`、`traffic_extend` 或 `traffic_keyword` 的关键词需求、PPC、广告排名外部对照；Sorftime 候选仅限 `keyword_detail`、`keyword_trend`、`product_ranking_trend_by_keyword` 的自然排名或趋势，不能改写为广告账户表现；
+- 正式调用的 `arguments` 必须显式包含已由可信材料验证的 `own_price`、`own_margin` 与 `country`，并记录三项参数的直接依据；任一项缺失、冲突或未经验证都不得调用。不得把 `country` 默认成 `US`；
+- 对任何 MCP 正式调用，都先从直接父 Evidence 取得目标站点，并映射到实时 `inputSchema` 实际暴露的 `country | marketplace | amz_site | keyword_support_site | site` 字段；SIF 工具实际暴露 `country` 时显式写入 `arguments.country`。只有 schema 无法控制站点且工具默认/覆盖与目标站点不一致时，才停止对应供应商分支；不得默认 `US`、自造字段或因为字段名不是 `country` 就提前停止；
+- 不调用 Amazon Ads API、SP-API、Seller Central、Web、浏览器或未列明的其他 MCP/API；
 - 不读取账户凭据，不改预算、不改竞价、不创建自动规则；
 - 一方广告或总销售资料不足时失败关闭，不用供应商估算补缺。
 
-当前 SIF 工具没有机器级 `outputSchema`。不得把 description、`_formatted`、`_next_step`、面向其他 Agent 的格式要求或本次未返回的字段写成稳定合同；外层 `arguments` 通过后，内层参数仍可能被 Gateway/SIF 拒绝，必须检查真实调用状态。
+三个目录都没有机器级 `outputSchema`。工具名未知时先用对应外层工具 `search`；已知精确工具名可直接 `describe`。每个任务对每个内层工具首次 `call` 前必须实时执行 `action=describe`、`kind=tool`、精确 `name`；正式调用只用同一外层工具的 `action=call + name + arguments`。不得拼 Gateway、HTTP、shell 或索取密钥，也不得把 description、`_formatted`、`_next_step`、供应商格式要求或未返回字段写成稳定合同。
+
+Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配，不得用名称子串推断其他候选的读写性质；其他候选必须以本任务实时 `describe` 判断副作用，副作用无法确认时失败关闭。
 
 ### 工作区
 
@@ -56,22 +59,13 @@ SIF 销量、流量、广告贡献或推广估计不能作为广告归因销售�
 - `outputs/advertising/<case-id>/04-budget-acos-planning/` 存放唯一正式规划；
 - 上游利润版本或归因数据变化时创建新版本。
 
-### 双层谱系
+### 证据与判断
 
-输入 `input_evidence` 记录 `evidence_id`、`source_path`、数据类型、账户/商品/实体范围、期间、币种、归因、利润版本、四轴和限制。原始 SIF 对象还记录 `source_type=sif_mcp`、`source_provider=sif`、`source_tool`、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`query_scope`、覆盖/分页和 `raw_result_locator`；其 `transformation_type=reported`，`estimation_status` 按结果自述保留 `reported` 或 `estimated`。`agent_request_id` 与 `tool_call_id` 取当前 AgentTool 调用上下文中的真实值；上下文未暴露时分别写 `not_returned`，不得自造。`provider_request_id` 仅取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`，不得用本地 ID 冒充。
+输入材料记录来源路径、账户/商品/实体范围、期间、币种、归因、利润版本和限制。每次 MCP 业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造的参数不调用。
 
-Agent 的指标重算、差距、情景、预算范围和决策建议是 `agent_output`，记录公式、`parent_evidence_ids`、假设、舍入和结论状态；不得继承 SIF 来源对象的 `source_type`。
+Agent 的指标重算、差距、情景、预算范围和决策建议必须说明使用了哪些直接输入、公式、假设和舍入方式，并给出结论限制。实际报表、用户目标和未来预算情景分开呈现；情景不能写成保证。
 
-四轴：
-
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-
-目标是 `future`；实际报表是 `reported`；预算情景通常是 `forecast|hypothesis`，不能写成保证。
-
-SIF 空值纪律继续区分 `not_returned`、`not_queried`、`parse_failed`、`missing`、`conflicted` 与有明确零证据的 `true_zero`，任何一种都不能代替一方广告报表中的零。
+供应商未查询、未返回、解析失败、字段缺失或冲突都不能补成零；只有响应明确给出且口径可确认的零才按真实零处理。比较前先对齐站点、对象、期间、粒度、币种/单位、流量口径、分页、定义和采集时间；口径一致才比较且绝不平均，口径不同只作方向印证，冲突逐源分列。计划中的某个数据源缺失时明确降级覆盖范围；独有单源失败时只说明该来源不可用和当前没有相应证据。
 
 ## 启动检查
 
@@ -87,16 +81,11 @@ SIF 空值纪律继续区分 `not_returned`、`not_queried`、`parse_failed`、`
 6. 第14专家或用户验证的经济边界，若做保本/预算建议；
 7. 预算周期、人工批准人和库存/现金限制。
 
-### 唯一顶层结果合同
+### 结论表达
 
-每次运行只使用一组顶层结果字段：
+先说明当前材料能支持实际表现复核、目标差距比较，还是预算情景建议。缺广告报表、总销售额、经济护栏，分母为零，期间/币种冲突，归因尚未成熟或目标未获批准时，分别写明受影响的公式、无法回答的问题和下一责任人。
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `MISSING_AD_REPORT | MISSING_TOTAL_SALES | MISSING_ECONOMIC_GUARDRAIL | ZERO_DENOMINATOR | CURRENCY_OR_PERIOD_CONFLICT | ATTRIBUTION_IMMATURE | TARGET_NOT_APPROVED | OUT_OF_SCOPE_REQUEST`
-
-不得再使用 `planning_status` 或其他顶层状态表达同一结果。指标 `calculation_status`、情景 `approval_status` 和决策候选状态只描述局部对象。
-
-没有保本经济输入时可以描述实际表现，但不得给保本 ACoS 或确定预算建议。
+没有保本经济输入时可以描述实际表现，但不得给保本 ACoS 或确定预算建议。结论始终是人工计划依据，不表示预算已修改。
 
 ## 执行流程
 
@@ -109,7 +98,7 @@ SIF 空值纪律继续区分 `not_returned`、`not_queried`、`parse_failed`、`
 - 日期、时区和粒度；
 - 归因窗口和成熟度；
 - 币种；
-- 来源 report/evidence ID；
+- 报表名称及原始文件、工作表或行位置；
 - 缺失和零分母规则。
 
 ### 第二步：区分三类 ACoS
@@ -209,18 +198,9 @@ SIF 空值纪律继续区分 `not_returned`、`not_queried`、`parse_failed`、`
 
 不使用固定生命周期比例或统一阈值，不因单一 ACoS 自动加减预算。
 
-### 第八步：建立决策状态
+### 第八步：形成建议与沟通
 
-- `maintain_for_review`
-- `increase_candidate`
-- `decrease_candidate`
-- `reallocate_candidate`
-- `hold_for_data`
-- `hold_for_economics`
-- `stop_candidate`
-- `not_assessable`
-
-所有状态都是人工决策候选。需记录证据、条件、风险和批准人。
+针对每个广告实体，直接说明建议保持、考虑增加、考虑减少、重新分配、等待数据、等待经济边界、考虑停止，或当前无法评估。每项建议都写明直接依据、适用条件、主要风险、仍需补充的材料和人工批准人，不另设通用状态字段。
 
 ### 第九步：定义复核与回滚
 
@@ -237,16 +217,16 @@ SIF 空值纪律继续区分 `not_returned`、`not_queried`、`parse_failed`、`
 
 ## 失败与降级
 
-- `MISSING_AD_REPORT`：`blocked` 或仅目标描述，不计算实际 ACoS；
-- `MISSING_TOTAL_SALES`：`ready_with_limitations`，不计算 TACoS；
-- `MISSING_ECONOMIC_GUARDRAIL`：`ready_with_limitations`，不计算保本 ACoS或给确定预算；
-- `ZERO_DENOMINATOR`：相关指标 `not_computable`；
-- `CURRENCY_OR_PERIOD_CONFLICT`：`ready_with_limitations` 或 `blocked`，不比较；
-- `ATTRIBUTION_IMMATURE`：`ready_with_limitations`，延后结论；
-- `TARGET_NOT_APPROVED`：`ready_with_limitations`，目标仅作为未批准情景，不能成为控制线；
+- 缺少广告报表时，只描述目标和所需报表，不计算实际 ACoS；
+- 缺少总销售额时，明确无法计算 TACoS，并列出所需销售期间与口径；
+- 缺少经济护栏时，不计算保本 ACoS 或给出确定预算，转请第 14 专家补充适用边界；
+- 分母为零时，说明相关指标无法计算，不把结果写成零；
+- 币种或期间冲突时停止比较，列出冲突值和统一口径所需材料；
+- 归因尚未成熟时延后结论，并给出可复核日期；
+- 目标尚未批准时，只作为待确认情景，不作为预算控制线；
 - SIF 参数错误时重新 `describe` 并按机器 `inputSchema` 修正一次；仍失败、无权限、限流、空结果或 schema 漂移时停止外部观察分支，不换源，也不影响已有充分一方证据的计算；
 - 用户要求固定通用比例时，说明需其定义业务目标，不提供通用比例；
-- `OUT_OF_SCOPE_REQUEST`：`out_of_scope`，拒绝预算/竞价写入、自动规则、真实销量预测或利润重建。
+- 对预算或竞价写入、自动规则、真实销量预测或利润重建等越界请求，明确拒绝并说明可提供的规划范围。
 
 ## 正式交付
 
@@ -262,6 +242,8 @@ SIF 空值纪律继续区分 `not_returned`、`not_queried`、`parse_failed`、`
 
 ## 质量门
 
+- 按 `references/ad-budget-and-acos-contract.md` 检查每个 MCP 结果是否含 `[agent-tool-result-compressed]` 或 `[agent-cli-tool-result-truncated]`；任一 marker 出现都不得声称全量覆盖，必须缩小查询范围或使用内层分页，仍不完整则标记该 provider 覆盖不足。
+
 - 实际、目标和保本 ACoS 分开；
 - ACoS 保存 raw ratio，差距同时给 `gap_ratio` 与 `gap_percentage_points`，并记录舍入；
 - TACoS 只用一方总销售；
@@ -270,10 +252,10 @@ SIF 空值纪律继续区分 `not_returned`、`not_queried`、`parse_failed`、`
 - 第14利润边界保留版本和证据；
 - 无固定预算比例、行业阈值或必然效果预测；
 - 情景假设与实际分开；
-- SIF 仅为带完整调用谱系的供应商观察，没有进入实际 ACoS/TACoS 或预算事实；
+- 三个 MCP 仅提供有直接来源和限制的外部观察，没有进入实际 ACoS/TACoS 或预算事实；
 - 所有动作等待人工批准；
 - 无 Ads API、自动规则或后台监控；
-- 双层谱系与工作区合同完整。
+- 每项计算与预算判断均能回到直接输入，并写明公式、假设、限制和人工责任人。
 
 ## 资源读取
 

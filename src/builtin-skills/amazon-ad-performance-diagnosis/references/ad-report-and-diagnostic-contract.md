@@ -1,133 +1,75 @@
 <!--
-文件功能：定义广告报告生命周期、签名、完整性、稳定 ID 联接、缺失语义、指标和诊断假设合同。
-职责边界：不执行报告请求、轮询、下载或广告账户操作，不提供虚构 Ads API 字段。
-重要关联：由 ../SKILL.md 在数据验收和诊断时读取；正式字段映射到 ../assets/templates/ad-performance-diagnosis-template.md。
+文件功能：说明广告报表验收、指标复算、变化分解和根因假设的方法。
+职责边界：不拉取或轮询报表，不操作广告账户，不把供应商观察当作一方绩效。
+重要关联：由 ../SKILL.md 在诊断时读取；正式交付使用 ../assets/templates/ad-performance-diagnosis-template.md。
 -->
 
-# 广告报告与诊断合同
+# 广告绩效诊断方法
 
-## 1. 顶层诊断结果合同
+## 1. 报表先过可用性门
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `REPORT_PROCESSING | REPORT_FAILED | REPORT_CANCELLED | REPORT_TIMEOUT | DOWNLOAD_FAILED | TRUNCATED_OR_PARTIAL | SCOPE_OR_ATTRIBUTION_CONFLICT | NOT_COMPARABLE | UNSTABLE_JOIN | ZERO_DENOMINATOR | OUT_OF_SCOPE_REQUEST`
+确认报告 ID/类型、账户/profile、站点、实体粒度、日期、时区、归因窗口、筛选条件、列集和文件版本。
 
-每次运行只允许这一组顶层诊断结果字段。每份异步报表的生命周期必须另存为 `report_status`；不得使用 `diagnostic_status`，也不得把 `processing/failed` 等报告状态写进 `result_status`。
+上游仍在生成、失败、取消、超时或下载失败时，不能把它写成空报表。只有文件已取得、可读、列结构清楚且范围可确认，才进入诊断。截断、分页不完整或压缩标记出现时，明确实际覆盖。
 
-## 2. 报告生命周期 `report_status`
+## 2. 不混合不可比报表
 
-| 状态 | 含义 | 是否可分析 |
-|---|---|---:|
-| `request` | 已有请求证据 | 否 |
-| `processing` | 上游生成中 | 否 |
-| `completed` | 上游完成，尚需下载验收 | 否 |
-| `failed` | 上游失败 | 否 |
-| `cancelled` | 上游取消 | 否 |
-| `timeout` | 用户定义等待边界到期 | 否 |
-| `download_failed` | 完成但文件未取得 | 否 |
-| `ingested` | 文件结构验收通过 | 是 |
-| `rejected` | 文件不可用于本分析 | 否 |
+比较前核对：
 
-## 3. 报告 manifest
+- 账户、站点、币种和实体；
+- 报告粒度与稳定实体键；
+- 日期、时区和归因窗口；
+- 指标定义、过滤条件和是否包含重复行。
 
-必须包含：
+无法稳定联接时只做单表描述，不做跨表归因。相同名称不代表同一 Campaign/Ad Group/Target。
 
-- `report_artifact_id`
-- `report_id`
-- `report_type_reported`
-- `account_scope_id`
-- `profile_id`
-- `marketplace_id`
-- `requested_at`
-- `completed_at`
-- `downloaded_at`
-- `report_status`
-- `source_path`
-- `recovery_reference`
-- `report_signature`
-- `file_hash_or_version`
-- `error_or_limit`
+## 3. 从原始列复算核心指标
 
-## 4. 报告签名
+- CTR：`clicks / impressions`
+- CPC：`spend / clicks`
+- CVR：`orders / clicks`
+- ACoS：`spend / attributed_sales`
+- ROAS：`attributed_sales / spend`
 
-签名字段：
+所有分母缺失或为零时写“不可计算”。展示舍入不能反向进入后续计算。来源已经给出比率时，也应在原始分子分母可用的情况下复算并解释差异。
 
-- 账户/profile/站点；
-- 报告类型；
-- 实体范围；
-- 开始与结束日期；
-- 时区；
-- 归因窗口和日期语义；
-- 粒度；
-- 列集；
-- 筛选与排除；
-- 币种。
+## 4. 分解变化而非罗列指标
 
-同名文件不等于同签名报告。
+先找变化发生在哪一层：
 
-## 5. 完整性
+- 曝光：覆盖、排名、预算或可见性问题；
+- 点击：相关性、创意、价格或流量结构问题；
+- 转化：商品、价格、Listing、库存或归因成熟度问题；
+- 花费：流量量级、CPC、竞价或预算节奏问题。
 
-| 字段 | 说明 |
-|---|---|
-| `page_count_expected/received` | 未知时明确 unknown |
-| `row_count_reported/parsed` | 原始与解析分开 |
-| `pagination_state` | complete/partial/unknown |
-| `truncation_state` | no/yes/unknown |
-| `coverage_scope` | 实体、日期和状态范围 |
-| `duplicate_count` | 重复行 |
-| `parse_error_count` | 解析失败 |
-| `empty_semantics` | zero_rows/headers_only/not_requested/failed |
+每个判断列出观察、直接报表依据、计算或比较过程、替代解释、限制和需要的补充材料。
 
-## 6. 稳定 ID 联接
+## 5. 谨慎形成根因假设
 
-每条联接记录：
+观察性报表不能单独证明因果。一个合格假设应说明：
 
-- `join_id`
-- `left_dataset/right_dataset`
-- `stable_key_fields`
-- `join_scope`
-- `matched/unmatched/ambiguous counts`
-- `manual_mapping_evidence_ids`
-- `join_status`
+- 看到的可复核变化；
+- 已被证据支持的链路；
+- 尚未知的环节；
+- 至少一个合理替代解释；
+- 可以验证它的补充报表、实验或人工计划。
 
-名称联接只能作为待人工确认候选，不能成为正式事实。
+不得把相关性写成“导致”或“必然改善”。
 
-## 7. 缺失语义
+## 6. 三源外部观察
 
-| 值 | 含义 |
-|---|---|
-| `0` | 来源真实报告零 |
-| `missing` | 字段或值缺失 |
-| `empty_result` | 完成请求真实无行 |
-| `not_requested` | 未请求 |
-| `not_applicable` | 不适用 |
-| `not_computable` | 分母缺失或零 |
-| `failed_state` | 生命周期失败 |
+只有一方报表已经通过验收，且外部观察能回答明确替代解释时，才调用 SIF、SellerSprite 或 Sorftime。
 
-## 8. 指标
+保存供应商、实际工具、对象/站点/期间、原始值、可复查位置和限制。供应商流量分数、广告结构画像或自然排名不能映射为 impressions、clicks、spend、orders、sales 或一方归因。
 
-每个计算记录：
+多源数据只有对象、时间、粒度和定义一致时才比较，绝不平均。缺少某个计划来源时降低覆盖范围；独有单源失败只说明该来源不可用。
 
-- 指标名；
-- 公式；
-- numerator/denominator 字段；
-- 币种和单位；
-- 期间、时区、归因窗口；
-- 输入 evidence IDs；
-- 零分母规则；
-- 舍入规则；
-- 输出 ID。
+## 7. 降级交付
 
-## 9. 诊断假设
+无法完整诊断时仍可交付：
 
-| 字段 | 说明 |
-|---|---|
-| `hypothesis_id` | 稳定编号 |
-| `observation` | 可复核变化 |
-| `parent_evidence_ids` | 必填 |
-| `supported_links` | 已支持链路 |
-| `unknown_links` | 未知链路 |
-| `alternative_explanations` | 至少一个 |
-| `next_evidence_or_test` | 补充证据 |
-| `support_status` | supported/partially_supported/unsupported/not_tested |
-
-不允许用任意综合分代替证据链。
+- 已验收的报表与实际覆盖；
+- 能复算的指标；
+- 不能比较的对象和原因；
+- 尚可成立的有限观察；
+- 最小补充材料和下一责任人。

@@ -1,98 +1,57 @@
 <!--
-文件功能：定义政策文档、列表详情关系、版本、翻译、差异、适用性、影响、行动和跨专家 handoff 合同。
-职责边界：不获取政策、不判断法律效力、不执行监控、推送或整改。
-重要关联：由 ../SKILL.md 在差异与影响评估时读取；正式字段映射到 ../assets/templates/policy-change-impact-template.md。
+文件功能：说明如何冻结 Amazon 政策版本、做段落级差异、判断适用范围并形成业务行动。
+职责边界：只评估用户或可信上游提供的政策原文，不抓取或持续监控政策，也不宣布法律效力。
+重要关联：由 ../SKILL.md 读取，正式交付见 ../assets/templates/policy-change-impact-template.md。
 -->
 
-# 政策变更证据合同
+# Amazon 政策变更影响评估方法
 
-## 1. 政策文档
+## 1. 先确认两版都是真实原文
 
-- `policy_document_id`
-- `policy_identity`
-- `title/issuer`
-- `marketplace/jurisdiction`
-- `language`
-- `publication/effective/revision/provided dates`
-- `version`
-- `source_path`
-- `document_type`
-- `completeness`
-- `validity_confirmed_by`
-- `limitations`
+每个版本至少记录标题、发布主体、站点/地区、页面或文件位置、版本/发布日期、生效日期、获取日期、语言、适用对象和完整性限制。
 
-`document_type`：`original_text`、`summary`、`notice`、`translation`、`professional_opinion`。
+列表页、摘要、通知标题或二手解读不能替代详情原文。只有一版正文时只能做单版适用性评估，不能声称发生了具体变更。
 
-## 2. 列表到详情
+## 2. 冻结版本与适用范围
 
-| 字段 | 说明 |
-|---|---|
-| `list_record_id` | 通知/列表记录 |
-| `detail_document_id` | 正文 ID |
-| `relation_status` | linked/ambiguous/missing |
-| `parent_evidence_ids` | 必填 |
+先确认：
 
-详情缺失时不能分析条款。
+- 新旧文本是否属于同一政策主题和站点；
+- 是否存在不同语言、地区、卖家类型或商品范围；
+- 生效日期与发布日期是否不同；
+- 引用、附件和例外条款是否齐全；
+- 翻译是否保留原段落定位和限定语。
 
-## 3. 差异
+## 3. 做段落级差异
 
-每项记录：
+按原文段落或条款逐项列出：
 
-- `diff_id`
-- `old_document/segment_id`
-- `new_document/segment_id`
-- `change_type`
-- `old/new text evidence ids`
-- `change_summary`
-- `substantive_status`
-- `translation_review_status`
+- 旧版内容与定位；
+- 新版内容与定位；
+- 新增、删除、修改或仅重排；
+- 事实差异；
+- 是否改变义务、范围、时间、证据或执行后果；
+- 无法确定的原因。
 
-`change_type` 使用 added/removed/modified/moved_without_substantive_change/unchanged/not_alignable。
+不把措辞变化自动升级为业务义务变化，也不把摘要中的解释写回原文。
 
-## 4. 影响
+## 4. 判断业务适用性
 
-| 字段 | 说明 |
-|---|---|
-| `impact_id` | 稳定编号 |
-| `diff_ids` | 来源变化 |
-| `affected_object_ids` | 商品/流程/资产/账号 |
-| `impact_mechanism` | 推断链 |
-| `applicability_status` | candidate/confirmed_by_qualified_owner/not_applicable_by_qualified_owner |
-| `responsible_expert_or_owner` | 责任方 |
-| `unknowns` | 未知 |
+把变更映射到具体对象：
 
-## 5. 行动
+- 站点、账户和卖家角色；
+- 商品、类目、品牌或受限属性；
+- 页面、库存、订单、配送、广告、客服或财务流程；
+- 当前政策生效时间与业务行动截止时间。
 
-状态：
+无法确认适用对象时，提出最小专业或平台核验问题，不做泛化影响结论。
 
-- `proposed`
-- `planned`
-- `in_progress_reported`
-- `verified_completed`
-- `blocked`
-- `not_applicable`
+## 5. 行动与验证
 
-只有验证证据可进入 `verified_completed`。
+每个行动写明受影响对象、直接政策依据、责任方、截止时间、完成材料、验证方式和不行动的风险。区分立即止损、待确认准备、长期流程改造。
 
-## 6. Handoff
+向其它专家交接时，只传递已确认的政策事实、适用范围、影响、行动和限制；接收方不得把“可能适用”改写成“已违规”。
 
-必须包含 `policy_evidence_id`、document/diff/impact/action IDs、站点、发布日期、生效日、as_of、责任方、限制和 `monitoring_status=not_running`。
+## 6. 工具边界
 
-## 7. 四轴与谱系
-
-每条记录含 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path` 或 `parent_evidence_ids`。
-
-## 8. 来源可用性与业务状态
-
-`source_availability_status` 与政策 `result_status` 必须分列：
-
-| 来源状态 | 含义 |
-|---|---|
-| `not_returned` | 已核验合法来源未返回目标字段 |
-| `not_queried` | 本次未查询合法来源 |
-| `parse_failed` | 材料存在但无法可靠解析 |
-| `missing` | 范围确定后必需材料仍缺失 |
-| `conflicted` | 同范围证据互相冲突 |
-| `true_zero` | 完整可验证覆盖明确证明为零 |
-
-前五项不得写成 0、无政策、无变化或无影响。正例：两版完整正文覆盖后删除条款数为 0，可记 `true_zero`，但仍按业务门禁形成 diff 状态。反例：当前正文未查询时必须为 `not_queried`，不得得出“变化为零”。
+本方法不调用 SIF、SellerSprite、Sorftime。三个 MCP 都不能提供可确认效力、版本和适用范围的 Amazon 政策原文。缺少当前正文时，明确请求用户或可信责任方提供，不声称“最新政策”。

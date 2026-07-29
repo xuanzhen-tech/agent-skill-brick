@@ -1,6 +1,6 @@
 ---
 name: amazon-ad-portfolio-planning
-description: 基于商品目标、站点、账户范围、预算边界、上游关键词和已验证利润约束，设计可供人工实施的 Amazon 广告 Portfolio、Campaign、Ad Group、Target 与 Ad 结构规格，并可用 SIF 广告可见结构与关键词信号作外部观察。适用于新建广告架构、重组计划、命名治理和上线前就绪检查；不适用于调用 Ads API、创建或修改广告、自动调价、预算执行或用 SIF 冒充广告账户数据。
+description: 基于商品目标、站点、账户范围、预算边界、上游关键词和已验证利润约束，设计可供人工实施的 Amazon 广告 Portfolio、Campaign、Ad Group、Target 与 Ad 结构规格，并可按职责组合 SIF 广告可见结构、SellerSprite PPC/广告排名与 Sorftime 自然排名趋势作外部观察。适用于新建广告架构、重组计划、命名治理和上线前就绪检查；不适用于调用 Ads API、创建或修改广告、自动调价、预算执行或用供应商观察冒充广告账户数据。
 ---
 
 <!--
@@ -22,29 +22,32 @@ description: 基于商品目标、站点、账户范围、预算边界、上游�
 5. 哪些字段已确认，哪些必须由广告操作者在平台中核对；
 6. 人工执行后怎样回填稳定 ID 和版本。
 
-完成时顶层 `result_status=ready`；存在不阻塞人工规划的缺口时为 `ready_with_limitations`。这两种结果都不是“广告已创建”。
+完成时明确说明哪些实体规划可交给人工实施、哪些仍受限制或阻塞；任何规划结论都不表示“广告已创建”。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
 - 用户对话及只读 `uploads/` 中的广告目标、商品清单、账户/站点信息、现有结构导出、品牌限制、预算和历史经验；
 - 可信上游 `outputs/` 中的第02专家关键词架构、产品/市场证据、Listing 约束、活动计划和第14专家利润/价格护栏；
 - 用户提供的一方广告账户元数据和现有实体 ID；
-- 当前 Agent definitions 中真实存在的 `sif_mcp`，仅在需要补充 ASIN 广告可见结构、关键词或流量观察且当次机器 schema 支持时使用。
+- 已接入假设下的三个 MCP 外层工具，仅在需要补充外部广告结构、关键词/PPC 或自然排名观察且实时 schema 支持时使用。
 
 SIF 返回的 Campaign/Ad Group 标识、结构或贡献分数只属于供应商可见观察，不证明用户账户的 profile、Portfolio、实体配置、预算、竞价、状态、花费、点击或归因订单事实。
 
-### 唯一外部业务数据源
+### 三 MCP 外部数据路由
 
-- 新外部业务数据只允许通过当前 Agent 已注入的 `sif_mcp` 获取；
-- 运行时 tool definitions、通过外层 `sif_mcp` 执行 `action=describe`、`kind=tool`、`name=<候选工具>` 所返回的机器 `inputSchema`，以及实际调用结果为接口真相；正式调用使用 `action=call`、`name=<候选工具>`、`arguments={...}`，description 只作说明，不能放宽机器合同；
-- 候选路由限于 `ads_get_asin_ad_structure`、`ads_get_asin_ad_historical_feature_profile`、`market_get_asin_keyword_signals` 和 `market_assess_keyword_promotion`，不得调用猜测名称；
-- 不使用 Amazon Ads API、SP-API、Sorftime、Keepa、Web、浏览器、Meta、Google 或其他 MCP/API；
+- 新外部市场数据只允许通过 `sif_mcp`、`sellersprite_mcp` 或 `sorftime_mcp` 获取，并分别保留原始证据；
+- 工具名未知时先由对应外层工具 `search`；已知精确工具名可直接 `describe`。每个任务对每个内层工具首次 `call` 前必须实时 `describe`；正式调用使用同一外层工具的 `action=call`、相同精确 `name` 与 `arguments`，实时机器 `inputSchema` 是接口真相；
+- SIF 候选路由限于 `ads_get_asin_ad_structure`、`ads_get_asin_ad_historical_feature_profile`、`market_get_asin_keyword_signals` 和 `market_assess_keyword_promotion`，不得调用猜测名称；
+- SellerSprite 候选限于 `traffic_keyword`、`traffic_source`、`traffic_keyword_stat` 的关键词/PPC/广告排名外部对照；Sorftime 候选限于 `product_traffic_terms`、`product_ranking_trend_by_keyword`、`competitor_product_keywords`、`keyword_trend` 的自然排名、自然竞品词和关键词趋势，不得用于推断用户广告实体或付费绩效；
+- 不使用 Amazon Ads API、SP-API、Web、浏览器、Meta、Google 或未列明的其他 MCP/API；
 - 不索取 LWA、OAuth、广告平台或代理密钥，不安装连接器；
-- SIF 不可见或不支持所需字段时，依赖合法输入；仍不足则失败关闭。
+- 任一对应外层工具不可见、实时 schema 不支持所需字段或副作用无法确认时，关闭该供应商观察分支；合法输入仍不足则失败关闭。
 
-当前 SIF 工具没有机器级 `outputSchema`。不得把 description、`_formatted`、`_next_step`、供应商建议或本次未返回的字段写成稳定合同；外层 `call.arguments` 通过后，内层参数仍可能被 Gateway/SIF 拒绝，必须检查真实状态。
+三个目录均无机器级 `outputSchema`。不得拼 Gateway、HTTP、shell、索取密钥，也不得把 description、格式指令、供应商建议或本次未返回字段写成稳定合同。
+
+Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配，不得用名称子串推断其他候选的读写性质；其他候选必须以本任务实时 `describe` 判断副作用，副作用无法确认时失败关闭。
 
 ### 工作区
 
@@ -53,24 +56,13 @@ SIF 返回的 Campaign/Ad Group 标识、结构或贡献分数只属于供应商
 - `outputs/advertising/<case-id>/01-portfolio-planning/` 存放唯一正式规划；
 - 人工执行后的 ID 回填作为新版本输入，不覆盖原计划。
 
-### 双层证据谱系
+### 证据与判断
 
-输入 `input_evidence` 至少记录：
+输入材料说明来源路径、提供日期和版本、适用的站点/账户/商品/期间，以及它能支持和不能支持的规划判断。
 
-- `evidence_id`
-- `source_path`
-- `source_type`
-- `source_date`
-- `source_version`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- 站点、账户、商品和期间范围
-- 限制
+每次 MCP 业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造的参数不调用。
 
-原始 SIF 观察还直接记录 `source_type=sif_mcp`、`source_provider=sif`、`source_tool`、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`query_scope`、覆盖/分页和 `raw_result_locator`；其 `transformation_type=reported`，`estimation_status` 按结果自述保留 `reported` 或 `estimated`。`agent_request_id` 与 `tool_call_id` 取当前 AgentTool 调用上下文中的真实值；上下文未暴露时分别写 `not_returned`，不得自造。`provider_request_id` 仅取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`，不得用本地 ID 冒充。
-
-Agent 产生的结构、命名、预算情景、目标映射和状态建议属于 `agent_output`，记录 `output_id`、`parent_evidence_ids`、转换类型、假设状态和结论上限；对象本体不得继承 SIF 的来源类型。
+Agent 产生的结构、命名、预算情景、目标映射和状态建议必须直接引用所用材料，说明设计理由、假设和结论上限；不得把任一 MCP 供应商观察伪装成账户事实。
 
 ## 启动检查
 
@@ -86,30 +78,25 @@ Agent 产生的结构、命名、预算情景、目标映射和状态建议属�
 6. 第02专家或用户提供的关键词/目标证据；
 7. 第14专家或用户提供的利润与价格边界，若需要预算或竞价判断。
 
-### 唯一顶层结果合同
+### 结论表达
 
-每次运行只使用一组顶层结果字段：
+逐层说明 Portfolio、Campaign、Ad Group、Target 和 Ad 中哪些已具备人工计划依据，哪些仍缺账户范围、商品映射、关键词证据、经济护栏或平台枚举确认。每个缺口写明受影响实体、为什么阻塞或限制实施、下一责任人。
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `ACCOUNT_SCOPE_MISSING | PRODUCT_SCOPE_CONFLICT | KEYWORD_EVIDENCE_MISSING | ECONOMIC_GUARDRAIL_MISSING | PLATFORM_ENUM_CONFIRMATION_REQUIRED | PARTIAL_RESULT | OUT_OF_SCOPE_REQUEST`
+账户、站点或商品身份不明时，不得输出可直接执行的实体规格。实体状态、人工批准和平台回填分别记录，不把“规划完成”说成“平台已创建”。
 
-`reason_codes[]` 为零个或多个稳定原因码；`ready` 时通常为空。不得再用 `planning_status`、`readiness_status` 或其他顶层状态字段表达同一结果。实体的 `status`、人工批准状态和平台回填状态是局部生命周期字段，不替代 `result_status`。
-
-账户、站点或商品身份不明时，不得输出可直接执行的实体规格。
-
-## SIF 外部观察预检
+## 三 MCP 外部观察预检
 
 只有市场/关键词观察不足时：
 
-1. 确认 `sif_mcp` 在当前 Agent definitions 中存在；
-2. 对本任务首次使用的每个候选工具，通过外层 `sif_mcp` 单独执行 `action=describe`、`kind=tool`、`name=<候选工具>`；
-3. 只按当次机器 `inputSchema` 组装站点、ASIN、关键词、时间、粒度和分页，并以外层 `sif_mcp` 的 `action=call`、`name=<候选工具>`、`arguments={...}` 发起正式调用；参数说明冲突时失败关闭；
-4. 只要运行时 `inputSchema` 含 `country`，就把有直接父证据的已验证站点映射显式写入 `arguments.country`，不得默认 `US`；目标为非美国且 schema 缺少或不支持该国家时，停止该外部观察分支；
-5. 发起最小请求并记录工具、参数、调用 IDs、覆盖和实际返回字段；
-6. 把供应商观察标为 `source_type=sif_mcp` 与 `reported|estimated`；
-7. 调用 `market_assess_keyword_promotion` 时，`arguments` 必须显式包含已由父证据验证的 `own_price`、`own_margin` 与 `country`，并保存三项各自的输入 `evidence_id`；任一项缺失、冲突或未经验证都不得调用，结果只作外部经济性假设；
+1. 确认目标外层 `sif_mcp | sellersprite_mcp | sorftime_mcp` 存在；
+2. 工具名未知时先在同一外层 `search`；已知精确工具名可直接 `describe`。本任务首次使用每个内层工具前必须实时 `describe`；
+3. 只按当次机器 `inputSchema` 组装参数，并以同一外层工具执行 `action=call`、相同 `name` 和 `arguments`；参数说明冲突时失败关闭；
+4. 从直接父 Evidence 取得目标站点，并按实时 `inputSchema` 实际暴露的站点字段（如 `country`、`marketplace`、`amz_site`、`keyword_support_site`、`site`）映射；SIF 工具实际暴露 `country` 时显式写入 `arguments.country`。只有 schema 无法控制站点且工具默认/覆盖与目标站点不一致时，才停止该供应商分支；不得默认 `US` 或自造字段、枚举；
+5. 发起最小请求并记录供应商、实际工具、查询范围、原始返回和限制；
+6. 明确供应商结果是直接返回还是供应商估算，不把它写成用户广告账户事实；
+7. 调用 `market_assess_keyword_promotion` 时，`arguments` 必须显式包含已由可信材料验证的 `own_price`、`own_margin` 与 `country`，并记录三项参数的直接依据；任一项缺失、冲突或未经验证都不得调用，结果只作外部经济性假设；
 8. 不把自然搜索、供应商广告结构或贡献分数命名为用户广告账户字段；
-9. 用 `not_returned | not_queried | parse_failed | missing | conflicted | true_zero` 区分结果；schema 漂移时停止该分支，不猜映射或换源。
+9. 供应商未查询、未返回、解析失败、字段缺失或冲突都不能补成零；只有响应明确给出且口径可确认的零才按真实零处理。同类数据先对齐站点、对象、期间、粒度、币种/单位、流量口径、分页、定义和采集时间，口径一致才比较且不平均，口径不同只作方向印证，冲突逐源分列。计划中的某个数据源缺失时明确降级覆盖范围；独有单源失败时只说明该来源不可用和当前没有相应证据。
 
 ## 执行流程
 
@@ -124,7 +111,7 @@ Agent 产生的结构、命名、预算情景、目标映射和状态建议属�
 - `product_id`、ASIN/SKU/变体范围
 - 计划版本和决策日期
 
-相同名称但不同稳定 ID 的实体不得合并。profile 未确认时必须输出 `result_status=blocked` 且 `reason_codes[]` 包含 `ACCOUNT_SCOPE_MISSING`。
+相同名称但不同稳定 ID 的实体不得合并。profile 未确认时明确阻塞实施，并说明缺少账户范围确认。
 
 ### 第二步：定义目标与成功合同
 
@@ -236,14 +223,14 @@ Agent 产生的结构、命名、预算情景、目标映射和状态建议属�
 
 ## 失败与降级
 
-- `ACCOUNT_SCOPE_MISSING`：`blocked`，只交付数据准备清单；
-- `PRODUCT_SCOPE_CONFLICT`：`blocked`，暂停实体规划；
-- `KEYWORD_EVIDENCE_MISSING`：`ready_with_limitations`，只规划非关键词结构或路由02；
-- `ECONOMIC_GUARDRAIL_MISSING`：`ready_with_limitations`，可给结构，不给确定预算/竞价；
-- `PLATFORM_ENUM_CONFIRMATION_REQUIRED`：`ready_with_limitations`，使用抽象字段并标 `tbd_platform_enum`；
-- `schema_mismatch`：重新 `describe` 并修正一次；仍不匹配则停止 SIF 背景分支；
-- `PARTIAL_RESULT`：`ready_with_limitations`，交付已证结构与显式 TBD；
-- `OUT_OF_SCOPE_REQUEST`：`out_of_scope`，拒绝创建、暂停、归档、预算修改、竞价执行或账户登录。
+- 缺少账户范围时，只交付需要人工补齐的账户、站点和权限清单；
+- 商品范围冲突时暂停相关实体规划，列出冲突商品与确认责任方；
+- 缺少关键词依据时，只规划非关键词结构，或转第 02 专家补充搜索语境；
+- 缺少经济护栏时可以说明结构，但不给确定预算或竞价；
+- 平台枚举未确认时保留抽象字段，并要求账户操作者回填当前枚举；
+- 供应商接口说明与实时 schema 不一致时，由同一外层工具重新 `describe` 并修正一次；仍不匹配则停止该背景分支并说明受影响的规划判断；
+- 只有部分结构有充分依据时，仅交付已确认区块，其余逐项写明待确认内容和责任人；
+- 对创建、暂停、归档、预算修改、竞价执行或账户登录等越界请求，明确拒绝并交付人工实施清单。
 
 ## 正式交付
 
@@ -259,16 +246,18 @@ Agent 产生的结构、命名、预算情景、目标映射和状态建议属�
 
 ## 质量门
 
+- 按 `references/ad-portfolio-entity-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；压缩或截断结果不得作为全量结构，须缩小范围/按内层分页，仍不完整则标记 provider 覆盖不足。
+
 - 站点、账户、profile 和商品范围固定；
 - 实体层级和父子关系唯一；
 - 稳定 ID 与名称分开；
 - 元数据与绩效分开；
 - 关键词研究没有被重复；
-- SIF 观察没有冒充广告账户数据，供应商返回的实体 ID 也未被当作用户账户已存在实体；
+- 三个 MCP 的外部观察没有冒充广告账户数据，供应商返回的实体 ID 也未被当作用户账户已存在实体；
 - 没有固定预算比例、行业阈值或效果承诺；
 - 平台枚举未知时没有猜测；
 - 没有执行广告账户写操作；
-- 双层谱系与工作区合同完整。
+- 每项结构和预算判断均能回到直接材料，并写明理由、限制和人工责任人。
 
 ## 资源读取
 

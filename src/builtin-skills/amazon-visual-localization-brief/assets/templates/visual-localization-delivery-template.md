@@ -1,12 +1,10 @@
 <!--
-文件功能：提供视觉本地化正式交付的可复用结构，并定义 brief、资产处理账本和证据权利账本三个产物的字段顺序。
-职责边界：只承载可交付内容，不提供新的业务规则；使用时分别物化到 outputs，不覆盖只读输入资产。
-重要关联：../../SKILL.md；字段语义见 ../../references/visual-localization-evidence-and-rights-contract.md。
+文件功能：提供视觉方向 brief、资产处理 CSV 和依据/权利说明的正式交付模板。
+职责边界：模板只承载已核实方向和生产交接，不预填市场结论、权利结论或图像生成结果。
+重要关联：由 ../../SKILL.md 物化到 outputs/visual-content/<case-id>/01-visual-localization/；方法见 ../../references/visual-localization-evidence-and-rights-contract.md。
 -->
 
 # 视觉本地化交付模板
-
-> 使用说明：将下列三个区段分别物化为 `visual-direction-brief.md`、`asset-treatment-ledger.csv` 和 `visual-evidence-and-rights-ledger.md`。删除说明文字，但保留未知、限制和批准状态。
 
 ## 文件 A：visual-direction-brief.md
 
@@ -15,121 +13,81 @@
 ## 1. 案例与范围
 
 - Case ID：
-- Amazon 站点：
-- 目标市场：
-- 目标语言：
-- 产品与变体：
-- 资产范围：
-- 上游输出路径与版本：
-- 就绪状态：
-- 生成时间：
+- 站点、产品与变体：
+- 目标市场与语言：
+- 目标资产：
+- 当前可交付：方向 brief / 可生产 brief / 仅准备清单
+- 阻塞项：
 
-## 2. 责任声明
+## 2. 产品身份锁
 
-- 本文件状态：视觉 brief，不是已生成图片。
-- A+ 模块与文案责任方：
-- 图片生成、编辑、批量和版本链责任方：`amazon-product-image-generation`
-- 当前待用户、运营或权利方决定：
+| 属性 | 已核实内容 | 来源及原始位置 | 必须保持 | 适用变体 | 限制 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## 3. 产品身份锁
+## 3. 市场与用户依据
 
-| Identity ID | 属性 | 已核实值 | Evidence IDs | 必须保持 | 变体范围 | 限制 |
-|---|---|---|---|---|---|---|
-| ID-001 |  |  |  |  |  |  |
+| 来源或精确工具 | 查询站点、对象与范围 | 时间、筛选与分页 | 原始值/文本及位置 | 覆盖与限制 |
+|---|---|---|---|---|
+|  |  |  |  |  |
 
-## 4. 品牌与权利摘要
+## 4. 品牌与权利
 
-| Asset ID | 来源 | Rights status | Usable scope | 品牌约束 | 限制或待确认 |
+| 素材/品牌元素 | 路径与版本 | 权利确认 | 可用范围 | 批准责任方 | 限制 |
 |---|---|---|---|---|---|
 |  |  |  |  |  |  |
 
 ## 5. 视觉方向
 
-| Decision ID | 适用资产 | 决策类型 | 可执行决定 | Parent Evidence IDs | Source type | Temporal scope | Estimation status | Transformation type | Approval status | 限制 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| DEC-001 |  |  |  |  | `agent` | `current/historical/future/mixed/not_applicable/unknown` | `reported/estimated/forecast/mixed/not_applicable/unknown` | `normalized/inference/hypothesis` |  |  |
+- 目标市场要解决的理解问题：
+- 核心视觉方向及直接依据：
+- Agent 进行了哪些归纳与取舍：
+- 不得暗示的产品事实或业务效果：
+- 需要用户确认的选择：
 
 ## 6. 资产级处理
 
-### Asset：`<asset_id>`
+### 资产〔名称/路径〕
 
-- 目标槽位与用途：
-- Shopper question：
-- Communication task：
-- Module ID / Fact IDs：
-- Consistency anchor：
-- 主体、角度与动作：
-- 环境、道具与空间关系：
-- 构图与镜头：
-- 光线、色彩与背景语言：
-- 文字、语言与单位：
-- 必须出现：
-- 允许出现：
-- 禁止出现：
-- 可使用源资产：
-- Decision IDs：
-- 单资产验收：
+- 当前用途与版本：
+- 产品身份锚点：
+- 保留/替换/裁切/重构/重新制作/暂缓：
+- 具体处理：
+- 市场与用户依据：
+- 必须保持：
+- 禁止新增：
+- 文字叠加与语言：
+- 跨资产一致性：
+- 权利与批准：
+- 生产方式、责任方与验收：
+- 缺口：
 
 ## 7. 跨资产一致性
 
-| 检查项 | 锚点 | 适用资产 | 验收条件 | 状态 | 备注 |
-|---|---|---|---|---|---|
-| 产品身份 |  |  |  |  |  |
-| 变体身份 |  |  |  |  |  |
-| 视觉系统 |  |  |  |  |  |
-| 场景逻辑 |  |  |  |  |  |
-| 资产分工 |  |  |  |  |  |
+| 检查项 | 必须保持 | 适用资产 | 验收方式 | 返工时冻结项 |
+|---|---|---|---|---|
+|  |  |  |  |  |
 
-## 8. 生产 Handoff
+## 8. 结论与限制
 
-- 已批准资产：
-- 必须保持：
-- 允许改变：
-- 禁止新增：
-- 可使用源资产与权利范围：
-- 确定性文字或排版责任：
-- 单资产验收：
-- 跨资产验收：
-- `policy_check_required`：
-
-## 9. 阻塞与待决定
-
-| Item ID | 类型 | 问题 | 影响资产 | 所需决定或证据 | Owner | 状态 |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
+- 直接证据：
+- Agent 决策：
+- 未查询、未返回、解析失败或冲突：
+- 覆盖缺口对方向的影响：
+- 下一步与责任方：
 
 ## 文件 B：asset-treatment-ledger.csv
 
-按以下列顺序创建 UTF-8 CSV；含逗号、引号或换行的值必须按 CSV 规则转义：
-
-`asset_id,target_slot,market,language,variant_scope,shopper_question,communication_task,module_id,fact_ids,consistency_anchor_asset_id,required_subject,required_action,required_context,composition,camera_distance,lighting,palette,background_language,required_elements,optional_elements,prohibited_elements,text_and_unit_requirements,source_asset_ids,decision_ids,approval_status,acceptance_checks,status`
+```csv
+asset_name_and_path,site_and_variant,current_use,product_identity_anchor,market_basis,treatment,required_preserve,prohibited_additions,text_and_language,rights_and_approval,production_method,acceptance_check,owner,limitations
+```
 
 ## 文件 C：visual-evidence-and-rights-ledger.md
 
-# 视觉证据与权利账本
+# 视觉依据与权利说明
 
-## 输入证据
+| 资产/方向决定 | 直接来源及原始位置 | Agent 做了什么 | 权利/批准 | 限制 |
+|---|---|---|---|---|
+|  |  | 归纳/取舍/本地化判断 |  |  |
 
-| Evidence ID | Parent Evidence ID | Source type | Source path | Locator | Version | Temporal scope | Estimation status | Transformation type | Rights status | Usable scope | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  |  |  |
-
-### SIF 原始证据（仅实际调用时）
-
-| Evidence ID | Source type | Source provider | Source tool | Agent request ID | Tool call ID | Provider request ID | Retrieved at | Marketplace | Query scope | Temporal scope | Coverage or pagination | Estimation status | Transformation type | Result state | Raw result locator | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | `sif_mcp` | `sif` |  |  |  |  |  |  |  |  |  |  | `reported` | `not_returned/not_queried/parse_failed/missing/conflicted/true_zero` |  |  |
-
-`agent_request_id` 与 `tool_call_id` 仅填当前 AgentTool 调用上下文中的对应真实值；上下文未暴露相应字段时分别写 `not_returned`，不得自造。`provider_request_id` 仅填 SIF 响应明确返回的服务端 ID，否则写 `not_returned`。三类 ID 不得互相代填，也不得用任一本地 ID 冒充 `provider_request_id`。不得在本表复制 `_formatted`、`_next_step` 或供应商给其他 Agent 的格式指令。
-
-## Agent 决策
-
-| Decision ID | Parent Evidence IDs | Source type | Temporal scope | Estimation status | Transformation type | Asset ID | Decision type | Decision | Approval status | Approved by/at | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  | `agent` | `current/historical/future/mixed/not_applicable/unknown` | `reported/estimated/forecast/mixed/not_applicable/unknown` | `normalized/inference/hypothesis` |  |  |  |  |  |  |
-
-## 权利与批准缺口
-
-| Item ID | Asset or Decision ID | Current status | Missing proof or approval | Allowed action now | Blocked action | Owner |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
+缺失、未查询、解析失败和冲突不得填成零；供应商覆盖不足时降低视觉方向结论的确定性。

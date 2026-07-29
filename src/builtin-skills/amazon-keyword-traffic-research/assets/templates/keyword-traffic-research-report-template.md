@@ -19,36 +19,36 @@
 
 ## 2. 数据准备状态
 
-| 通道 | 实际 SIF 工具 | 状态 | 时间/覆盖 | 缺口 |
-|---|---|---|---|---|
-| 市场关键词 |  |  |  |  |
-| ASIN 关键词 |  |  |  |  |
-| Listing 流量 |  |  |  |  |
-| 广告可见结构 |  |  |  |  |
+| 通道 | 供应商 | 外层工具 | 实际内层工具 | 状态 | 时间/覆盖 | 缺口 |
+|---|---|---|---|---|---|---|
+| 市场关键词 |  |  |  |  |  |  |
+| ASIN 关键词 |  |  |  |  |  |  |
+| Listing 流量 |  |  |  |  |  |  |
+| 广告可见结构 |  |  |  |  |  |  |
 
 ## 3. 市场关键词
 
-| 原始关键词 | 需求/历史字段 | 竞争字段 | 时间范围 | 估算状态 | Evidence IDs | 限制 |
+| 原始关键词 | 需求/历史字段 | 竞争字段 | 时间范围 | 数据是报告值/估算值/未知 | 来源与原始结果位置 | 限制 |
 |---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |
 
 ## 4. ASIN 关键词
 
-| ASIN | 原始关键词 | 信号/ABA/分布字段 | 时间范围 | 估算状态 | Evidence IDs | 限制 |
+| ASIN | 原始关键词 | 信号/ABA/分布字段 | 时间范围 | 数据是报告值/估算值/未知 | 来源与原始结果位置 | 限制 |
 |---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |
 
 ## 5. Listing 流量
 
-| ASIN | 概览/结构/趋势字段 | 时间范围 | 粒度 | 覆盖 | Evidence IDs | 限制 |
+| ASIN | 概览/结构/趋势字段 | 时间范围 | 粒度 | 覆盖 | 来源与原始结果位置 | 限制 |
 |---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |
 
 ## 6. 广告可见结构
 
-| ASIN | 层级 | 供应商可见字段 | 上游 SIF ID | 时间范围 | Evidence IDs | 解释上限 |
-|---|---|---|---|---|---|---|
-|  | asin/campaign/ad_group/keyword |  |  |  |  |  |
+| ASIN | 层级 | 供应商可见字段 | Provider | 上游来源与原始位置 | 时间范围 | 本次原始结果位置 | 解释上限 |
+|---|---|---|---|---|---|---|---|
+|  | asin/campaign/ad_group/keyword |  |  |  |  |  |  |
 
 > 本节不是广告账户、Search Term Report、花费、订单、ACoS、ROAS 或归因收入审计。
 
@@ -60,21 +60,19 @@
 
 ## 8. 研究发现
 
-| 优先级 | parent_evidence_ids | Agent 推断 | 反证/限制 | 下一条 SIF/用户/上游证据 |
+| 优先级 | 直接依据 | Agent 推断 | 反证/限制 | 下一条 MCP/用户/上游证据 |
 |---:|---|---|---|---|
 | 1 |  |  |  |  |
 
-## 9. SIF 请求谱系
+## 9. 外部查询依据
 
-| Evidence ID | source_tool | agent_request_id | tool_call_id | provider_request_id | marketplace | temporal_scope | coverage_or_pagination | parent_input_evidence_ids | raw_result_locator |
-|---|---|---|---|---|---|---|---|---|---|
-|  |  | `not_returned` | `not_returned` | `not_returned` |  |  |  |  |  |
+| 通道 | 供应商与精确工具 | 站点/对象/期间 | 实际参数与依据 | 筛选/分页覆盖 | 原始结果位置 | 缺口与限制 |
+|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |
 
-`agent_request_id` 与 `tool_call_id` 只填写当前 AgentTool 调用上下文暴露的对应真实值；仅当该上下文未暴露对应字段时写 `not_returned`。`provider_request_id` 只填写 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三类 ID 不得互代。任何传入的 `arguments.country` 都必须把其直接父 Evidence ID 写入 `parent_input_evidence_ids`。
+## 10. 冲突与缺口
 
-## 10. 冲突与六态缺口
-
-| 问题 | field_state | 当前结论上限 | 可解除条件 |
+| 问题 | 未查询/未返回/解析失败/缺失/冲突 | 当前结论上限 | 可解除条件 |
 |---|---|---|---|
 |  | not_returned/not_queried/parse_failed/missing/conflicted/true_zero |  |  |
 
@@ -82,7 +80,7 @@
 
 - 本报告能证明：
 - 本报告不能证明：
-- 四轴与对象血缘：
+- 来源、查询边界、Agent 处理与直接依据：
 - 样本、分页和期间限制：
 - 不提供广告账户、订单归因、广告执行或 Listing 文案：
 

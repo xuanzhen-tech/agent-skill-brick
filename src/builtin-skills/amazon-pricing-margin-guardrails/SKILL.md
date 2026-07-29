@@ -1,278 +1,177 @@
 ---
 name: amazon-pricing-margin-guardrails
-description: "把 amazon-operating-analysis 已批准的价格与贡献情景原样规范成可审计的 Amazon 价格/毛利护栏，供广告和促销规划使用；适用于建立、复核、更新或撤销价格底线，检查币种、税费、履约、Offer 叠加与有效期口径，以及在上游情景缺失或口径冲突时失败关闭；不适用于重算利润、生成新底线、动态调价或执行平台动作。"
+description: 把 amazon-operating-analysis 已批准的价格与贡献情景原样整理成可审计的 Amazon 价格/毛利护栏，供广告和促销规划使用；适用于建立、复核、更新或撤销价格底线，检查币种、税费、履约、Offer 叠加与有效期口径，以及在上游情景缺失或冲突时失败关闭；不适用于重算利润、生成新底线、动态调价或执行平台动作。
 ---
 
 <!--
-文件功能：指导 Agent 把内置经营分析的正式情景转换为跨专家可消费的价格与贡献护栏，并把可选 SIF 采购阈值计算严格隔离为探索性附录。
-职责边界：正式护栏只做上游数值的原样映射、证据核对、有效性判断和人工审批编排；SIF 不得进入护栏数值、有效性或审批；不重算利润、不动态调价、不执行广告或促销动作。
-重要关联：references/pricing-guardrail-contract.md 定义确定性字段与状态；assets/templates/pricing-margin-guardrail.md 是唯一正式交付模板。
+文件功能：指导 Agent 把正式经营情景转成跨专家可用的价格与贡献护栏，并将三 MCP 公开观察隔离为探索性背景。
+职责边界：正式护栏只原样映射已批准上游数值、核对口径与有效性；供应商观察不得进入护栏数值、审批或有效性；不重算利润或动态调价。
+重要关联：护栏方法见 references/pricing-guardrail-contract.md；正式交付使用 assets/templates/pricing-margin-guardrail.md。
 -->
 
 # Amazon 价格与毛利护栏
 
-## 先读取哪些资源
+## 目标
 
-- 每次执行都先读取 `references/pricing-guardrail-contract.md`，按其中的字段、状态和校验规则建立记录。
-- 需要写正式产物时复制 `assets/templates/pricing-margin-guardrail.md` 到本次 `outputs/`，只替换占位符，不修改原模板。
+把上游已批准情景转成下游容易遵守的业务边界：
 
-## 结果与非目标
+- 适用于哪个站点、ASIN/SKU、Offer 和期间；
+- 使用哪个币种、税费、履约、退款和广告口径；
+- 正常价、促销价、Coupon、广告与其他叠加怎样影响贡献；
+- 哪条是绝对底线，哪条是审批阈值；
+- 什么变化会让护栏失效；
+- 第05广告与第06促销能否安全消费；
+- 谁批准、何时复核或撤销。
 
-把 `amazon-operating-analysis` 的正式、版本化输出转换为一条或多条价格护栏。护栏让第 05 广告投放专家和第 06 活动促销专家知道：什么数值可以按什么口径使用、何时失效、由什么证据批准。
+本 Skill 不重新计算利润或发明底线。缺上游正式情景时失败关闭。
 
-严格拒绝以下扩张：
+## 开始条件
 
-- 不从交易明细、成本表、费用池或库存表重建利润、单件经济、现金流或盈亏平衡。
-- 不计算新的价格底线、贡献底线、折扣空间、ACoS 阈值或安全边际；不舍入上游数值形成新阈值。
-- 不监控竞品、不创建 repricer、不改价、不投放广告、不报名促销。
-- 不硬编码费率、税率、折扣、MAP、历史价窗口、市场阈值或行业经验值。
-- 不把草稿、条件状态或过期记录描述为已批准护栏。
-- 不给法律、合同、平台政策或渠道限制的确定意见。
+至少需要：
 
-## 输入合同
+- `amazon-operating-analysis` 的已批准、带版本情景；
+- 站点、商品/Offer、币种和适用期间；
+- 价格、税费、Amazon 费用、履约、采购/制造、退货/退款、广告与其他成本口径；
+- 贡献利润或毛利定义；
+- 允许的促销/Coupon/广告叠加；
+- 最低贡献、目标贡献或审批规则；
+- 上游 owner、护栏批准人和下游使用者。
 
-### 必需输入
-
-1. `amazon-operating-analysis` 写入可信上游 `outputs/` 的正式产物。
-2. 可唯一定位的 `upstream_output_id`、`upstream_version` 和 `upstream_scenario_id`。
-3. 站点、SKU/变体、币种、税费与履约口径、Offer 叠加范围、有效期。
-4. 上游已计算的 `minimum_effective_price` 和贡献底线字段；不适用或未返回时保留明确缺失状态。
-5. 当前审批证据及其 Evidence ID；没有审批证据时只能形成待审草稿。
-
-### 可选输入
-
-- 用户输入、只读 `uploads/` 或可信上游 `outputs/` 中的 MAP、渠道价、合同或平台价格限制原文。
-- 仅当用户明确要求采购侧探索，并且 `price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days` 均有独立 Evidence ID 时，可调用 SIF `market_estimate_profit_threshold`；尺寸 `length_in/width_in/height_in` 只有三项都有证据时才成组传入。其结果只能进入 `exploratory_vendor_calculation` 附录，SIF profile 类目不能冒充官方类目事实。
-
-### 禁止输入与回退
-
-- 不使用 Web、浏览器、Sorftime、Keepa、SP-API、广告平台或其他外部数据源补齐业务事实。
-- 新外部业务数据只允许当前 `sif_mcp`，但正式护栏不依赖 SIF；SIF 分支失败不得影响已有上游正式情景的原样映射。
-- 关键探索输入缺失时不得调用，也不得接受供应商建议值或默认站点、利润率、币种/汇率、关税、服装属性、周转天数、费率补齐。
-- `uploads/` 永远只读；不覆写、不移动、不删除用户文件。
-
-## 工作区
-
-使用以下任务隔离路径；`<case-id>` 使用用户提供的稳定标识，缺失时生成本次会话内稳定、非敏感的标识：
-
-- 中间归一化资料：`temp/profit-management/<case-id>/pricing-margin-guardrails/`
-- 唯一正式交付：`outputs/profit-management/<case-id>/pricing-margin-guardrails/`
-
-不要把正式结果留在 `temp/`，也不要在 Skill 包目录内写运行产物。
-
-## 证据与缺失语义
-
-为每个输入证据记录：
-
-- `evidence_id`
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- 来源定位、取得时间、站点/实体、币种、期间/时区与适用限制
-
-每个 Agent 生成的规范化、审批判断、有效性判断、护栏或缺口记录都直接使用：
-
-```text
-output_evidence_id
-output_type=guardrail_record|basis_comparison|validity_assessment|approval_state_mapping|gap_classification
-parent_evidence_ids[]
-source_type=agent
-temporal_scope=point_in_time|current_rule|scenario
-estimation_status=not_applicable
-transformation_type=normalized|basis_comparison|validity_assessment|approval_state_mapping|gap_classification
-created_at
-decision_status
-limitations[]
-```
-
-上游正式产物是输入证据；本 Skill 的规范化和判断是 Agent 输出，形成第二层谱系。每个正式对象本体都必须包含父证据与四轴，不能只在总谱系中登记一次。
-
-SIF 探索性计算另建原始供应商对象，并直接保存：
-
-```text
-evidence_id
-record_type=exploratory_vendor_calculation
-source_type=sif_mcp
-source_provider=sif
-source_tool=market_estimate_profit_threshold
-agent_request_id
-tool_call_id
-provider_request_id
-parent_input_evidence_ids[]
-retrieved_at
-marketplace
-query_scope
-temporal_scope=scenario
-coverage_or_pagination
-estimation_status=estimated
-transformation_type=vendor_calculation
-raw_result_locator
-excluded_from_guardrail=true
-```
-
-`agent_request_id` 与 `tool_call_id` 记录当前 AgentTool 调用上下文中的真实值；只有运行时面向本 Agent 的上下文确实未暴露相应字段时才写 `not_returned`，不得自造。`provider_request_id` 仅在 SIF 结果明确返回服务端 ID 时记录，否则写 `not_returned`。该对象不得成为 `guardrail_record`、`basis_comparison`、`validity_assessment` 或 `approval_state_mapping` 的父证据。
-
-口径、有效性与审批映射分别形成独立对象，不得只写进通用输出账本：
-
-```text
-basis_comparison_id
-output_evidence_id
-guardrail_id
-comparison_status
-compared_fields[]
-parent_evidence_ids[]
-source_type=agent
-temporal_scope=point_in_time|current_rule|scenario
-estimation_status=not_applicable
-transformation_type=basis_comparison
-```
-
-```text
-validity_assessment_id
-output_evidence_id
-guardrail_id
-validity_status
-checked_triggers[]
-parent_evidence_ids[]
-source_type=agent
-temporal_scope=point_in_time|current_rule
-estimation_status=not_applicable
-transformation_type=validity_assessment
-```
-
-```text
-approval_mapping_id
-output_evidence_id
-guardrail_id
-approval_status
-approval_evidence_ids[]
-parent_evidence_ids[]
-source_type=agent
-temporal_scope=point_in_time|current_rule
-estimation_status=not_applicable
-transformation_type=approval_state_mapping
-```
-
-缺失状态只允许：
-
-- `not_returned`
-- `not_queried`
-- `parse_failed`
-- `missing`
-- `conflicted`
-- `true_zero`
-
-前五种都不能当作 `0`，也不能参与计算、比较或批准。只有来源明确返回真实零时才使用 `true_zero`。
+`uploads/` 只读；过程材料写入 `temp/profit-management/<run-id>/02-pricing-guardrail/`，正式结果写入 `outputs/profit-management/<run-id>/02-pricing-guardrail/`。
 
 ## 执行流程
 
-### 1. 冻结任务范围
+### 1. 冻结适用范围
 
-记录站点、SKU/变体、币种、税费和履约口径、Offer 叠加、目标使用方、有效期与请求时间。不同站点、币种、税费口径或 SKU 不得合并为一条护栏。
+说明护栏对应：
 
-### 2. 校验上游责任方
+- marketplace、币种和税费模式；
+- ASIN/SKU/变体/Offer；
+- FBA/FBM 或其他履约模式；
+- 日期、促销窗口和版本；
+- 成本与费用基准；
+- 允许消费护栏的专家/流程。
 
-确认输入确实来自内置 `amazon-operating-analysis` 的正式输出，并可定位版本与情景。以下任一情况都停止确定性护栏生成：
+不同站点、履约、币种或成本版本不能共用一条底线。
 
-- 只有原始成本表、用户口述价格或外部估算，没有内置经营分析正式输出。
-- 输出 ID、版本或情景 ID 缺失。
-- 站点、SKU、币种、税费/履约口径与请求范围不一致。
-- 上游记录已过期、被撤销、被替换或自身标为不可计算。
+### 2. 核对上游责任
 
-利润历史或交易级金额应路由 `amazon-sku-profit-summary`；未来经营、定价与现金流计算应路由 `amazon-operating-analysis`，本 Skill 不建立替代计算。
+确认上游情景确实：
 
-### 可选分支：SIF 探索性采购阈值
+- 已由责任方批准；
+- 版本和生成时间明确；
+- 关键成本没有缺失/冲突；
+- 公式和币种可复核；
+- 说明退款、退货、广告和税费口径；
+- 有有效期和失效触发。
 
-仅在用户明确要求、且不把结果用于正式护栏时执行：
+若缺少任何关键项，停止护栏发布并退回上游。
 
-1. 确认当前 Agent 工具定义存在 `sif_mcp`；
-2. 通过外层 `sif_mcp` 传 `action=describe`、`kind=tool` 与 `name=market_estimate_profit_threshold`；只服从当次机器 `inputSchema`，禁止把内层工具当独立模型工具或写成点式调用；
-3. 通过同一外层工具传 `action=call`、同一 `name` 与 `arguments`；schema 含 `country` 时必须把有直接父证据的已证站点显式写入 `call.arguments.country`，不依赖默认 US；目标站点非 US 且 schema 不暴露或不支持该站点时立即停止，不得按默认 US 调用或重试；
-4. 将 `price/category/weight_oz/freight_cost/target_margin/country/price_currency/tariff_rate/is_apparel/turnover_days` 分别链接到输入 Evidence IDs 并显式传入；尺寸三项只可成组传入，不接受缺省或供应商建议值；
-5. `call` 后检查实际成功与错误；当前 SIF 没有机器 `outputSchema`，只能按本次原始结果观察字段；
-6. 保存原始结果和供应商计算对象，不复制 `_formatted`、`_next_step`、面向其它 Agent 的指令或供应商强制格式；
-7. 固定 `excluded_from_guardrail=true`，不得用结果生成、修正、比较、批准或验证任何正式护栏；
-8. 工具不可见、描述失败、机器 schema 不匹配、权限/限流/内部错误、空结果或解析失败时关闭此分支，不回退其他来源。
+### 3. 原样映射数值
 
-### 3. 原样映射确定字段
+保留上游的：
 
-严格按 reference 的最小接口逐字段复制：
+- 正常/活动价格情景；
+- 单件收入与成本组成；
+- 毛利/贡献定义；
+- 最低允许结果和目标结果；
+- 广告/促销可用空间；
+- 数量、变体与叠加假设；
+- 场景限制。
 
-- **数值原样不变量**：所有价格和贡献字段保持上游正式输出的原值、精度、币种和单位。
-- 保留原始小数、币种、单位与精度，不重新舍入。
-- `minimum_effective_price` 必须来自上游情景，不从贡献底线反推。
-- `contribution_floor_value`、`contribution_floor_unit` 和 `contribution_floor_basis` 必须作为一组读取。
-- 上游只给单位金额时，将其原有单位语义映射为 `currency_per_unit`；不得再算总额、比例或百分比。
-- 不适用或未返回的字段保留对应缺失状态，不用空字符串、`0` 或经验值替代。
+不要在映射时重新解释、四舍五入成不同口径或补默认成本。若发现公式错误，标记冲突并退回，不在本 Skill 修正。
 
-### 4. 核对限制证据
+### 4. 定义可执行护栏
 
-如果存在 MAP、渠道、合同或平台价格限制，只接受用户或第 09 合规税务专家提供的当前证据。记录地区、渠道、适用主体、原文定位、有效期、证据状态与 Evidence ID。
+根据已批准情景表达：
 
-只把已确认限制登记为情景约束。若原文、适用范围、有效期或责任方结论缺失，标记冲突或待核验，不解释法律效果。
+- 低于什么价格或贡献必须阻塞；
+- 落在哪个区间需要额外审批；
+- 哪些组合（价格 + Coupon + 广告 + 费用）不能叠加；
+- 哪些字段必须在执行前重新确认；
+- 对第05广告和第06促销分别提供什么边界；
+- 当前护栏不覆盖什么。
 
-### 5. 判断有效性与失效条件
+护栏应以业务语言可执行，而非只给一个数字。
 
-逐项检查：
+### 5. 判断有效性
 
-- 上游输出和情景仍为当前版本。
-- 站点、SKU/变体、币种、税费和履约基础完全一致。
-- Offer 叠加范围明确且未超出上游覆盖。
-- `valid_from`、`valid_to` 与请求时点可比较。
-- 所有 `invalidation_triggers` 均有当前证据状态。
-- 审批证据属于同一护栏、同一版本和同一适用范围。
+以下变化通常触发复核或失效：
 
-任一关键口径冲突时使用 `blocked_basis_mismatch`；上游正式情景缺失时使用 `blocked_missing_operating_analysis`。
+- 汇率、税费、Amazon fee 或履约费变化；
+- 采购、头程、仓储、退货或退款成本变化；
+- 履约模式、包装尺寸或重量变化；
+- 价格、Coupon、促销或广告叠加改变；
+- 变体/Offer/站点变化；
+- 上游情景版本被替换；
+- 有效期届满或数据明显过期。
 
-### 6. 编排人工审批状态
+未经复核的旧护栏不能继续作为批准依据。
 
-`approval_status` 只能取：
+### 6. 管理审批状态
 
-- `draft_ready_for_review`
-- `approved_for_planning`
-- `conditional`
-- `blocked_missing_operating_analysis`
-- `blocked_basis_mismatch`
-- `expired`
-- `revoked`
+区分：
 
-没有明确审批证据时默认 `draft_ready_for_review`，而不是自动批准。状态只能由新的可追溯证据更新：
+- 草案，等待核对；
+- 已批准，可在限定范围内消费；
+- 暂停，因关键变化或冲突；
+- 已撤销，由新版本替代或失效。
 
-- `approved_for_planning`：审批证据明确批准当前记录、版本、范围和有效期。
-- `conditional`：审批证据明确给出尚需满足的条件；必须逐条保存条件与证据。
-- `expired`：有效期证据证明已过期。
-- `revoked`：撤销证据明确指向当前护栏。
+每次状态变化写清原因、责任人、生效时间和对下游的影响。批准护栏不等于批准具体广告或促销动作。
 
-第 05/06 专家只有在 `approved_for_planning` 时才能把数值当确定护栏。`draft_ready_for_review` 或 `conditional` 只能作为显式标注的情景，不能变成执行许可。
+### 7. 可选外部价格背景
 
-### 7. 写入正式产物
+候选工具：
 
-至少输出：
+- SIF：`market_estimate_profit_threshold`，仅在其全部必需输入均有直接材料时作探索性门槛；
+- SellerSprite：`market_price_distribution`、`asin_coupon_trend`、`keepa_info`、`asin_detail_with_coupon_trend`；
+- Sorftime Amazon：`product_detail`、`product_trend`；
+- 明确 1688 采购任务才可用：`ali1688_product_search`、`ali1688_product_request`。
 
-- `pricing-margin-guardrail.md`
-- `evidence-register.md`
-- `validation-and-gap-log.md`
+每个工具首次调用前按外层 `search → describe → call`，只按本次 `inputSchema` 传参。禁止点式调用、Gateway、HTTP、SDK、CLI、shell 或浏览器回退。
 
-若生成机器可读附表，字段和值必须与 Markdown 主记录一致，且仍写入同一 `outputs/` 目录。正式结果不得声称已经改价、投放、报名、批准或执行。
+Sorftime 的 `favorite_keyword`、`change_favorite_keyword`、`del_favorite_keyword`、`shopee_favorite_keyword`、`shopee_change_favorite_keyword`、`shopee_del_favorite_keyword`、`walmart_favorite_keyword`、`walmart_change_favorite_keyword`、`walmart_del_favorite_keyword` 精确禁止。
 
-## 跨专家交接
+这些结果只进入探索性背景：
 
-- 第 05 广告投放专家：只交付已批准护栏及其适用范围；广告预算、竞价和执行仍由第 05 负责。
-- 第 06 活动促销专家：只交付已批准护栏、Offer 叠加与失效条件；促销经济、日历和执行仍由第 06 负责。
-- 第 09 合规税务专家：接收 MAP、合同、平台限制或法律适用性核验。
-- 内置 `amazon-operating-analysis`：接收任何需要重算、更新情景、改变数量/时点或解释经营权衡的请求。
+- SellerSprite Coupon/Keepa 是公开供应商观察；
+- Sorftime Amazon 是供应商趋势；
+- 1688 是挂牌商品/价格线索，不是正式报价、MOQ、税、运费、交期、质检或合同；
+- SIF 门槛是探索性计算。
 
-## 完成前自检
+它们全部不得修改正式护栏、上游利润、审批或有效性。
 
-- 是否存在唯一的上游输出、版本和情景 ID？
-- 所有数值是否逐字逐值来自上游正式输出，未重新计算或舍入？
-- 四轴、双层谱系和 `parent_evidence_ids` 是否完整？
-- 缺失是否使用六种明确状态，且未补零？
-- 审批状态是否有对应 Evidence ID，且未由 Agent 自动升级？
-- 第 05/06 是否只能把 `approved_for_planning` 当确定护栏？
-- 是否没有调用未注入工具、外部数据回退、动态调价或其他执行副作用？
-- 若调用 SIF，是否仅形成 `excluded_from_guardrail=true` 的探索性供应商计算，且每个输入有父 Evidence？
-- 正式产物是否只位于 `outputs/`？
+## 失败与降级
 
-任何答案为“否”时，不得标记完成。
+- 上游情景缺失/未批准：不创建护栏；
+- 关键成本或口径冲突：暂停并退回上游；
+- 下游对象/站点不匹配：不得消费；
+- 护栏过期或触发失效：暂停；
+- 供应商外部数据失败：不影响已有正式护栏；
+- 用户要求动态调价或平台执行：明确越界。
+
+## 正式交付
+
+使用 `assets/templates/pricing-margin-guardrail.md` 生成：
+
+1. `pricing-margin-guardrail.md`
+2. `guardrail-scope-and-basis.csv`
+3. `approval-and-validity.md`
+4. `downstream-usage.md`
+5. `external-price-context.md`（调用三 MCP 时）
+
+## 质量门
+
+- 正式数值来自已批准上游情景；
+- 站点、Offer、币种、税费、履约和期间匹配；
+- 映射未重算或补默认值；
+- 最低边界、审批区间和叠加限制可执行；
+- 失效触发和复核 owner 清楚；
+- 外部供应商观察与正式护栏完全隔离；
+- 1688 挂牌未当采购成本；
+- 未动态调价或执行平台动作。
+
+## 资源读取
+
+- 开始前读取 `references/pricing-guardrail-contract.md`。
+- 写正式交付前读取 `assets/templates/pricing-margin-guardrail.md`。

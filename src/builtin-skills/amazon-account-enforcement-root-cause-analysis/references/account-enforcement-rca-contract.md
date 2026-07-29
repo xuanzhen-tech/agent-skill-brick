@@ -1,105 +1,114 @@
 <!--
-文件功能：定义账号执法事件、证据类别、跨事件时间线、因果链接、root_cause_id 和整改状态。
+文件功能：提供账号执法事件重建、跨案模式识别、因果链验证和整改设计方法。
 职责边界：不处理单个买家案件回复，不判断政策/IP实体问题，不撰写或提交 POA。
-重要关联：由 ../SKILL.md 在执法根因分析时读取；正式字段映射到 ../assets/templates/account-enforcement-rca-template.md。
+重要关联：由 ../SKILL.md 在执法根因分析时读取；正式交付结构见 ../assets/templates/account-enforcement-rca-template.md。
 -->
 
-# 账号执法 RCA 合同
+# 账号执法 RCA 方法
 
-## 1. 证据类别
+## 1. 事件重建
 
-- `account_enforcement_event`
-- `policy_reference`
-- `ip_qualified_output`
-- `aggregated_customer_case_handoff`
-- `public_product_voc`
-- `corrective_action_evidence`
-- `agent_inference`
+一个可用于 RCA 的执法事件应能回答：
 
-公共 VOC 不能产生 case/enforcement event ID。
+- Amazon 对哪个账号、站点、ASIN 或 SKU 采取了什么动作；
+- 通知原文指向的问题、要求和期限；
+- 通知前后发生了哪些相关业务变化；
+- 用户采取过什么动作，Amazon 是否有后续响应；
+- 哪些事实来自后台，哪些只是内部判断。
 
-## 2. 执法事件
+若同一通知包含多个问题，拆成可分别验证的事件主题，但保留它们属于同一通知的关系。
 
-- `enforcement_event_id`
-- `event_type`
-- `account/marketplace/ASIN/SKU scope`
-- `notice/deadline dates/timezone`
-- `source_path`
-- `issue_and_request_reported`
-- `status_reported`
-- `policy/ip evidence ids`
-- `action evidence ids`
+## 2. 跨案模式识别
 
-## 3. 因果链接
+寻找重复模式时至少从五个角度比较：
 
-| 字段 | 说明 |
-|---|---|
-| `causal_link_id` | 稳定编号 |
-| `from_observation/to_hypothesis` | 链接 |
-| `parent_evidence_ids` | 必填 |
-| `support_status` | supported/partially_supported/unsupported/not_tested |
-| `alternative_explanations` | 至少一个 |
-| `unknowns` | 未知 |
+1. **对象**：是否集中于同一产品、类目、站点或供应商；
+2. **时间**：是否紧随同一批次、发布、权限或流程变化；
+3. **问题**：Amazon 的问题表述与内部故障是否一致；
+4. **控制**：本应预防或发现问题的控制是否相同；
+5. **处置结果**：某项止损后是否仍有新事件。
 
-## 4. Root cause
+频次高不自动代表根因重要；频次低的安全、合规事件也可能需要最高优先级。
 
-仅证据门满足时记录：
+## 3. 因果链检验
 
-- `root_cause_id`
-- `applicable_event/object ids`
-- `root_cause_statement`
-- `causal_link_ids`
-- `supporting_evidence_ids`
-- `unknowns/limitations`
-- `human_approval_status`
+推荐按以下链条分析：
 
-候选不得伪装成已验证 root cause。
+`执法事件 → 直接原因 → 未生效的控制 → 控制失效原因 → 组织或流程根因`
 
-## 5. 行动
+每一箭头都要有材料支撑。若只能证明事件与某次变更同时出现，应写“时间相关，因果待核”，而非“变更导致事件”。
 
-类型：
+### 正例
 
-- `containment`
-- `immediate_correction`
-- `corrective_action`
-- `preventive_control`
-- `effectiveness_verification`
+同一供应商的三个批次先后出现相同安全投诉；入库记录显示三个批次均跳过了原定检测；权限日志显示紧急采购流程允许未经质检放行；整改后恢复检测并对后续批次抽检，未再发现相同缺陷。该链条可支持“紧急采购放行绕过质检控制”作为根因。
 
-状态：`proposed`、`planned`、`user_claimed_in_progress`、`user_claimed_completed`、`verified_completed`、`blocked`。
+### 反例
 
-## 6. 四轴与谱系
+五条公开 Review 提到质量问题，随后账号收到产品安全通知。两者没有订单、批次或 ASIN 范围联接时，只能形成调查线索，不能宣布 Review 证明了通知原因。
 
-每条记录含 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path/query_ref` 或 `parent_evidence_ids`。
+## 4. 替代解释
 
-## 7. 第11单案与第13聚合输入
+至少提出一个能解释同一现象的替代解释。例如：
 
-第11只提供多个版本化单案 handoff，每项最少包含：
+- 商品本身缺陷，还是运输造成损坏；
+- Listing 误导，还是买家误解使用方式；
+- 供应商批次问题，还是仓内混货；
+- 流程没有设计，还是流程存在但被绕过；
+- 单一偶发事件，还是系统性控制失效。
 
-- `case_handoff_id`
-- `case_handoff_version`
-- `case_id_masked`
-- `case_type`
-- `reason_code`
-- `evidence_ids`
-- `as_of`
-- `limitations`
+为每个替代解释写出可区分它们的最小证据。没有完成区分时，保留候选，不强行选一个。
 
-第13拥有聚合/KPI，其可追溯聚合 handoff 必须包含：
+## 5. 根因确认门槛
 
-- `aggregation_id/aggregation_version`
-- `source_case_handoff_ids/source_case_versions`
-- `population_definition/inclusion_exclusion`
-- `period_timezone`
-- `numerator_denominator`
-- `metric_or_pattern/calculation_method`
-- `missingness_summary`
-- `parent_evidence_ids`
-- `generated_at/limitations`
+可确认的根因必须：
 
-10可从多个第11单案建立 `rca_case_set_id` 并分析跨案共因，或消费符合上述 schema 的第13聚合；不要求第11聚合，不重算第13通用 KPI。
+- 能解释目标事件或重复模式；
+- 有完整因果链，而非只把问题改写一遍；
+- 与事件时间和适用范围一致；
+- 主要替代解释已排除或明确受限；
+- 能导出针对性的纠正与预防措施；
+- 经负责人员人工确认。
 
-## 8. 来源可用性与业务状态
+“员工疏忽”“供应商问题”“培训不足”通常过于表面。继续追问：为什么现有审批、检测、权限或监督没能阻止它？
 
-`source_availability_status` 与 RCA `result_status/root_cause status` 分列，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。前五项不得写成 0、无案件、无投诉、无根因或无风险；`true_zero` 只用于集合、期间和覆盖完整时明确为零的计数。
+## 6. 整改设计
 
-正例：第13按固定集合确认某原因编码计数为 0，可记 `true_zero`，但不能据此验证根因。反例：第11单案未返回 `reason_code` 时记 `not_returned`，不得当作无原因或无案件。
+- 立即遏制应停止新风险，例如暂停问题批次；
+- 即时纠正处理已发生对象，例如更正 Listing 或隔离库存；
+- 纠正措施消除已确认根因，例如修改放行规则；
+- 预防控制扩展到其他对象，例如统一供应商准入；
+- 有效性验证应观察结果，例如抽检通过率、复发事件或审计记录。
+
+只写“加强培训”“加强管理”不合格，必须说明对象、内容、负责人、期限、执行证据和验证方法。
+
+## 7. 第11与第13输入的使用
+
+第11交接的单案材料必须能区分案件、版本、时间、原因编码、直接材料和限制。本 Skill 不修改单案事实，只把多个案件用于跨案比较。
+
+第13提供的聚合只有在以下内容可解释时才可采用：
+
+- 纳入了哪些单案、排除了什么；
+- 统计期间和时区；
+- 指标的分子、分母和算法；
+- 缺失、冲突和版本变化；
+- 结果如何回溯到原始单案。
+
+缺字段不代表零案件。无法解释总体范围时，聚合只能作为线索，不能确认根因。
+
+## 8. 冲突和缺口
+
+发生冲突时，并列展示通知、后台记录、内部记录和用户说法，优先核对最接近原始事件的材料。不要用平均、投票或“多数来源一致”替代责任判断。
+
+缺口应转成具体补证动作，例如：
+
+- 导出目标站点完整通知；
+- 提供对应批次质检与放行记录；
+- 核对 Listing 发布历史与权限日志；
+- 让第09专家确认政策版本与适用性；
+- 让第11专家补齐指定单案版本。
+
+## 9. 三 MCP 边界
+
+本方法不调用 `sif_mcp`、`sellersprite_mcp` 或 `sorftime_mcp`。公开 Listing、Review、商标、关键词、排名、销量、广告和市场数据不能证明账号通知、Case、根因、POA 或控制有效性。
+
+所有根因候选必须回到用户材料、只读 `uploads/` 或可信上游 `outputs/`，并清楚表达直接事实、推导和限制。

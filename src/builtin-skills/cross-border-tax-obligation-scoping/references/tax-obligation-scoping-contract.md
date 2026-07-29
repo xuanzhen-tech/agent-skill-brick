@@ -1,88 +1,49 @@
 <!--
-文件功能：定义跨境税务的实体、业务流、事件、现行依据、义务候选、资料覆盖和专业问题合同。
-职责边界：不提供税率、阈值、税额或确定义务，不替代税务顾问、会计师或税务机关。
-重要关联：由 ../SKILL.md 在范围界定时读取；正式字段映射到 ../assets/templates/tax-obligation-scoping-template.md。
+文件功能：说明如何从业务实体、货物流、库存、销售与付款事实识别跨境税务问题并准备专业咨询。
+职责边界：不计算或申报税款，不给确定税务意见，不硬编码税率/阈值或从 Web 获取现行税法。
+重要关联：由 ../SKILL.md 读取，正式交付见 ../assets/templates/tax-obligation-scoping-template.md。
 -->
 
-# 税务义务范围合同
+# 跨境税务义务范围方法
 
-## 1. 实体
+## 1. 先识别每个实体与角色
 
-- `entity_id`
-- `legal_name_masked`
-- `jurisdiction`
-- `tax_identifier_masked`
-- `roles`
-- `contract/account/payee references`
-- `parent_evidence_ids`
-- `identity_conflicts`
+分别记录法定实体、注册地、税务识别信息、合同卖方、进口方、库存所有者、平台账户主体、收款方、雇佣/服务主体和关联关系。不要因品牌、店铺或联系人相同自动合并实体。
 
-## 2. 业务流
+## 2. 画出业务流
 
-每种模式记录：
+对每条流说明：
 
-- `flow_id`
-- `goods_flow`
-- `ownership_transfer`
-- `inventory_locations`
-- `seller_of_record`
-- `invoice_issuer`
-- `collection/refund party`
-- `platform_role_reported`
-- `currency`
-- `period`
-- `evidence_ids`
+- 商品、资金、发票和服务分别从哪里到哪里；
+- 哪个实体在何时拥有库存或承担风险；
+- 库存位于哪些国家/地区和仓库；
+- 销售渠道、客户类型和交付条款；
+- 平台代扣代缴、付款服务或第三方仓储的已知角色；
+- 业务开始/变更时间和计划规模。
 
-## 3. 税务事件
+## 3. 识别可能触发税务问题的事件
 
-| 字段 | 说明 |
-|---|---|
-| `tax_event_id` | 稳定编号 |
-| `jurisdiction` | 必填 |
-| `event_type` | 进口、库存、销售、服务、退款等 |
-| `event_date` | 必填或 unknown |
-| `entity/product/order scope` | 范围 |
-| `amount_or_quantity_reported` | 输入事实，不计算税额 |
-| `parent_evidence_ids` | 必填 |
-| `authority_evidence_needed` | 所需依据 |
+例如库存进入新辖区、跨境销售、当地仓储、B2B/B2C 变化、进口、平台代征、数字/服务收入、人员或固定场所变化。
 
-## 4. 义务候选
+每个事件只形成待确认问题，说明事实依据、可能涉及的税种/义务、适用期间、缺失事实和专业责任方，不能直接判定已注册、应申报或欠税。
 
-| 字段 | 说明 |
-|---|---|
-| `obligation_candidate_id` | 稳定编号 |
-| `question_type` | registration/filing/invoice/platform_collection/import/records/refund |
-| `trigger_facts` | 事实 |
-| `authority_evidence_ids` | 带日期依据 |
-| `status` | candidate/qualified_confirmation_required/confirmed_by_qualified_owner/not_applicable_by_qualified_owner |
-| `responsible_owner` | 合格责任方 |
-| `deadline_or_gate` | 日期或业务闸门 |
-| `limitations` | 结论上限 |
+## 4. 使用现行依据
 
-Agent 不得自行进入后两种责任方状态。
+税务依据需带发布主体、辖区、税种、版本/发布日期、有效期、适用条件和原文位置。用户提供的税率或阈值还要说明期间、币种、税基和是否含例外。
 
-## 5. 阈值/税率证据
+缺少现行依据时保持问题开放，不用记忆、默认值或静态知识补齐。
 
-若用户提供，记录：
+## 5. 专业咨询准备
 
-- 数值和币种；
-- 计算基础；
-- 期间；
-- 适用主体/交易；
-- 生效日期；
-- 来源段落；
-- 确认责任方。
+把问题按实体、辖区和事件分组，向税务责任方提供：
 
-不得自行计算应税额或判断触发。
+- 已确认业务事实；
+- 关键时间线；
+- 当前依据与限制；
+- 需要确认的注册、申报、开票、代扣或记录保存问题；
+- 所需补充文件和截止时间；
+- 哪些经营或利润决策必须等待确认。
 
-## 6. 四轴与谱系
+## 6. 工具边界
 
-每条记录包含 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path` 或 `parent_evidence_ids`。
-
-Agent 的义务候选属于 inference，不是税务结论。
-
-## 7. 来源可用性与业务状态
-
-`source_availability_status` 与税务 `result_status/obligation status` 分列，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。前五项不得写成 0、无交易、无义务或无风险；`true_zero` 必须来自完整可验证覆盖。
-
-正例：完整期间交易导出明确退款笔数为 0，可记 `true_zero`。反例：平台代征字段未返回时记 `not_returned`，不能写代征额为 0 或无需申报。
+本方法不调用 SIF、SellerSprite、Sorftime。三个 MCP 都不能提供正式税务义务、税率、注册、申报或应税额事实。

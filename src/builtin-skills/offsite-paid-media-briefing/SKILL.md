@@ -23,9 +23,9 @@ description: 为 Meta、Google 或其他站外付费媒体形成目标、受众�
 6. 什么条件下由人工上线、暂停、复核或终止；
 7. 哪些平台配置必须由有权限的操作者确认。
 
-完成时顶层 `result_status=ready`；有非阻塞缺口时为 `ready_with_limitations`。这两种结果都不是“Campaign 已发布”。
+完成时明确说明哪些内容足以交给人工上线、哪些仍有限制或阻塞；任何 brief 结论都不表示“Campaign 已发布”。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -33,18 +33,21 @@ description: 为 Meta、Google 或其他站外付费媒体形成目标、受众�
 - 第12专家可信 `outputs/` 中的品牌策略、渠道内容、创作者或 DTC 页面资产；
 - 第14专家的利润、价格和预算边界；
 - 第13专家已验收的 `experiment_protocol_id` 及其协议版本；只有存在该 ID 时才能按协议填写实验相关交接字段；
-- 当前 Agent definitions 中真实存在的 `sif_mcp`，仅在需要 Amazon 商品、关键词、竞品或站内流量背景且当次机器 schema 支持时使用。
+- 已接入假设下的三个 MCP 外层工具，仅在需要 Amazon 背景，或任务明确命中 Google Trends/TikTok 渠道且实时 schema 支持时使用。
 
-SIF 不能提供 Meta/Google 账户、受众规模、广告花费、点击、转化、像素、归因或平台权限事实；Amazon 站内观察也不能自动映射为站外受众。
+三个 MCP 都不能提供用户 Meta/Google/TikTok 账户、广告花费、点击、转化、像素、归因或平台权限事实；公开市场观察也不能自动映射为站外受众。
 
-### 唯一外部业务数据源
+### 三 MCP 外部数据路由
 
-- 新外部业务数据只允许通过当前 Agent 已注入的 `sif_mcp` 获取；
-- 候选路由限于 `market_get_asin_profile`、`market_get_keyword_demand`、`market_get_keyword_competition` 与 `ops_get_listing_traffic_overview`；每个工具在本任务首次调用前必须执行 `describe`，且只按机器 `inputSchema` 调用；
-- description、官网链接或本次响应字段都不能替代机器 `inputSchema`；当前 SIF 没有机器级 `outputSchema`；
+- 新外部市场数据只允许通过 `sif_mcp`、`sellersprite_mcp` 或 `sorftime_mcp` 获取，并分别保存原始证据；
+- SIF 路由限于 `market_get_asin_profile`、`market_get_keyword_demand`、`market_get_keyword_competition` 与 `ops_get_listing_traffic_overview`，只作 Amazon 市场背景；
+- SellerSprite 的 `google_trend` 只在用户明确选择 Google/搜索兴趣问题时使用；Sorftime 只可在任务平台明确为 TikTok 时使用 `tiktok_product_detail`、`tiktok_product_trend`、`tiktok_product_video`、`tiktok_product_video_author`、`tiktok_author`，且 `tiktok_author` 仅限实时 schema 支持的美国站。不能把跨平台信号移植为 Amazon、Meta 或 Google 事实；
+- 三个目录均无 `outputSchema`；工具名未知时先由对应外层工具 `search`，已知精确工具名可直接 `describe`；每任务每工具首次 `call` 前必须实时 `describe`，description 或官网不能替代机器 `inputSchema`；
 - 不使用 Meta Ads API、Google Ads API、GA、Shopify、邮箱、Web、浏览器、Firecrawl、Bright Data 或其他 MCP/API；
 - 不索取 OAuth、像素、Tag Manager、平台或代理密钥；
 - 平台当前规格只能来自用户或可信上游带日期资料；缺失时标 `platform_confirmation_required`。
+
+Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配，不得用名称子串推断其他候选的读写性质；其他候选必须以本任务实时 `describe` 判断副作用，副作用无法确认时失败关闭。
 
 ### 工作区
 
@@ -53,22 +56,13 @@ SIF 不能提供 Meta/Google 账户、受众规模、广告花费、点击、转
 - `outputs/advertising/<case-id>/05-offsite-paid-media-brief/` 存放唯一正式 brief；
 - 平台操作回执和实际报表必须作为后续新证据。
 
-### 双层谱系
+### 证据与判断
 
-输入 `input_evidence` 记录 `evidence_id`、`source_path`、平台/市场/商品/受众范围、日期、版本、四轴、权利和限制。原始 SIF 背景对象另记录 `source_type=sif_mcp`、`source_provider=sif`、`source_tool`、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`query_scope`、覆盖/分页和 `raw_result_locator`；其 `transformation_type=reported`，`estimation_status` 按结果自述保留 `reported` 或 `estimated`。`agent_request_id` 与 `tool_call_id` 取当前 AgentTool 调用上下文中的真实值；上下文未暴露时分别写 `not_returned`，不得自造。`provider_request_id` 仅取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`，不得用本地 ID 冒充。
+输入材料记录来源路径、平台/市场/商品/受众范围、日期、版本、权利和限制。每次 MCP 业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造的参数不调用。
 
-Agent 的受众假设、信息角度、媒体结构、预算情景、媒体干预标签和测量问题是 `agent_output`，必须引用 `parent_evidence_ids` 并标记推断/假设。第13协议中的 KPI、样本、停止规则和分析窗口保持上游值，不在本包改写。
+Agent 的受众假设、信息角度、媒体结构、预算情景、媒体干预标签和测量问题必须直接引用所用材料，并明确哪些只是待验证假设。第13协议中的 KPI、样本、停止规则和分析窗口保持上游值，不在本包改写。平台实际表现只来自用户一方资料；受众、点击和转化预测不得凭空生成。
 
-四轴：
-
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-
-平台实际表现只来自用户一方资料；受众、点击和转化预测不得凭空生成。
-
-SIF 结果必须区分 `not_returned`、`not_queried`、`parse_failed`、`missing`、`conflicted` 与有明确零证据的 `true_zero`。Agent 的受众假设或信息角度仍使用 `source_type=agent` 并在对象本体记录 `parent_evidence_ids`。
+供应商未查询、未返回、解析失败、字段缺失或冲突都不能补成零；只有响应明确给出且口径可确认的零才按真实零处理。跨来源信号先对齐平台、站点、对象、期间、粒度、单位、分页、定义和采集时间，口径一致才比较且不平均，口径不同只作方向印证，冲突逐源分列。计划中的某个数据源缺失时明确降级覆盖范围；独有渠道或单源失败时只说明该来源不可用和当前没有相应证据。Agent 的受众假设或信息角度仍回指实际父证据。
 
 ## 启动检查
 
@@ -84,28 +78,25 @@ SIF 结果必须区分 `not_returned`、`not_queried`、`parse_failed`、`missin
 6. `measurement_question`、`event_label`、`intervention_id`、`desired_metric` 和人工责任人；
 7. 用户提供的当前平台限制，若需要具体实施字段。
 
-### 唯一顶层结果合同
+### 结论表达
 
-每次运行只使用一组顶层结果字段：
+逐项说明受众、素材、落地页、预算护栏、测量交接和平台限制中哪些已经有依据，哪些仍是待验证假设或阻塞项。每个缺口写明影响、所需材料和责任人。
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `MISSING_PLATFORM_RULES | AUDIENCE_UNVERIFIED | CREATIVE_RIGHTS_UNKNOWN | LANDING_PAGE_UNAVAILABLE | MEASUREMENT_HANDOFF_MISSING | ECONOMIC_GUARDRAIL_MISSING | EXPERIMENT_PROTOCOL_MISSING | SIF_SCHEMA_MISMATCH | OUT_OF_SCOPE_REQUEST`
+权利、落地页、平台确认和人工批准分别跟随对应事项记录；首页始终明确“未发布，等待人工操作”。
 
-不得再使用 `status`、`brief_status` 或其他顶层状态字段表达同一结果。权利、落地页、平台确认、人工批准和 `publication_status` 是局部字段；`publication_status` 始终为 `not_published`。
+## 三 MCP 外部背景预检
 
-## SIF 外部背景预检
+只有任务确需上述 Amazon、Google Trends 或 TikTok 外部背景时：
 
-只有 Amazon 市场背景不足时：
-
-1. 确认 `sif_mcp` 在当前 Agent definitions 中存在；
-2. 对本任务首次使用的每个候选工具，通过外层 `sif_mcp` 执行 `action=describe`、`kind=tool`、`name=<候选工具>`；
-3. 只按机器 `inputSchema` 组装站点、商品、关键词、时间和分页，并以外层 `sif_mcp` 的 `action=call`、`name=<候选工具>`、`arguments={...}` 发起正式调用，description 冲突时失败关闭；
-4. 只要运行时 `inputSchema` 含 `country`，就把有直接父证据的已验证站点映射显式写入 `arguments.country`，不得默认 `US`；目标为非美国且 schema 缺少或不支持该国家时，停止该外部背景分支；
-5. 发起最小必要请求并检查 Gateway/SIF 的真实调用结果；
-6. 保存原始结果和调用 IDs，将观察标为供应商 `reported|estimated`；
+1. 确认目标外层 `sif_mcp | sellersprite_mcp | sorftime_mcp` 存在；
+2. 工具名未知时先在同一外层 `search`；已知精确工具名可直接 `describe`。对本任务首次使用的每个候选工具必须实时 `describe`；
+3. 只按机器 `inputSchema` 组装参数，并以同一外层执行 `call`、相同精确 `name` 和 `arguments`，description 冲突时失败关闭；
+4. 从直接父 Evidence 取得目标平台/站点，并按实时 `inputSchema` 实际暴露的字段（如 `country`、`marketplace`、`amz_site`、`keyword_support_site`、`site`）映射；SIF 工具实际暴露 `country` 时显式写入 `arguments.country`。只有 schema 无法控制站点且工具默认/覆盖与目标不一致时，才停止该供应商分支；不得默认 `US` 或跨平台改写；
+5. 发起最小必要请求并检查对应 provider 的真实调用结果；
+6. 保存原始结果和可复查位置，说明观察是供应商直接返回还是供应商估算；
 7. 不把 Amazon 搜索/商品/站内流量数据改写成站外受众或平台行为；
 8. 不复制 `_formatted`、`_next_step`、面向其他 Agent 的格式或主动路由要求；
-9. schema 不符时重新 `describe` 并修正一次，仍失败则停止且不使用其他外部源。
+9. schema 不符时重新 `describe` 并修正一次，仍失败则停止该来源分支。若原计划需要比较多个 MCP，明确写出缺少哪个来源、受影响的受众或媒体判断、因此不能完成的比较，以及重新取得该数据需要的条件；若该渠道只有一个适用来源，则说明当前没有可用的外部证据。不得拼 Gateway、HTTP、shell、索取密钥或把另一来源静默当成同义回退。
 
 ## 执行流程
 
@@ -153,7 +144,7 @@ SIF 结果必须区分 `not_returned`、`not_queried`、`parse_failed`、`missin
 
 对每个受众/阶段说明：
 
-- 核心事实与 Fact ID；
+- 核心事实及其原始文件、段落或上游结果位置；
 - 可用利益点和禁止宣称；
 - 所需画面、格式和版本；
 - 品牌规范；
@@ -190,7 +181,7 @@ Agent 不访问页面抓取，也不配置像素或 Tag Manager。无法查看�
 - `experiment_protocol_id`：仅引用第13专家已验收协议；缺失时保持 `missing`；
 - `protocol_version` 与 `protocol_status`：保留上游版本和可用性。
 
-本包不得自行定义或覆盖 KPI、分子/分母、样本、分组、停止规则、分析窗口、显著性规则或归因方法。只有 `experiment_protocol_id` 存在且协议适用于当前 `intervention_id` 时，才按该协议填充对应交接值；否则输出 `reason_codes[]` 包含 `EXPERIMENT_PROTOCOL_MISSING`，并把协议执行留给第13专家。
+本包不得自行定义或覆盖 KPI、分子/分母、样本、分组、停止规则、分析窗口、显著性规则或归因方法。只有 `experiment_protocol_id` 存在且协议适用于当前 `intervention_id` 时，才按该协议填充对应交接值；否则明确说明实验协议缺失，并把协议设计与执行留给第13专家。
 
 UTM/命名仅作为媒体干预事实字段；具体参数和平台限制由人工确认。
 
@@ -222,9 +213,9 @@ UTM/命名仅作为媒体干预事实字段；具体参数和平台限制由人�
 
 ### 第九步：核对第13协议引用
 
-- 有 `experiment_protocol_id`：核对版本、适用 `intervention_id`、协议状态和 `parent_evidence_ids`，只引用不改写；
-- 无 `experiment_protocol_id`：不生成实验单元、样本、停止规则、分析窗口或 KPI，记录 `EXPERIMENT_PROTOCOL_MISSING`；
-- 协议与当前干预不匹配：结果 `blocked`，请求第13专家重新形成适用协议；
+- 有 `experiment_protocol_id`：核对版本、适用 `intervention_id`、协议状态和直接依据，只引用不改写；
+- 无 `experiment_protocol_id`：不生成实验单元、样本、停止规则、分析窗口或 KPI，明确记录协议缺口；
+- 协议与当前干预不匹配：阻塞实验交接，请求第13专家重新形成适用协议；
 - 任何观察性资料都不得在本包写成因果结论。
 
 ### 第十步：人工上线前闸门
@@ -242,15 +233,15 @@ UTM/命名仅作为媒体干预事实字段；具体参数和平台限制由人�
 
 ## 失败与降级
 
-- `MISSING_PLATFORM_RULES`：`ready_with_limitations`，保持抽象 brief，要求人工平台确认；
-- `AUDIENCE_UNVERIFIED`：`ready_with_limitations`，标假设，不写规模或可用性；
-- `CREATIVE_RIGHTS_UNKNOWN`：`blocked`，阻塞人工上线交接；
-- `LANDING_PAGE_UNAVAILABLE`：`ready_with_limitations` 或 `blocked`，相关维度 `not_assessed`；
-- `MEASUREMENT_HANDOFF_MISSING`：`blocked`，缺少问题、事件标签、干预 ID 或希望指标；
-- `ECONOMIC_GUARDRAIL_MISSING`：`ready_with_limitations`，不给确定预算；
-- `EXPERIMENT_PROTOCOL_MISSING`：不执行实验协议，不自行补样本、停止规则、分析窗口或 KPI；
-- `SIF_SCHEMA_MISMATCH`：停止 SIF 背景分支，保留安全错误码、阶段、目标工具与可见调用 ID，不反推底层根因；
-- `OUT_OF_SCOPE_REQUEST`：`out_of_scope`，拒绝账户连接、受众查询、像素/Tag 配置、发布、预算修改、自动优化或自行定义实验协议。
+- 缺少平台当前规则时保持抽象 brief，并列出需由平台操作者确认的字段；
+- 受众尚未核验时明确其为假设，不写实际规模或可用性；
+- 素材权利未知时暂停人工上线交接，并说明所需授权材料；
+- 落地页不可用时不评估相关转化路径，说明修复责任方和复核条件；
+- 缺少测量问题、事件标签、干预标识或希望指标时，不交给平台执行；
+- 缺少经济护栏时不给确定预算，转第 14 专家补充边界；
+- 缺少第 13 专家的实验协议时，不自行补样本、停止规则、分析窗口或 KPI；
+- 供应商接口与实时说明不匹配：停止该背景分支，记录实际工具、失败阶段和安全错误信息，不反推底层根因；
+- 对账户连接、受众查询、像素/Tag 配置、发布、预算修改、自动优化或自行定义实验协议等越界请求，明确拒绝并说明人工交接范围。
 
 ## 正式交付
 
@@ -262,9 +253,11 @@ UTM/命名仅作为媒体干预事实字段；具体参数和平台限制由人�
 4. `media-intervention-handoff.md`
 5. `offsite-paid-media-evidence-ledger.md`
 
-使用 `assets/templates/offsite-paid-media-brief-template.md`。首页必须标明 `publication_status=not_published`、顶层 `result_status`、`reason_codes[]` 和人工责任人。
+使用 `assets/templates/offsite-paid-media-brief-template.md`。首页必须标明“未发布”、当前可交付范围、具体缺口和人工责任人。
 
 ## 质量门
+
+- 按 `references/offsite-paid-media-brief-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；出现任一 marker 时不得声称渠道样本全量，须缩小范围/按内层分页，仍不完整则明确 provider 覆盖不足。
 
 - 品牌策略与付费媒体 brief 边界清楚；
 - 受众事实与假设分开；
@@ -276,7 +269,7 @@ UTM/命名仅作为媒体干预事实字段；具体参数和平台限制由人�
 - 无固定平台价格、预算比例或效果承诺；
 - 无账户连接、像素配置、发布或预算执行；
 - 所有上线动作等待人工批准；
-- 双层谱系与工作区合同完整。
+- 每项受众、媒体结构和预算判断均能回到直接材料，并写明理由、限制和人工责任人。
 
 ## 资源读取
 

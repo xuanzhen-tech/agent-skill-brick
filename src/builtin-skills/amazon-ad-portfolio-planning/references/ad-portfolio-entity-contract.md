@@ -1,112 +1,62 @@
 <!--
-文件功能：定义广告规划中的账户锚点、实体层级、稳定 ID、目标、预算护栏和实施状态合同。
-职责边界：不提供平台枚举或 Ads API 字段，不执行创建、修改、启用、暂停或预算操作。
-重要关联：由 ../SKILL.md 在建立广告结构时读取；正式字段映射到 ../assets/templates/ad-portfolio-plan-template.md。
+文件功能：说明 Amazon 广告组合层级、目标分工、预算护栏和人工实施准备的方法。
+职责边界：不创建或修改广告实体，不猜平台枚举，不用供应商实体替代用户账户事实。
+重要关联：由 ../SKILL.md 在结构规划时读取；正式交付使用 ../assets/templates/ad-portfolio-plan-template.md。
 -->
 
-# 广告组合实体合同
+# 广告组合规划方法
 
-## 1. 顶层结果合同
+## 1. 先确认账户与商品锚点
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `ACCOUNT_SCOPE_MISSING | PRODUCT_SCOPE_CONFLICT | KEYWORD_EVIDENCE_MISSING | ECONOMIC_GUARDRAIL_MISSING | PLATFORM_ENUM_CONFIRMATION_REQUIRED | PARTIAL_RESULT | OUT_OF_SCOPE_REQUEST`
+至少确认站点、广告账户/profile、品牌范围、商品稳定标识、变体范围、币种、计划版本和决策日期。账户或商品身份不清时，只输出澄清清单，不能给可直接实施的结构。
 
-每次运行只允许这一组顶层结果字段；不得并列 `planning_status` 或 `readiness_status`。实体 `status` 和人工实施状态只描述局部对象生命周期。
+名称不是稳定键。已有实体必须使用用户账户中的真实 ID；新实体只能写人工计划名称，待操作者创建后回填平台 ID。
 
-## 2. 账户锚点
+## 2. 从业务目标倒推层级
 
-| 字段 | 规则 |
-|---|---|
-| `marketplace_id` | 必填 |
-| `account_scope_id` | 用户或一方资料提供 |
-| `profile_id` | 缺失时不得进入实施就绪 |
-| `brand_scope` | 品牌/主体范围 |
-| `currency` | 不从站点猜测 |
-| `timezone` | 不从站点猜测 |
-| `source_evidence_ids` | 必填 |
+- Portfolio：用于业务预算或管理分组，不承载搜索词判断。
+- Campaign：承担明确目标、商品范围、预算边界和评估窗口。
+- Ad Group：维持商品、Target 与创意的可解释组合。
+- Target：连接关键词、商品或受众证据与投放意图。
+- Ad：绑定明确商品/素材，不能用供应商 ASIN 画像冒充账户广告。
 
-## 3. 规划实体
+每层说明为什么需要、服务哪个目标、上层和下层如何连接、何时需要拆分。
 
-所有层级共用：
+## 3. 常见拆分判断
 
-- `plan_entity_id`
-- `entity_level`
-- `parent_plan_entity_id`
-- `platform_entity_id`
-- `display_name`
-- `marketplace_id`
-- `product_scope_ids`
-- `objective_id`
-- `status`
-- `version`
-- `parent_evidence_ids`
+以下差异通常需要考虑拆分，但不自动套模板：
 
-`platform_entity_id` 只有人工执行并回填后才能填写。名称不可替代稳定 ID。
+- 品牌防守、类目拓展、竞品争夺等目标不同；
+- 商品利润、价格、库存或生命周期不同；
+- 关键词意图、匹配策略或复核节奏不同；
+- 预算责任人或人工实施批次不同。
 
-## 4. 实体状态
+只有能解释管理收益和数据可读性的拆分才保留。过度拆分会稀释数据、增加操作负担。
 
-- `draft`
-- `ready_for_human_implementation`
-- `blocked`
-- `human_created_unverified`
-- `platform_id_verified`
-- `human_enabled`
-- `superseded`
+## 4. 目标和成功标准
 
-Agent 不得自行进入 `human_created_unverified` 之后的状态。
+每个目标列出主指标、护栏指标、观察指标、数据来源、期间和人工复核节奏。指标定义沿用可信上游，不在本包发明行业阈值。
 
-## 5. 目标与指标
+需要预算或竞价判断时，引用专家 14 或用户验证的利润、价格和现金边界；缺失时保留待定。
 
-| 字段 | 说明 |
-|---|---|
-| `objective_id` | 稳定编号 |
-| `business_question` | 要解决的决策 |
-| `primary_metric` | 指标合同而非口号 |
-| `guardrail_metrics` | 利润、库存、Listing 等 |
-| `measurement_window` | 期间和时区 |
-| `required_report_type` | 抽象描述，不猜平台枚举 |
-| `causal_limit` | 观察或实验结论上限 |
+## 5. 预算与实施批次
 
-## 6. Target 规划
+不使用固定 70/20/10、生命周期比例或通用竞价系数。按目标重要性、经济护栏、库存/现金限制、历史证据和人工学习顺序形成预算候选。
 
-每项记录：
+实施批次应列出：
 
-- `plan_target_id`
-- `target_source_id`
-- `target_source_type`
-- `include_attributes`
-- `exclude_attributes`
-- `product_anchor_ids`
-- `target_type_abstract`
-- `platform_enum_status`
-- `overlap_purpose`
-- `migration_evidence_required`
+- 哪些实体由谁创建或调整；
+- 依赖的商品、关键词、预算和平台字段；
+- 上线前人工检查；
+- 上线后观察窗口和回填信息；
+- 停止或回滚条件。
 
-第02专家拥有关键词研究；本包只消费其稳定 ID。
+## 6. 三源观察的边界
 
-## 7. 预算与竞价护栏
+SIF、SellerSprite 和 Sorftime 可提供关键词、PPC、自然排名、市场或流量观察。记录供应商、实际工具、查询范围、原始值、可复查位置和限制。
 
-| 字段 | 规则 |
-|---|---|
-| `scenario_id` | 保守/基准/进取仅为用户情景 |
-| `budget_currency` | 必填 |
-| `total_budget_limit` | 用户或上游提供 |
-| `entity_budget_range` | 范围而非执行值 |
-| `bid_range` | 无经济边界时 tbd |
-| `economic_guardrail_evidence_ids` | 来自14或用户 |
-| `approval_owner` | 必填 |
-| `stop_or_review_trigger` | 可观察条件 |
+这些观察不能填入用户账户的 Campaign、Ad Group、Target、预算、竞价或状态。只有对象和定义一致时才跨源比较，绝不平均；冲突逐源展示。
 
-禁止固定预算比例或行业基准。
+## 7. 交付表达
 
-## 8. 四轴
-
-每条输入和输出记录：
-
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- `source_path` 或 `parent_evidence_ids`
-
-规划结构通常是 `agent` + `future` + `not_applicable|unknown` + `inference`。
+逐实体写清建议结构、直接依据、设计理由、限制、待确认平台字段和人工责任人。规划完成仅表示可供人工评审，不表示任何广告已经创建或启用。

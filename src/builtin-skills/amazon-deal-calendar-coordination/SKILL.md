@@ -23,7 +23,7 @@ description: 把用户确认的 Amazon Deal 或促销窗口、资格材料、价
 
 本 Skill 不替用户报名、提交、修改或取消活动，不创建提醒、Cron、计划任务或后台监控。
 
-## 运行合同
+## 使用边界
 
 ### 允许的数据
 
@@ -34,29 +34,20 @@ description: 把用户确认的 Amazon Deal 或促销窗口、资格材料、价
 - Agent 对事件、依赖、冲突和就绪状态的可追溯整理。
 
 活动截止日、资格和费用必须来自用户或可信来源。没有证据时写 `TBD`。
-当前 SIF 只有 ASIN 画像、销量/流量和探索性经济背景，不提供 Deal/Coupon 历史、资格、活动窗口、活动费、库存、报名或平台审批状态；本 Skill 不调用 SIF。
+SIF、SellerSprite、Sorftime 的市场、商品、Coupon 或趋势观察都不能证明正式活动规则、窗口、资格、活动费、库存、报名或平台审批状态；本 Skill 不直接调用三个 MCP。
 
 ### 禁止的数据与动作
 
-- 不使用 Coaxon、Linkfox、Sorftime、Amazon SP-API、邮件平台、Web、浏览器或其他 MCP/API；
+- 不使用 Coaxon、Linkfox、Amazon SP-API、邮件平台、Web、浏览器或任何 MCP/API；
 - 不假定任何候选工具具有 Deal 注册、报名、提交或状态回写能力；
 - 不硬编码活动窗口、资格、费用、提前期或平台审批状态；
 - 不创建日历提醒、Cron、后台进程、自动告警或消息发送；
 - 不把 `go` 写成 Amazon 已接受或已上线；
 - 不读取或索要密钥。
 
-### 双层谱系与四轴
+### 证据与判断
 
-来源证据层保存活动通知、规则、上游状态的路径、Evidence ID、字段、时间、原值和四轴。派生决策层保存 Event ID、依赖输入、状态规则、假设、go/no-go 结果和四轴。
-
-四轴使用：
-
-- `source_type`：`user_input | upstream_output | agent`；
-- `temporal_scope`：`current | historical | future | mixed | not_applicable | unknown`；
-- `estimation_status`：`reported | estimated | forecast | mixed | not_applicable | unknown`；
-- `transformation_type`：`raw | normalized | calculation | coding | inference | hypothesis`。
-
-日历事件编码为 `coding`，就绪结论为 `inference`。来源未确认的未来日期不是 `forecast`，而是 `unknown/TBD`。
+活动通知、规则和上游状态保留来源路径、适用活动、原值、提供时间和限制。日历事件与 go/no-go 判断必须直接引用这些材料，说明依赖关系、状态规则、假设和阻塞原因。来源未确认的未来日期保持 `TBD`，不得当作预测或已承诺窗口。
 
 ### 工作区
 
@@ -79,22 +70,15 @@ description: 把用户确认的 Amazon Deal 或促销窗口、资格材料、价
 
 只有活动名称没有任何来源、窗口或责任人时，可以建立 `TBD` 待办，但不能给 `go`。
 
-### 就绪状态
+### 启动判断
 
-- `go`：所有必需依赖有证据通过，且没有已知阻塞；
-- `conditional`：有明确条件、责任人和截止时间，条件满足后可转 go；
-- `no_go`：价格/经济/库存/审批等硬闸门失败；
-- `tbd`：关键日期、资格、规则或责任人未知；
-- `cancelled_by_user`：仅用户明确取消时使用；
-- `out_of_scope`：要求报名、提交、提醒、自动化或后台状态查询。
-
-`TBD` 不是失败，也不能自动变成某个默认日期。
+逐活动说明是否所有必需依赖已有证据通过、是否仍有带责任人和截止时间的条件、或价格/经济/库存/审批硬闸门已经失败。日期、资格、规则或责任人未知时保留 `TBD`，但 `TBD` 不是失败，也不能自动变成默认日期。只有用户明确取消才写“已取消”；报名、提交、提醒、自动化或后台状态查询不在范围内。
 
 ## 工具边界与失败关闭
 
-日历任务只消费用户、只读 `uploads/` 和可信 `outputs/`。当前 `sif_mcp` 的 ASIN、销量、流量和供应商经济工具都不能证明活动规则、窗口、资格、活动费、批准、报名、库存或平台状态，因此本 Skill 不调用 SIF，也不执行 `describe`。
+日历任务只消费用户、只读 `uploads/` 和可信 `outputs/`。三个 MCP 均不能证明活动规则、窗口、资格、活动费、批准、报名、库存或平台状态，因此本 Skill 不调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`，也不执行 `search/describe/call`。
 
-缺少上述事实时保持 `TBD` 或阻塞状态，不切换 Coaxon、Linkfox、SP-API、Web、浏览器或其他 MCP/API。即使其他 Skill 已生成 SIF 外部观察，也只能作为对象背景，不能提升任何日历事件的资格、时间或平台状态。
+缺少上述事实时保持 `TBD` 或阻塞状态，不切换任何外部来源。即使其他 Skill 已生成三方外部观察，也只能作为带原始谱系的对象背景，不能提升任何日历事件的资格、时间或平台状态。
 
 ## 执行流程
 
@@ -175,7 +159,7 @@ description: 把用户确认的 Amazon Deal 或促销窗口、资格材料、价
 - `eligibility_unverified`：不能给最终 go。
 - `missing_owner`：保留未分配责任，不假装会自动执行。
 - `conflicted_sources`：并列日期/规则和影响，等待责任方裁定。
-- `parse_failed`：不写成无活动或活动取消。
+- 当活动字段无法解析时，日期或状态无法可靠确认，日历安排不能据此推进；保留原字段和错误并将该项留待核验，不写成无活动或活动取消。
 - `automation_requested`：返回 `out_of_scope`，只提供可导入的静态计划字段。
 - `submission_requested`：明确本 Skill 未获授权且无工具，不声称已提交。
 
@@ -185,7 +169,7 @@ description: 把用户确认的 Amazon Deal 或促销窗口、资格材料、价
 
 1. `deal-calendar.md`：按时间排序的活动、状态、依赖与冲突；
 2. `deal-readiness-ledger.csv`：一行一个 Event/依赖状态；
-3. `deal-calendar-evidence.md`：双层谱系、四轴和来源限制。
+3. `deal-calendar-evidence.md`：来源、直接依据、日期判断和限制。
 
 使用 `assets/templates/deal-calendar-template.md`。资料不足时仍可交付 `TBD` 日历与 `data-readiness.md`，但不得生成虚假日期。最终回复只链接 `outputs/` 文件。
 
@@ -197,7 +181,7 @@ description: 把用户确认的 Amazon Deal 或促销窗口、资格材料、价
 - 只对已确认可叠加 Offer 允许重叠；
 - 平台报名、提交、资格和上线状态没有被推断；
 - 没有提醒、Cron、后台进程或自动告警；
-- 双层谱系与四轴完整；
+- 来源、直接依据、日期判断和限制完整；
 - 解析失败、未返回、取消和无活动没有混写；
 - 未使用 SIF 推断 Deal/Coupon、资格、活动窗口、活动费、库存、报名或审批状态；
 - 没有使用禁止数据源或接触密钥。

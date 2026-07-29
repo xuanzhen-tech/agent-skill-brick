@@ -1,11 +1,11 @@
 ---
 name: cross-border-intellectual-property-risk-triage
-description: 对商品名称、品牌、Logo、文案、图片、包装、设计、技术特征和权利资料执行商标、版权、外观/设计与专利风险初筛，形成证据缺口和专业升级路径。适用于上市前权利盘点、投诉前预防和素材使用检查；不适用于法律侵权结论、专利/版权无风险保证、注册、诉讼或主动调用外部商标/IP 数据源。
+description: 对商品名称、品牌、Logo、文案、图片、包装、设计、技术特征和权利资料执行商标、版权、外观/设计与专利风险初筛，并在用户明确要求时使用 SellerSprite 形成供应商商标检索线索。适用于上市前权利盘点、投诉前预防和素材使用检查；不适用于把供应商线索当官方检索、法律侵权结论、无冲突保证、注册、诉讼或律师意见。
 ---
 
 <!--
-文件功能：定义知识产权对象、权利链、使用情境、用户/可信上游商标证据审查、风险信号和专业核验交接。
-职责边界：只做证据化初筛，不判断侵权、有效性、可注册性或胜诉概率；不主动调用外部商标、专利、版权或设计检索能力。
+文件功能：定义知识产权对象、权利链、使用情境、用户/可信上游证据和 SellerSprite 商标线索审查、风险信号与专业核验交接。
+职责边界：只做证据化初筛；SellerSprite 仅提供供应商检索线索，不判断侵权、有效性、可注册性、无冲突或胜诉概率，也不调用其它外部 IP 检索能力。
 重要关联：对象、证据和升级状态见 references/ip-risk-triage-contract.md；正式交付使用 assets/templates/ip-risk-triage-template.md；账号执法事件由第10专家处理。
 -->
 
@@ -24,7 +24,7 @@ description: 对商品名称、品牌、Logo、文案、图片、包装、设计
 
 最高结论是 `ready_for_qualified_ip_review`、`risk_signal_present` 或 `not_assessable`，不是“未侵权”。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -32,17 +32,17 @@ description: 对商品名称、品牌、Logo、文案、图片、包装、设计
 - 用户或可信上游提供的带日期官方检索、律师意见、投诉通知和权利文件；
 - 可信 `outputs/` 中的商品事实、Listing、视觉、政策影响和账号执法证据；
 - 用户或可信上游提供的带日期、辖区、商品/服务范围、检索范围和责任方的商标检索/专业证据。
+- 用户明确要求供应商商标线索初筛时，可通过 `sellersprite_mcp` 使用 `trademark_country_list`、`trademark_list`、`trademark_stats`、`trademark_detail` 的当前真实目录能力。
 
 ### 外部数据与能力边界
 
-- 本 Skill 不主动获取新外部业务数据；
-- 运行时输入只允许用户对话、只读 `uploads/` 和带来源/日期/版本/谱系的可信 `outputs/`；
-- 当前 SIF 目录没有商标、专利、版权、外观设计或其他 IP 检索能力，`sif_mcp` 不用于合规取数；
-- 不使用 Web、浏览器、Google Patents、WIPO/USPTO/EUIPO 网站抓取、版权数据库、其他 MCP/API；
+- 除上述 SellerSprite 四个商标工具外，本 Skill 不主动获取新外部业务数据；
+- SIF、Sorftime 不用于商标、专利、版权、外观设计或其它 IP 合规取数；
+- 不使用 Web、浏览器、Google Patents、WIPO/USPTO/EUIPO 网站抓取、版权数据库或未列明 MCP/API；
 - 不调用 DeepL，不读取密钥，不提交商标/专利/版权申请；
 - 合法材料不足时失败关闭，形成证据缺口与专业检索问题，不换源、不猜测。
 
-用户或可信上游提供的检索结果也不能自动证明检索完备、权利有效、商品/服务相同、可注册或无冲突；只有带范围的合格责任方意见可支持其明确声明的结论上限。
+SellerSprite 结果和其它检索材料都不能自动证明检索完备、权利有效、商品/服务相同、可注册或无冲突；只有带范围的官方检索与合格责任方意见可支持其明确声明的结论上限。
 
 ### 工作区
 
@@ -51,18 +51,11 @@ description: 对商品名称、品牌、Logo、文案、图片、包装、设计
 - `outputs/compliance/<case-id>/04-ip-triage/` 存放唯一正式初筛包；
 - 敏感合同、身份和未公开设计在输出中最小披露。
 
-### 双层谱系
+### 证据与判断
 
-输入证据记录 `evidence_id`、`source_path`、对象、权利主体、市场、日期、版本、四轴、权利状态和限制。
+每份权利或检索材料保留对象、权利主体、目标市场、商品/服务范围、日期、版本、权利状态、实际检索工具和原始结果定位。SellerSprite 结果按单一来源记录；未返回、命中数量少或查询失败都不能证明“无冲突”。
 
-Agent 的对象编码、使用情境、冲突线索、风险信号和升级问题为 `agent_output`，记录 `parent_evidence_ids`、转换类型、不确定性和结论上限。
-
-四轴：
-
-- `source_type`: `user_input`、`user_upload`、`trusted_upstream_output`、`agent`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
+对象使用情境、相似或冲突线索、权利链缺口和风险信号分别写明直接依据、为什么值得关注、检索覆盖与结论上限、下一位专业责任人。不同市场、权利类型或商品/服务范围不得合并；多个来源冲突时并列呈现，不平均风险。
 
 ## 启动检查
 
@@ -77,39 +70,37 @@ Agent 的对象编码、使用情境、冲突线索、风险信号和升级问�
 5. 用户担心的权利类型；
 6. 计划日期和专业责任方。
 
-### 状态
+### 启动判断
 
-- `ready_for_qualified_ip_review`
-- `risk_signal_present`
-- `rights_chain_incomplete`
-- `trademark_preliminary_only`
-- `trademark_evidence_missing`
-- `patent_search_missing`
-- `copyright_evidence_missing`
-- `scope_conflicted`
-- `blocked`
-- `out_of_scope`
+先说明材料能否支持交给合格 IP 责任方复核。出现风险信号、权利链不完整、商标检索仅为初筛、专利/版权材料缺失或范围冲突时，分别列出对象、证据、覆盖缺口和下一步；不得把单一 SellerSprite 查询包装成完整检索。
 
-### 来源缺失语义（与业务状态分列）
+### 缺失与冲突
 
-业务 `result_status/gate_status` 继续使用上述 IP 初筛状态；证据字段另记 `source_availability_status`，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。`not_returned` 表示合法查询未返字段，`not_queried` 表示未查询，`parse_failed` 表示材料不可可靠解析，`missing` 表示已知必需材料缺失，`conflicted` 表示证据冲突，`true_zero` 只表示完整可验证覆盖下的真实零。
-
-前五项不得写成 0、无权利、无冲突或无风险，也不得替代 `rights_chain_incomplete/patent_search_missing/...` 等业务门禁。正例：用户提供的完整官方检索材料由合格责任方确认检索范围内记录数为 0，可将该记录数记 `true_zero`，但风险结论仍受检索范围、日期和专业意见限制。反例：未提供商标检索材料时记 `not_queried` 或 `missing`，不能写“零近似商标”或“无商标风险”。
+材料未取得、未查询、未返回、无法解析或互相冲突时，按实际原因和受影响对象说明，不能写成零近似商标、无权利、无冲突或无风险。即使合格责任方确认某一官方检索范围内记录数为零，结论仍受辖区、类别、检索日期和检索策略限制。
 
 ## 合规取数与商标证据门禁
 
-本 Skill 不调用 `sif_mcp`、Web、浏览器、官方数据库站点或其他 MCP/API 获取商标/IP 数据。商标初筛只能接收合法输入中的既有证据，并逐份检查：
+本 Skill 只允许通过外层 `sellersprite_mcp` 获取供应商商标检索线索，不调用 SIF、Sorftime、Web、浏览器或官方数据库站点。使用 SellerSprite 时：
+
+1. 工具名未知时先 `search`；已知上述四个精确工具名可直接 `describe`。本任务每个工具首次 `call` 前必须执行实时 `describe`，再以同一外层工具、相同精确 `name` 和符合 `inputSchema` 的 `arguments` 调用；
+2. `trademark_detail` 的 `office`、`brandId` 必须来自可信材料；其它查询对象中的辖区、类别、查询词、分页和筛选也必须明确，不猜枚举或默认值；
+3. 三个 MCP 目录均无 `outputSchema`；只接收真实响应字段，不拼 Gateway、HTTP、shell，不索取密钥；
+4. 每次 SellerSprite 查询保留实际工具、辖区/office、类别、查询词、检索日期、分页/覆盖、原始返回和可复查位置；无法从合法材料构造参数时不调用；
+5. 未查询、未返回、解析失败、字段缺失或冲突都不能补成零，也不能据此写“无冲突”。工具不可见或失败时只说明 SellerSprite 单源分支不可用和当前没有供应商证据；不能写成多源覆盖不足，因为该商标分支没有第二个等价 MCP；
+6. SellerSprite 结果只作为供应商检索线索或商标初筛，不能输出“无冲突”“可注册”“权利有效”或法律结论。
+
+对所有商标材料逐份检查：
 
 1. 来源是用户输入、只读 `uploads/` 或可信 `outputs/`；
 2. 明确检索机构/责任方、数据库或材料类型；
 3. 明确搜索词/图形描述、辖区、类别、商品/服务和检索日期；
 4. 保存原始材料定位、版本、查询范围、分页/覆盖声明和实际返回字段；
 5. 区分官方检索材料、专业意见、普通上游整理和 Agent 结构化；
-6. 记录 `source_type`、`evidence_class`、`valid_as_of`、`limitations` 与责任方确认状态；
+6. 记录材料性质、有效日期、限制和责任方确认状态；
 7. 覆盖不明、分页不完整、字段含义不清、材料过期或互相冲突时停止升级结论；
 8. 不把“无结果”写成无商标风险。
 
-缺少商标材料时保持 `trademark_evidence_missing` 或 `trademark_preliminary_only`，并给出合格代理人/律师需要执行的检索范围。本 Skill 不尝试补查。
+缺少官方或专业商标材料时，明确说明当前仅有初筛线索，并给出合格代理人/律师需要执行的检索范围；SellerSprite 线索不能解除该门禁。
 
 ## 执行流程
 
@@ -210,15 +201,7 @@ Agent 的对象编码、使用情境、冲突线索、风险信号和升级问�
 
 ### 第八步：设置使用闸门
 
-状态：
-
-- `proceed_to_qualified_review`
-- `hold_use_pending_rights_evidence`
-- `hold_launch_pending_search`
-- `replace_asset_candidate`
-- `not_assessable`
-
-是否实际停止、替换或继续由用户/合格责任方决定。
+说明当前对象可交给合格责任方继续复核，还是应等待权利证据、等待专业检索、考虑替换素材，或因材料不足暂时无法评估。是否实际停止、替换或继续由用户或合格责任方决定。
 
 ### 第九步：形成专业咨询包
 
@@ -242,7 +225,7 @@ Agent 的对象编码、使用情境、冲突线索、风险信号和升级问�
 - `patent_or_design_search_missing`：不判断自由实施；
 - `copyright_source_unknown`：要求替换或权利确认；
 - `professional_opinion_missing`：只给初筛；
-- `out_of_scope`：侵权结论、可注册性、FTO 意见、申请、诉讼或平台执法。
+- 当请求涉及侵权结论、可注册性、FTO 意见、申请、诉讼或平台执法时，继续执行会把事实梳理误作法律意见；仅整理已知事实、证据缺口与需知识产权专业人士确认的问题。
 
 ## 正式交付
 
@@ -258,6 +241,8 @@ Agent 的对象编码、使用情境、冲突线索、风险信号和升级问�
 
 ## 质量门
 
+- 按 `references/ip-risk-triage-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；出现任一 marker 时不得声称商标结果全量，须缩小查询或按内层分页。仍不完整时，说明 SellerSprite 实际覆盖的辖区、类别和页码，缺少哪些结果范围，因此不能判断什么，以及继续核验所需的官方或专业材料；本报告始终只作初筛。
+
 - IP 对象和版本分开；
 - 市场、商品/服务和使用情境明确；
 - 权利链含主体、地区、媒介、期限和修改权；
@@ -267,7 +252,7 @@ Agent 的对象编码、使用情境、冲突线索、风险信号和升级问�
 - 风险信号不是侵权结论；
 - 无 Web、官方数据库抓取、注册或诉讼执行；
 - 与第10账号执法证据边界清楚；
-- 双层谱系与工作区合同完整。
+- 每项风险信号均能回到直接材料或检索结果，并写明覆盖、限制和专业复核责任人。
 
 ## 资源读取
 

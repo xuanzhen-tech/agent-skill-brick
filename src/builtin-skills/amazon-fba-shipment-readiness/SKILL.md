@@ -41,7 +41,7 @@ description: 基于用户材料与可信上游正式产物，审查 Amazon FBA �
 - 确认本次人工建件范围与货件身份。
 - 盘点用户提供的 SKU、数量、标签、包装、箱规和目的信息。
 - 判断每一项资料为 `ready`、`missing`、`conflict`、`expired`、`not_applicable` 或 `needs_human_confirmation`。
-- 建立证据到判断的双层谱系。
+- 让每项判断都能回到原始材料、具体位置和责任人。
 - 输出人工建件前的缺口清单、阻塞项、待确认项和交接包。
 
 ### 由其他能力负责
@@ -61,7 +61,7 @@ description: 基于用户材料与可信上游正式产物，审查 Amazon FBA �
 2. `uploads/` 中由用户上传且与本次货件明确关联的只读材料。
 3. 已由可信上游生成、带版本和谱系的 `outputs/` 正式产物。
 
-本 Skill 不调用 `sif_mcp` 或其他外部业务工具。SIF 销量信号不能证明库存、货件、标签、包装、箱规、目的节点、账户状态或平台接受结果。不得使用 Web、浏览器、SP-API、ERP、WMS、领星、17TRACK 或其他 API/MCP 作为回退；合法输入不足时封闭失败。
+本 Skill 不调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp` 或其他外部业务工具。任何供应商销量/商品/市场信号都不能证明库存、货件、标签、包装、箱规、目的节点、账户状态或平台接受结果。不得使用 Web、浏览器、SP-API、ERP、WMS、领星、17TRACK 或其他 API/MCP 回退；合法输入不足时封闭失败。
 
 ## 工作区约定
 
@@ -83,48 +83,27 @@ description: 基于用户材料与可信上游正式产物，审查 Amazon FBA �
 
 任何关键范围无法确定时，不得把不同站点、批次或版本合并。
 
-## 双层谱系与四轴
+## 证据与判断
 
-每个关键字段必须同时保留两层：
+每份材料只登记完成本次货件审查所需的信息：
 
-### 第一层：原始证据 envelope
+- 来源或责任人、版本，以及文件页码、表格行、截图区域等可复查位置。
+- 所属站点、货件批次、SKU、箱或托盘；无法唯一对应时单列冲突。
+- 原始陈述、原单位、材料日期、适用发运窗口和批准状态。
+- 数值是实测、申报还是估算；来源未说明时保持未知。
+- 使用限制、待确认事项和最终确认责任人。
 
-每条来源证据都必须记录：
+Agent 的整理不得覆盖原文。单位换算、数量闭环检查和就绪结论分别写明：
 
-- `evidence_id`
-- `source_type`: `user_input | user_upload | trusted_upstream_output`
-- `source_locator`: 文件/产物、页/表/行、截图区域或返回记录定位
-- `source_version`
-- `observed_at`: 本任务读取或观察时间及时区
-- `business_time`: 材料声明的业务时点/期间及时区
-- `temporal_scope`: `current | historical | future | mixed | unknown`
-- `estimation_status`: `reported | estimated | forecast | mixed | unknown`
-- `transformation_type`: `raw | provider_derived`
-- `raw_value` 与 `raw_unit_or_currency`
-- `provider_or_owner`
-- `confirmation_status`
-- `limitations`
+| 判断 | 直接依据 | 为什么这样判断 | 限制或阻塞 | 下一步 |
+|---|---|---|---|---|
+| 商品、标签或箱规映射 | 对应材料及精确位置 | 使用的匹配键、换算规则或版本关系 | 模糊匹配、未知单位、版本冲突 | 由资料责任人确认 |
+| 数量与包装一致性 | 参与计算的逐项原值 | 带单位列出计算或差异 | 散箱、混装、缺行或未实测 | 由数量/包装责任人补齐 |
+| 货件资料准备度 | 支撑结论的材料和检查项 | 哪些条件已满足、哪些未满足 | 时效、范围、批准或状态快照限制 | 交给人工建件或补件 |
 
-### 第二层：派生 record
+缺失值不是零，冲突值必须并列展示，不能取平均或自行择一。材料过期、范围不覆盖本批次或无法定位原文时，明确降低结论强度。比较前必须核对对象、时间、单位和数量/包装口径是否一致。
 
-规范化、检查与结论是三类独立的正式派生对象。每个对象本体直接保存五项血缘字段，不能只在报告末尾总账中补写：
-
-| 派生对象 | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 对象载荷 |
-|---|---|---|---|---|---|---|---|
-| `normalized` | `normalized_id` | 支撑原值与规范化值的原始 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| unknown` | `not_applicable \| estimated \| unknown` | 固定 `normalized` | 原值/单位、规范化值/单位、规则、精度和舍入 |
-| `check` | `check_id` | 支撑检查输入、规则和阈值的 Evidence/Normalized IDs | 固定 `agent` | `current \| historical \| future \| mixed \| unknown` | `not_applicable \| estimated \| unknown` | `calculation \| comparison` | 检查项、带单位步骤、结果、差异、状态和原因 |
-| `conclusion` | `conclusion_id` | 支撑结论的 Evidence/Normalized/Check IDs | 固定 `agent` | `current \| historical \| future \| mixed \| unknown` | `not_applicable \| estimated \| unknown` | 固定 `decision` | 结论、阻塞、假设、下一责任人和人工交接 |
-
-三类对象还分别记录 `output_id`、`rule_version`、`generated_at`、`uncertainty`、`result_status=ready | ready_with_limitations | blocked | out_of_scope` 与 `reason_codes[]`。`normalized_id`、`check_id`、`conclusion_id` 是领域对象 ID，不能替代 `output_id`；`evidence_id` 也不能替代 `parent_evidence_ids`。派生对象的轴值必须逐条赋值，不能从父证据继承。
-
-原对象、时间、单位/币种和口径只能作为附加比较维度，不能替代上述 envelope/record 必填字段：
-
-- **对象轴**：站点、批次、SKU/ASIN/FNSKU、箱、托盘和目的节点分别是谁。
-- **时间轴**：证据时点、有效期、计划发运窗口和判断生成时间。
-- **单位/币种轴**：件、箱、托、重量和尺寸单位；本 Skill 通常不处理币种，出现费用时只原样保留。
-- **口径轴**：数量含义、包装层级、标签类型、重量类型和状态定义。
-
-## 核心输入合同
+## 核心输入
 
 ### 货件身份
 
@@ -194,7 +173,7 @@ IPI、stranded inventory、suppressed listing 及类似状态只能消费用户�
 
 ### 第一步：登记材料清单
 
-为每份材料建立完整原始证据 envelope，标明来源、版本、观察时间、业务时间、四轴和限制。重复文件不得静默覆盖；保留版本关系。
+为每份材料登记来源、版本、材料日期、适用范围、精确定位和限制。重复文件不得静默覆盖；保留版本关系。
 
 ### 第二步：锁定货件范围
 
@@ -276,7 +255,7 @@ IPI、stranded inventory、suppressed listing 及类似状态只能消费用户�
 
 - 一次只追问会改变结论的关键缺口，优先使用清单。
 - 明确区分“证据显示”“本 Skill 推导”“等待人工确认”。
-- 不把 `CONDITIONALLY_READY` 简化为“可以发货”。
+- 不把“带条件的资料准备”简化为“可以发货”。
 - 不承诺平台接受、仓库接收、时效或合规通过。
 - 用户要求执行时，说明本产物是人工操作输入，不是执行授权。
 
@@ -286,8 +265,8 @@ IPI、stranded inventory、suppressed listing 及类似状态只能消费用户�
 
 - 范围唯一且有版本。
 - 所有关键判断可回到证据。
-- 所有来源具有完整 raw evidence envelope，所有派生判断具有完整 derived record。
-- 四轴无缺失或已明确标为未知。
+- 每项判断都能回到直接材料，并写明理由、限制和下一责任人。
+- 对象、时间、单位和数量/包装口径已核对；无法确认的内容已显式标明并降低结论强度。
 - 原始值与规范化值没有互相覆盖。
 - 缺口、冲突、过期和待确认状态未被美化。
 - IPI、stranded、suppressed 仅来自用户带日期快照。

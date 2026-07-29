@@ -1,112 +1,57 @@
 <!--
-文件功能：提供跨境货运报价事实、复核过程和可比性结论的正式报告模板。
-使用方式：按 ../../SKILL.md 填写，并以 ../../references/freight-quote-comparison-contract.md 为计算和门控依据。
-维护边界：模板不询价、不订舱、不追踪，不计算税务清关或完整运输经济。
+文件功能：提供跨境货运报价的原规则复核、费用/时效桥接和可比性结论模板。
+职责边界：只比较用户报价，不询价、订舱、付款、追踪或判断清关税务与运输利润。
+重要关联：由 ../../SKILL.md 物化，判断方法见 ../../references/freight-quote-comparison-contract.md。
 -->
 
-# 跨境货运方案比较报告
+# 跨境货运方案比较
 
-> 所有报价必须来自用户材料。未写明、未返回、条件未知和不可计算都不得填为零。
+## 1. 比较范围与货物基准
 
-## 1. 比较任务
+- 起运地、目的地与计划出运期：
+- 件数、包装、实际重、尺寸/体积与单位：
+- 特殊属性：
+- 本次需要比较：
 
-| 字段 | 内容 |
-|---|---|
-| 任务 ID |  |
-| 货物批次/版本 |  |
-| 计划出运窗口 |  |
-| 起运地 |  |
-| 目的地 |  |
-| 目标服务范围 |  |
-| 报告生成时间及时区 |  |
+## 2. 报价原始条件
 
-## 2. 原始证据 envelope
-
-| evidence_id | source_type | source_locator | source_version | observed_at | business_time | temporal_scope | estimation_status | transformation_type | raw_value | raw_unit_or_currency | provider_or_owner | limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  |  |  |  |
-
-| quote_id | 版本 | 报价方 | 证据 IDs | 签发时间 | 有效期 | 原币 | 报价状态 |
-|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |
-
-## 3. 货物基准
-
-| quote_id | 件/箱/托范围 | 尺寸及单位 | 实际重及单位 | 实测/估算 | 起点 | 终点 | 服务段 | 是否同基准 |
-|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |
-
-## 4. 原规则转录
-
-| quote_id | 体积重规则/除数 | 计费重规则 | W/M 定义 | 最低收费规则 | 舍入规则 | 证据 |
+| 报价方/版本 | 签发与有效期 | 方式/航线/服务段 | 原计费规则与舍入 | 币种/税务 | 时效定义 | 来源位置 |
 |---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |
 
-## 5. 逐报价复核
+## 3. 逐报价复核
 
-| Calculation ID | Quote ID | 项目 | 原规则证据 | 带单位代入 | 舍入 | 结果 | 单位/币种 | 状态 | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  | 实际重/体积重/计费重/W-M/最低收费/附加费 |  |  |  |  |  |  |  | `agent` | `current/historical/future/mixed/unknown` | `not_applicable/estimated/unknown` | `calculation` |
+| 报价 | 原规则 | 带单位代入 | 舍入步骤 | 复核结果 | 缺失或冲突规则 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## 6. 费用包含与排除
+## 4. 费用范围
 
-| 费用类别 | 报价原始名称 | 报价 A | 报价 B | 计费基数 | 触发条件 | 是否含税 | 证据/备注 |
-|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |
+| 费用项 | 报价 A | 报价 B | 触发条件 | 是否同口径 | 对结论的影响 |
+|---|---|---|---|---|---|
+| 基础费/提货/清关/关税/派送/附加费 |  |  |  |  |  |
 
-## 7. 时效定义
+## 5. 时效与可比性
 
-| quote_id | 原始时效 | 起算事件 | 截止事件 | 自然/工作日 | 班期条件 | 承诺/估算 | 排除项 | 可比性 |
-|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |
-
-## 8. 可比性门
-
-| 门 | 报价 A/B 结果 | 关键差异 | 状态 | 最小补充问题 |
+| 关键门 | 报价 A | 报价 B | 是否通过 | 不能比较或排名的内容 |
 |---|---|---|---|---|
-| 货物基准 |  |  |  |  |
-| 区间与服务 |  |  |  |  |
-| 有效期 |  |  |  |  |
-| 计费可复核 |  |  |  |  |
-| 费用范围 |  |  |  |  |
-| 币种 |  |  |  |  |
-| 时效定义 |  |  |  |  |
+| 货物/区间/有效期/计费/费用/币种/时效 |  |  |  |  |
 
-## 9. 比较结论
+## 6. 结论与澄清
 
-| 字段 | 内容 |
-|---|---|
-| 状态 | `COMPARABLE` / `CONDITIONALLY_COMPARABLE` / `INCOMPARABLE` / `BLOCKED_MISSING_QUOTE_RULE` |
-| 可直接比较的内容 |  |
-| 只能并列展示的内容 |  |
-| 不得排名的内容 |  |
-| 原因 |  |
+- 可直接比较的维度：
+- 不可比较或禁止排名的维度：
+- 当前选择提示：
+- 可能改变结论的条件：
 
-> 仅当所有关键可比性门通过时，才填写金额或时效排序。最低报价不自动等于最佳商业方案。
+| 需向报价方确认的问题 | 为什么重要 | 要求回复格式 |
+|---|---|---|
+|  |  |  |
 
-### 正式比较记录
+## 7. 质量检查
 
-| Comparison ID | 比较范围 | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | 门结果/差异 | 可比较内容 | 禁止排名 | 结论 |
-|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  | `agent` | `current/historical/future/mixed/unknown` | `not_applicable/estimated/unknown` | `comparison/decision` |  |  |  |  |
-
-## 10. 派生 record 与双层谱系
-
-| output_id | output_type | object_id | parent_evidence_ids | source_type | temporal_scope | estimation_status | transformation_type | rule_version | generated_at | uncertainty | result_status | reason_codes[] | 规则/结果 | 对象轴 | 时间轴 | 单位/币种轴 | 口径轴 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | `calculation` |  |  | `agent` | `current/historical/future/mixed/unknown` | `not_applicable/estimated/unknown` | `calculation` |  |  |  | `ready/ready_with_limitations/blocked/out_of_scope` |  |  |  |  |  |  |
-|  | `comparison` |  |  | `agent` | `current/historical/future/mixed/unknown` | `not_applicable/estimated/unknown` | `comparison/decision` |  |  |  | `ready/ready_with_limitations/blocked/out_of_scope` |  |  |  |  |  |  |
-
-对象、时间、单位/币种和口径列仅为额外比较维度，不能替代两类对象本体的五项血缘字段。
-
-`reason_codes[]` 只允许：`QUOTE_SOURCE_UNVERIFIED | CARGO_BASELINE_CONFLICT | ROUTE_OR_SERVICE_CONFLICT | QUOTE_EXPIRED_OR_UNDATED | QUOTE_RULE_MISSING | CURRENCY_BASIS_MISSING | TRANSIT_DEFINITION_CONFLICT | OUT_OF_SCOPE_REQUEST`。
-
-## 11. 人工下一步与边界
-
-- [ ] 向报价方确认会改变结论的缺失规则。
-- [ ] 人工确认计划出运期仍在有效期内。
-- [ ] 税率、HS、清关和反倾销交专家 09。
-- [ ] 运输经济、利润和最终商业选择交专家 14。
-- [ ] 订舱、付款、提货和轨迹跟踪由人工或专用执行系统完成。
-
-本报告不使用 17TRACK 或其他外部来源生成运价，不执行任何运输动作。
+- [ ] 未默认体积重除数、W/M、计费重取大或附加费。
+- [ ] 未报价与条件未知费用未按零。
+- [ ] 服务段、币种和时效定义不一致时未强行排名。
+- [ ] 计算过程带单位并按原报价舍入。
+- [ ] 本报告不包含 MCP、询价、订舱、付款或轨迹监控。

@@ -1,5 +1,5 @@
 <!--
-文件功能：提供 baseline_compare 路由的正式基线比较报告结构，覆盖首次建基线、逐字段四轴可比性和变化。
+文件功能：提供 baseline_compare 路由的正式基线比较报告结构，覆盖首次建基线、逐字段业务可比性和变化。
 职责边界：模板只在用户明确接受一次基线比较后使用，不创建定时任务，不提供默认阈值；没有合格基线时只输出 baseline_created。
 关联关系：由 ../../SKILL.md 的基线比较模式使用，可比规则遵循 ../../references/baseline-comparison-contract.md。
 -->
@@ -13,7 +13,7 @@
 - Amazon 站点：
 - 主 ASIN：
 - 当前快照时间：
-- 基线 ID：
+- 基线名称/版本：
 - 基线时间：
 - 状态：`baseline_created | compared | partial | blocked`
 
@@ -27,23 +27,19 @@
 | 数据期间 |  |  |  |  |
 | 单位/币种 |  |  |  |  |
 | 字段语义 |  |  |  |  |
-| 四轴完整性 |  |  |  |  |
+| 数据期间、报告/估算性质与换算规则 |  |  |  |  |
 
-## 3. 上游证据谱系
+## 3. 基线与当前来源
 
-| 侧别 | 本层 Evidence ID | 上游来源文件 | 上游 Evidence ID | upstream_source_type | upstream_temporal_scope | upstream_estimation_status | upstream_transformation_type | 状态 |
-|---|---|---|---|---|---|---|---|---|
-| baseline/current |  |  |  |  |  |  |  | ready/partial |
+| 侧别 | 来源文件；若为 MCP 写供应商与精确工具 | 版本/取数时间 | 站点/ASIN/期间 | 原值位置 | 是报告、估算还是 Agent 计算 | 限制 |
+|---|---|---|---|---|---|---|
+| 基线/当前 |  |  |  |  |  |  |
 
-> 上游证据在本层使用 `source_type=upstream_output`；比较时同时检查本层四轴与上游原四轴。缺失标签不得猜测。
+## 4. 逐字段可比性
 
-## 4. 逐字段四轴与可比性
-
-| ASIN | 字段 | 基线 source_type | 当前 source_type | 基线 temporal_scope | 当前 temporal_scope | 基线 estimation_status | 当前 estimation_status | 基线 transformation_type | 当前 transformation_type | 四轴可比性 | 说明 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  | sif_mcp/user_input/upstream_output/agent | sif_mcp/user_input/upstream_output/agent | current/historical/future/mixed/not_applicable/unknown | current/historical/future/mixed/not_applicable/unknown | reported/estimated/forecast/mixed/not_applicable/unknown | reported/estimated/forecast/mixed/not_applicable/unknown | reported/normalized/calculation/coding/inference/hypothesis | reported/normalized/calculation/coding/inference/hypothesis | comparable/not_comparable |  |
-
-`competitor-change-ledger.csv` 必须逐字段物化本表两侧的四轴列，不得只保留差值和状态。
+| ASIN | 字段 | 基线原值/单位/期间 | 当前原值/单位/期间 | 基线形成方式 | 当前形成方式 | 是否可比及原因 | 换算规则 |
+|---|---|---|---|---|---|---|---|
+|  |  |  |  | 来源报告/供应商估算/Agent 计算 |  |  |  |
 
 ## 5. 首次运行声明
 
@@ -56,11 +52,11 @@
 
 ## 6. 商品指标变化
 
-| ASIN | 字段 | 基线值 | 当前值 | 绝对差值 | 相对差值 | 状态 | Evidence IDs |
+| ASIN | 字段 | 基线值 | 当前值 | 绝对差值 | 相对差值 | 变化描述 | 直接依据 |
 |---|---|---:|---:|---:|---:|---|---|
 |  |  |  |  |  |  | increased/decreased/unchanged/not_comparable |  |
 
-## 7. SIF 可见结构变化
+## 7. 供应商可见结构变化
 
 | ASIN | 结构字段 | 基线片段/标志 | 当前片段/标志 | 状态 | 可确认解释 | 反向解释 |
 |---|---|---|---|---|---|---|
@@ -83,13 +79,12 @@
 - 本报告能证明：
 - 本报告不能证明：
 - 两时点限制：
-- 两侧 source_type 差异：
-- 两侧 temporal_scope 差异：
-- 两侧 estimation_status 差异：
-- 两侧 transformation_type 差异：
-- 两侧上游原四轴与谱系完整性：
-- `reported` 不等于 Amazon 一方观测：
-- 历史估算的 `historical + estimated` 组合：
+- 两侧来源与精确工具差异：
+- 两侧数据期间差异：
+- 两侧是来源报告、估算还是预测：
+- 两侧是否经过 Agent 换算及公式：
+- 上游文件、版本、原值位置和限制：
+- 供应商报告值不等于 Amazon 一方观测：
 - 数据缺口与 schema 风险：
 
 ## 11. 下一步

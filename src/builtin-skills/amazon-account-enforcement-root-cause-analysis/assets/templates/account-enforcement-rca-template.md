@@ -1,98 +1,107 @@
 <!--
-文件功能：提供账号执法事件、时间线、证据类别、因果链接、root cause、整改和POA交接模板。
+文件功能：提供账号执法事件根因分析的正式业务交付模板。
 职责边界：模板不处理单案回复、政策/IP裁决、POA撰写或提交；占位根因不是事实。
-重要关联：由 ../../SKILL.md 物化；字段和状态遵循 ../../references/account-enforcement-rca-contract.md。
+重要关联：由 ../../SKILL.md 物化；分析方法见 ../../references/account-enforcement-rca-contract.md。
 -->
 
 # Amazon 账号执法事件根因分析
 
-## A. 元数据
+## 1. 分析范围与结论上限
 
-| 字段 | 内容 |
-|---|---|
-| `case_id` | `<case-id>` |
-| `account/marketplace/object scope` | `<masked values>` |
-| `analysis_as_of` | `<timestamp + timezone>` |
-| `status` | `<rca_ready/event_partial/policy_or_ip_missing/root_cause_unresolved/single_case_route_to_expert11/blocked>` |
-| `conclusion_limit` | `不保证 Amazon 接受或账号恢复` |
+- 账号/站点：`<掩码后的范围>`
+- 涉及对象：`<ASIN/SKU/流程/供应商>`
+- 分析截止时间：`<时间与时区>`
+- 本次事件范围：`<纳入与排除>`
+- 当前结论：`<根因已确认/仅形成根因候选/材料不足>`
+- 关键限制：`<缺失、冲突或不可验证事项>`
 
-## B. 执法事件
+> 本报告不代表 Amazon 已接受结论，也不保证账号恢复。
 
-| Event ID | Type | Account/Site/ASIN Scope | Notice/Deadline | Source Path | Issue/Request Reported | Status Reported | Policy/IP IDs | Action Evidence |
-|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<performance/policy/ip/safety/deactivation/restriction>` | `<scope>` | `<dates/tz>` | `<path>` | `<reported>` | `<reported>` | `<ids>` | `<ids>` |
+## 2. 执法事件概览
 
-## C. 证据分类
-
-| Evidence ID | Class | Source Path/Query Ref | Scope | Linkability | Limitations |
-|---|---|---|---|---|---|
-| `<id>` | `<account_enforcement_event/policy_reference/ip_qualified_output/aggregated_customer_case_handoff/public_product_voc/corrective_action_evidence>` | `<value>` | `<scope>` | `<linked/not_linked>` | `<limits>` |
-
-## D. 时间线
-
-| Timeline ID | Event/Change | Date/Timezone | Object | Evidence IDs | Date Status |
-|---|---|---|---|---|---|
-| `<id>` | `<value>` | `<date/unknown>` | `<scope>` | `<ids>` | `<reported/verified/unknown>` |
-
-## E. 因果链接
-
-| Link ID | From Observation | To Hypothesis | Evidence IDs | Support Status | Alternative Explanations | Unknowns |
+| 事件 | 账号/站点/对象 | 通知与截止时间 | Amazon 明示的问题与要求 | 当前处置 | 直接材料 | 未知 |
 |---|---|---|---|---|---|---|
-| `<id>` | `<observation>` | `<hypothesis>` | `<ids>` | `<supported/partially_supported/unsupported/not_tested>` | `<alternatives>` | `<unknowns>` |
+| `<事件编号>` | `<范围>` | `<时间/时区>` | `<原意摘要>` | `<用户报告>` | `<路径或定位>` | `<待核事实>` |
 
-## F. Root Cause
+## 3. 关键时间线
 
-| Root Cause ID | Applicable Events/Objects | Statement | Causal Link IDs | Evidence IDs | Unknowns/Limitations | Human Approval |
-|---|---|---|---|---|---|---|
-| `<id/pending>` | `<ids>` | `<statement/candidate>` | `<ids>` | `<ids>` | `<limits>` | `<approved/pending>` |
+| 时间 | 业务变化或事件 | 涉及对象 | 与执法事件的可能关系 | 直接材料 | 可信程度与限制 |
+|---|---|---|---|---|---|
+| `<时间/未知>` | `<变化或事件>` | `<范围>` | `<关系>` | `<路径或定位>` | `<说明>` |
 
-## G. 整改
+## 4. 跨事件模式
 
-| Action ID | Type | Action | Root Cause ID | Owner | Due | Status | Verification Requirement/Evidence |
+### 模式 `<编号：名称>`
+
+- 覆盖事件：`<事件编号>`
+- 共同对象、时间或控制：`<内容>`
+- 支持材料：`<定位>`
+- 反例或例外：`<内容>`
+- 当前判断：`<可继续验证/仅为线索/已被否定>`
+
+## 5. 根因候选与因果链
+
+### 候选 `<编号>`
+
+- 根因陈述：`<具体控制为何持续失效>`
+- 适用事件/对象：`<范围>`
+- 因果链：`<事件 → 直接原因 → 控制失效 → 根因>`
+- 每一步的直接材料：`<逐项列出>`
+- 支持程度：`<已直接支持/部分支持/尚未验证>`
+- 替代解释：`<至少一个>`
+- 区分所需证据：`<最小补证>`
+- 人工确认：`<负责人和状态>`
+
+## 6. 根因结论
+
+| 候选 | 是否达到确认门槛 | 主要理由 | 尚未排除的解释 | 对 POA 的影响 |
+|---|---|---|---|---|
+| `<编号>` | `<是/否>` | `<理由>` | `<内容>` | `<可交接/暂缓>` |
+
+若未达到门槛：
+
+- 当前只能确认：`<事实>`
+- 不能确认：`<因果或根因>`
+- 下一步验证：`<动作、负责人、期限>`
+
+## 7. 纠正与预防措施
+
+| 类型 | 措施 | 对应根因或风险 | 负责人 | 截止时间 | 当前进度 | 执行证据 | 有效性验证 |
 |---|---|---|---|---|---|---|---|
-| `<id>` | `<containment/immediate_correction/corrective_action/preventive_control/effectiveness_verification>` | `<action>` | `<id>` | `<owner>` | `<date>` | `<proposed/planned/user_claimed/verified_completed/blocked>` | `<requirement/ids>` |
+| `<遏制/即时纠正/纠正措施/预防控制>` | `<具体动作>` | `<内容>` | `<负责人>` | `<日期>` | `<建议/计划/执行中/用户称完成/已验证>` | `<所需或已有材料>` | `<指标、抽检或复核时点>` |
 
-## H. POA 交接
+## 8. POA 交接
 
-| Field | Value |
-|---|---|
-| `enforcement_event_ids` | `<ids>` |
-| `root_cause_id/status` | `<value>` |
-| `action ids/statuses` | `<values>` |
-| `attachment evidence ids` | `<ids>` |
-| `policy/ip ids` | `<ids>` |
-| `unknowns/blockers` | `<items>` |
+- 执法事件及范围：`<列表>`
+- 可用于 POA 的根因：`<已确认内容；未确认则明确写无>`
+- 纠正与预防措施：`<列表及真实进度>`
+- 附件建议：`<材料与用途>`
+- 政策/IP判断来源：`<第09交接及限制>`
+- 仍阻塞 POA 的问题：`<列表>`
+- 需要人工批准的内容：`<列表>`
 
-## I. 证据谱系
+## 9. 给用户的说明
 
-| Record ID | Layer | Evidence Class | Source Path/Query Ref / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Scope | Limitations |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<class>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<scope>` | `<limits>` |
+### 已能证明
 
-## J. 第11单案/第13聚合输入与来源状态
+`<事实和直接依据>`
 
-| Input ID | Owner/Type | Version | Source Case Handoff IDs/Versions | Population/Period/Timezone | Numerator/Denominator or Reason Code | Calculation/Pattern | Missingness | Parent Evidence IDs | Limitations |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<expert11_single_case/expert13_aggregation>` | `<version>` | `<ids/versions or not_applicable>` | `<scope or not_applicable>` | `<value>` | `<method or not_applicable>` | `<summary>` | `<ids>` | `<limits>` |
+### 尚不能证明
 
-第11行必须逐个保留 `case_handoff_id/case_handoff_version/case_id_masked/case_type/reason_code/evidence_ids/as_of/limitations`。第13聚合对象字段固定为 `aggregation_id/aggregation_version/source_case_handoff_ids/source_case_versions/population_definition/inclusion_exclusion/period_timezone/numerator_denominator/metric_or_pattern/calculation_method/missingness_summary/parent_evidence_ids/generated_at/limitations`。第11不提供聚合统计，第13拥有聚合/KPI，10只做跨案 RCA/POA 交接。
+`<缺口及其影响>`
 
-| Input/Field ID | `source_availability_status` | Business `result_status/root_cause status` | Interpretation |
-|---|---|---|---|
-| `<id>` | `<not_returned/not_queried/parse_failed/missing/conflicted/true_zero>` | `<RCA status>` | `<bounded meaning>` |
+### 最小补证动作
 
-前五种来源状态不得写成 0、无案件、无投诉、无根因或无风险。正例：第13固定集合确认某原因编码计数为 0，记 `true_zero`，不等于根因已验证。反例：第11单案未返回 `reason_code`，记 `not_returned`，不能当作无原因。
+`<按优先级列出>`
 
-## K. 质量门
+## 10. 交付前检查
 
-- [ ] 单案路由11，政策/IP判断路由09
-- [ ] 公共 Review 仅为 VOC
-- [ ] 每条因果链接有支持状态和替代解释
-- [ ] 证据不足未生成已验证 root cause
-- [ ] 行动未冒充执行
-- [ ] RCA 未重写 POA
-- [ ] 无 SP-API、登录、监控或提交
-- [ ] 敏感信息已掩码
-- [ ] 第11仅为版本化单案输入，第13聚合 schema 完整
-- [ ] 来源六态与业务状态分列，前五项未补零
-- [ ] 正式文件位于 `outputs/`
+- [ ] 单案沟通已路由第11专家，政策/IP实体判断已路由第09专家
+- [ ] 公开 Review 只作为外围线索
+- [ ] 时间先后没有被当作充分因果证明
+- [ ] 每个根因候选都有完整因果链、直接材料和替代解释
+- [ ] 证据不足时没有把候选写成已确认根因
+- [ ] 措施区分建议、执行中、用户称完成与已验证
+- [ ] 没有把“加强管理”等空泛动作当作整改
+- [ ] 未调用三个公开市场 MCP 补造账号事实
+- [ ] 敏感信息已掩码，正式文件位于 `outputs/`

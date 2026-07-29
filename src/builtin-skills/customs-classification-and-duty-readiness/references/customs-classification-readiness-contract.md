@@ -1,87 +1,59 @@
 <!--
-文件功能：定义海关商品事实、进口情景、候选编码、原产地、估价、税率证据、贸易救济和专业确认合同。
-职责边界：不提供编码、税率或金额，不替代报关行、海关、律师或税务责任方。
-重要关联：由 ../SKILL.md 在海关就绪分析时读取；正式字段映射到 ../assets/templates/customs-classification-readiness-template.md。
+文件功能：说明如何整理商品事实、候选税则编码、原产地、估价、税率和贸易救济问题，准备海关专业确认。
+职责边界：不自行确定编码、税率、原产地、申报价或应缴金额，也不执行报关。
+重要关联：由 ../SKILL.md 读取，正式交付见 ../assets/templates/customs-classification-readiness-template.md。
 -->
 
-# 海关分类与税费就绪合同
+# 海关分类与税费就绪方法
 
-## 1. 商品事实
+## 1. 冻结归类所需商品事实
 
-- `customs_product_fact_set_id`
-- `product/model/variant/version`
-- `materials/composition`
-- `primary/secondary functions`
-- `intended_use`
-- `assembly/set/component status`
-- `packaging/accessories`
-- `parent_evidence_ids`
-- `unknowns/conflicts`
+至少记录：
 
-## 2. 进口情景
+- 商品名称、型号、版本和图片/图纸；
+- 主要材料、成分比例和制造方式；
+- 主要功能、工作原理和预期用途；
+- 组成部件、套装关系和本质特征；
+- 包装形态和销售单元；
+- 目标进口国家/地区与进口情景。
 
-| 字段 | 说明 |
-|---|---|
-| `import_scenario_id` | 稳定编号 |
-| `destination_jurisdiction` | 必填 |
-| `planned_import_date` | 必填或 unknown |
-| `importer/declarant roles` | 主体 |
-| `origin_reported` | 陈述 |
-| `goods_state/quantity unit` | 状态 |
-| `incoterm rule/version/place` | 完整 |
-| `invoice currency/value evidence` | 输入事实 |
+标题、平台类目或挂牌页不能替代材料、功能和本质特征事实。
 
-## 3. 候选编码
+## 2. 候选编码是专业确认的起点
 
-每个候选包含：
+每个候选编码说明：
 
-- `classification_candidate_id`
-- `code`
-- `code_level`
-- `tariff_schedule/jurisdiction`
-- `tariff_version/effective_date`
-- `provided_by`
-- `goods_description`
-- `classification_reasoning_reported`
-- `alternative/exclusion`
-- `authority_or_opinion_evidence_ids`
-- `status`
+- 编码体系、位数和辖区；
+- 版本或适用日期；
+- 候选描述及原文位置；
+- 支持与反对该候选的商品事实；
+- 可能涉及的归类规则、注释或解释性材料；
+- 仍需专业确认的问题。
 
-状态：`candidate_for_review`、`conflicted`、`insufficient_basis`、`confirmed_by_qualified_owner`。
+不得只按关键词选择编码，也不得把候选写成最终 HS/税则编码。
 
-Agent 不能生成最后一种。
+## 3. 原产地与估价分开
 
-## 4. 原产地与估价
+原产地需要生产地点、工序、材料来源和适用规则；发货地、供应商所在地或品牌国不自动等于原产地。
 
-原产地记录生产步骤、地点、材料、证明、优惠/非优惠范围和专业问题。
+估价需要交易关系、货价、协助、特许权使用费、运保费、调整项、币种和适用时点。采购价或平台售价不自动等于海关申报价。
 
-估价记录交易价格、关系、协助/模具/特许权/佣金/包装/运保事实、Incoterms、依据和未知项。
+## 4. 税率与贸易救济
 
-## 5. 税率与贸易救济
+任何税率、关税优惠、反倾销/反补贴或其它贸易措施都应带辖区、编码、原产地、版本/日期、适用条件、来源和专业确认责任方。
 
-仅记录用户/可信上游：
+未知、过期或冲突的税率不参与应缴金额计算；本 Skill 不自行计算税款。
 
-- 编码与税则版本；
-- 税率/税种/基础；
-- 原产地条件；
-- 生效日期；
-- 生产商/出口商范围；
-- 依据路径；
-- 确认责任方；
-- 限制。
+## 5. 向物流与利润责任方交接
 
-不得计算金额。
+只有经海关/报关或合格专业责任方确认后，才向第 08 和第 14 专家传递：
 
-## 6. Handoff
+- 确认的编码和适用日期；
+- 原产地和估价口径；
+- 税率、贸易措施及适用条件；
+- 币种、单位和限制；
+- 复核触发条件。
 
-向08/14传递时必须是 `confirmed_by_qualified_owner`，并附 evidence ID、商品/辖区/日期范围、原产地/估价状态、费率来源、生效日和未决限制。
+## 6. 外部数据边界
 
-## 7. 四轴与谱系
-
-每条记录含 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path` 或 `parent_evidence_ids`。
-
-## 8. 来源可用性与业务状态
-
-`source_availability_status` 与海关 `result_status/candidate status` 分列，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。前五项不得写成 0、无税费、无限制或无风险；`true_zero` 只在来源完整、可验证、商品和日期范围匹配时使用。
-
-正例：合格责任方以带日期税则确认明确范围的附加税率为 0，可记 `true_zero`。反例：来源未返回税率时记 `not_returned`，不得补成 0%。
+本方法不直接调用三个 MCP。若用户明确要求并提供可信上游的 Sorftime 商品/1688 结果，只可把商品名称、SKU、页面描述或挂牌材料陈述作为待核验线索；不得用它确定材质、功能、本质特征、原产地、申报价或 HS 编码。

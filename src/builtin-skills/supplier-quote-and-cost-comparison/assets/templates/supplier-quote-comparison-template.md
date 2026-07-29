@@ -1,84 +1,67 @@
 <!--
-文件功能：提供报价版本、情景、可比性、成本差异、重报价和证据谱系的正式交付模板。
-职责边界：模板不提供汇率或未知成本，不把占位值视为零，也不产生供应商选择或下单动作。
-重要关联：由 ../../SKILL.md 物化；计算与状态遵循 ../../references/quote-normalization-and-comparability-contract.md。
+文件功能：提供供应商报价版本冻结、范围复核、转换、可比性和重报价问题的业务交付模板。
+职责边界：不抓取或生成报价，不猜汇率和未知成本，不输出 landed cost、利润、供应商批准或下单结论。
+重要关联：由 ../../SKILL.md 物化，判断方法见 ../../references/quote-normalization-and-comparability-contract.md。
 -->
 
 # 供应商报价与成本比较
 
-## A. 比较元数据
+## 1. 比较情景
 
-| 字段 | 内容 |
-|---|---|
-| `case_id` | `<case-id>` |
-| `product_spec_version` | `<version>` |
-| `comparison_status` | `<comparable/comparable_with_adjustments/partially_comparable/not_comparable/expired/conflicted/blocked>` |
-| `scenario_count` | `<count>` |
-| `prepared_at` | `<timestamp + timezone>` |
-| `conclusion_limit` | `只比较报价明确范围，不代表 landed cost、利润或供应商批准` |
+- 产品、规格与包装版本：
+- 数量与单位：
+- 交付范围、地点和日期：
+- 比较币种与汇率依据：
+- 一次性费用分摊方式：
 
-## B. 报价版本登记
+## 2. 报价版本
 
-| Quote ID | Candidate ID | Source Path | Date | Version | Valid Until | Currency | Unit | Tax Basis | Product Version |
-|---|---|---|---|---|---|---|---|---|---|
-| `<quote-id>` | `<candidate-id>` | `<path>` | `<date>` | `<version>` | `<date/missing>` | `<currency>` | `<unit>` | `<basis>` | `<version>` |
-
-## C. 贸易与范围
-
-| Quote ID | Incoterm | Version | Named Place | Included | Excluded | Optional | Unknown | Payment | Lead Time / Start Event |
-|---|---|---|---|---|---|---|---|---|---|
-| `<quote-id>` | `<rule>` | `<version>` | `<place>` | `<items>` | `<items>` | `<items>` | `<items>` | `<terms>` | `<value/event>` |
-
-## D. 比较情景
-
-| Scenario ID | Quantity/Unit | Product Version | Packaging | Delivery Scope | Target Date | Comparison Currency | FX Evidence ID | One-time Allocation |
-|---|---|---|---|---|---|---|---|---|
-| `<scenario-id>` | `<value>` | `<version>` | `<pack>` | `<scope>` | `<date>` | `<currency/original>` | `<id/not_available>` | `<rule>` |
-
-## E. 可比性矩阵
-
-| 检查项 | Quote A | Quote B | 状态 | 合法调整 | Parent Evidence IDs | 影响 |
+| 供应商 | 文件与版本 | 报价/有效日期 | 币种与计价单位 | 数量档/MOQ | 税务口径 | 适用产品版本 |
 |---|---|---|---|---|---|---|
-| `<product/quantity/unit/currency/incoterm/scope/validity/tax>` | `<value>` | `<value>` | `<same/adjustable/different/missing>` | `<conversion-id/none>` | `<ids>` | `<impact>` |
+|  |  |  |  |  |  |  |
 
-## F. 报价范围成本
+## 3. 商务与范围
 
-| Scenario ID | Quote ID | Recurring Unit | Tier Amount | One-time Cost | Allocated One-time | Included Cost | Excluded Known | Optional | Unknown | Quoted Scope Total | Status |
-|---|---|---:|---:|---:|---:|---:|---|---|---|---:|---|
-| `<scenario-id>` | `<quote-id>` | `<value currency/unit>` | `<value>` | `<value>` | `<value>` | `<items>` | `<items>` | `<items>` | `<items>` | `<value>` | `<comparable/not_comparable>` |
+| 供应商 | Incoterms 规则/版本/地点 | 包含 | 排除 | 可选 | 未知 | 付款条件 | 交期与起算事件 |
+|---|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |  |
 
-## G. 转换账本
+## 4. 转换与复算
 
-| Conversion ID | Input Value/Unit | Output Value/Unit | Formula | Evidence IDs | Rate Timestamp/Direction | Rounding |
+| 供应商 | 原值/单位 | 目标值/单位 | 公式或转换率 | 直接依据与时间 | 舍入规则 | 限制 |
 |---|---|---|---|---|---|---|
-| `<conversion-id>` | `<value>` | `<value>` | `<formula>` | `<ids>` | `<value/not_applicable>` | `<rule>` |
+|  |  |  |  |  |  |  |
 
-## H. 差异解释
+## 5. 报价范围成本
 
-| Difference ID | Field | Quote A | Quote B | Normalized Difference | Driver | Decision Relevance | Uncertainty | Evidence IDs |
-|---|---|---|---|---|---|---|---|---|
-| `<difference-id>` | `<field>` | `<value>` | `<value>` | `<value/not_comparable>` | `<price/tier/one_time/scope/payment/lead_time/quality/unknown>` | `<note>` | `<note>` | `<ids>` |
+| 供应商 | 数量档金额 | 一次性费用及分摊 | 其他已包含费用 | 已知排除费用 | 可选费用 | 未知费用 | 报价范围总额 |
+|---|---:|---:|---:|---|---|---|---:|
+|  |  |  |  |  |  |  |  |
 
-## I. 重报价清单
+## 6. 可比性与差异
 
-| Gap ID | Quote ID | 缺失/冲突字段 | 精确问题 | 要求格式 | 责任人 | 截止时间 | 缺失后果 |
-|---|---|---|---|---|---|---|---|
-| `<gap-id>` | `<quote-id>` | `<field>` | `<question>` | `<unit/currency/version>` | `<owner>` | `<date/tbd>` | `<not_comparable/hold>` |
+| 检查项 | 供应商 A | 供应商 B | 是否可合法对齐 | 对结论的影响 | 需要重报价或澄清 |
+|---|---|---|---|---|---|
+| 产品/数量/单位/币种/贸易范围/有效期/税务 |  |  |  |  |  |
 
-## J. 证据与 Agent 输出
+- 当前可比较的范围：
+- 不能排名的范围：
+- 主要差异驱动：
+- 可能改变结论的未知项：
 
-| Record ID | Layer | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Formula/Limitations |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<path-or-ids>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<value>` |
+## 7. 重报价问题
 
-## K. 质量门
+| 供应商 | 缺失或冲突 | 精确问题 | 要求回复格式 | 责任方 | 截止时间 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-- [ ] 未拼接多个报价版本
-- [ ] 数量、单位、币种、有效期和产品版本完整
-- [ ] Incoterms 包含版本和指定地点
-- [ ] 未知费用没有按零处理
-- [ ] 每次转换有证据、公式和舍入规则
-- [ ] `not_comparable` 没有被隐藏为排名
-- [ ] quoted scope 未冒充 landed cost 或利润
-- [ ] 无抓价、询价、谈判或下单
-- [ ] 正式交付仅位于 `outputs/`
+## 8. 质量检查
+
+- [ ] 未拼接不同报价版本。
+- [ ] 数量档、单位、币种、有效期和产品版本明确。
+- [ ] Incoterms 带版本和指定地点。
+- [ ] 未知费用未按零处理。
+- [ ] 转换有公式、依据和舍入规则。
+- [ ] 不可比项目未被隐藏成总额排名。
+- [ ] 报价范围成本未冒充 landed cost 或利润。
+- [ ] 未调用 MCP、抓价、询价、谈判或下单。

@@ -1,110 +1,108 @@
 <!--
-文件功能：定义合法账号治理中的实体关系、授权访问、材料一致性、敏感变更、控制状态和硬拒绝合同。
+文件功能：提供合法账号治理的关系、访问、材料、变更和控制评估方法。
 职责边界：不提供反检测、身份伪造或封禁规避方案，不执行平台、设备或网络变更。
-重要关联：由 ../SKILL.md 在账号运营风险评估时读取；正式字段映射到 ../assets/templates/account-operational-risk-control-template.md。
+重要关联：由 ../SKILL.md 在账号运营风险评估时读取；正式交付结构见 ../assets/templates/account-operational-risk-control-template.md。
 -->
 
-# 账号运营风险控制合同
+# 账号运营风险控制方法
 
-## 1. 硬拒绝类别
+## 1. 先识别风险来源
 
-- `anti_detect_browser`
-- `fingerprint_spoofing`
-- `cookie_or_session_manipulation`
-- `residential_or_rotating_proxy`
-- `device_identifier_manipulation`
-- `identity_or_kyc_evasion`
-- `shell_or_borrowed_entity`
-- `account_farm_or_account_trade`
-- `ban_or_review_evasion`
-- `relationship_concealment`
-- `risk_algorithm_reverse_engineering`
+账号操作风险通常来自五类失配：
 
-命中任一项即 `prohibited_evasion_request`。不得输出工具名称、配置参数、采购建议或操作步骤。
+- **事实失配**：真实主体与平台、银行、税务或品牌材料不一致；
+- **权限失配**：人员权限超过职责，或离职、转岗后未撤销；
+- **职责失配**：同一人可以发起、批准和执行高风险操作；
+- **变更失控**：敏感变更无复核、无验证或无回退准备；
+- **第三方失控**：服务商身份、合同、访问范围或退出机制不清。
 
-## 2. 实体与账号关系
+不要用“平台可能关联”替代对这些可控风险的具体分析。
 
-| 字段 | 约束 |
-|---|---|
-| `relationship_id` | 稳定编号 |
-| `from_object/to_object` | entity/beneficial_owner/account/brand/vendor |
-| `relationship_type` | ownership/control/authorization/service/brand_use |
-| `parent_evidence_ids` | 必填 |
-| `status` | verified/reported/unverified/conflicted |
-| `effective_dates` | 明确或 unknown |
-| `business_reason` | 多实体时必填 |
-| `disclosure_or_approval_status` | required/not_required/approved/pending/unknown |
-| `owner/limitations` | 必填 |
+## 2. 判断关系可信度
 
-## 3. 授权访问
+关系判断优先级通常是：
 
-- `principal_id_masked`
-- `employment_or_contract_relationship`
-- `business_duty`
-- `required_role/current_role`
-- `mfa_status`
-- `approved_device_and_remote_access`
-- `authorization/review/expiry/revocation dates`
-- `approver`
-- `evidence_ids`
-- `risk_and_action`
+1. 法定注册、股权、受益所有人和正式授权材料；
+2. 平台后台记录、合同与企业审批；
+3. 可验证的组织清单与设备/访问登记；
+4. 用户说明；
+5. 仅由相似地址、姓名、设备或网络得出的猜测。
 
-不得记录密码、验证码、恢复码、Cookie、session 或 token。
+后两项只能形成待核事项。多个来源冲突时，说明冲突和责任方，不自动选择对业务更方便的一项。
+
+## 3. 最小权限与职责分离
+
+对每个角色询问：
+
+- 完成职责真正需要哪些操作；
+- 当前多出的权限能造成什么后果；
+- 权限是谁批准、何时复核、何时到期；
+- 人员变化时如何撤权；
+- 紧急权限如何在结束后自动或人工收回。
+
+职责分离重点覆盖账号主体、管理员、银行、税务、付款、退款和 Listing/合规发布。团队过小时，应设计独立事后复核、限时授权或双人见证等补偿控制。
+
+### 正例
+
+服务商只获得单一站点的广告查看权限，合同和授权同日到期，季度复核由账号负责人执行；不接触管理员、银行或税务功能。
+
+### 反例
+
+为了操作方便，服务商长期使用创始人的个人管理员账号和共享验证码。即使从未发生事故，也属于高风险访问。
 
 ## 4. 材料一致性
 
-- `material_id/category`
-- `current_value_masked`
-- `source_evidence_id`
-- `expected_truth`
-- `status=consistent/explained_difference/unexplained_conflict/unknown`
-- `effective_date`
-- `affected_scope`
-- `professional_review_required`
-- `owner/action/status`
+“一致”不是所有字段机械相同，而是每个差异都符合真实业务事实，并有可解释的生效时间与材料。例如营业地址和退货地址可以不同，但应有真实用途和相应记录。
 
-真实且有证据的业务差异不等于风险规避；不得为了“隔离”制造虚假差异。
+遇到不一致时判断：
 
-## 5. 敏感变更
+- 哪个值代表当前真实情况；
+- 差异是否由合法业务变化造成；
+- 哪些平台、银行、税务或合同材料需要同步；
+- 同步顺序是否需要政策或专业意见；
+- 变更是否会影响其他账号、站点或主体。
 
-- `change_id`
-- `reason`
-- `before/after`
-- `evidence_ids`
-- `risk_review`
-- `policy_or_professional_review`
-- `approver`
-- `execution_owner/window`
-- `validation_evidence`
-- `incident_or_rollback_plan`
-- `status`
+不得为制造“隔离”而保留或创建虚假差异。
 
-## 6. 控制与状态
+## 5. 敏感变更门
 
-控制状态为：
+高风险变更至少需要：
 
-- `proposed`
-- `approved`
-- `in_progress`
-- `user_claimed_completed`
-- `verified_completed`
-- `blocked`
+- 清楚的业务原因；
+- 变更前后和影响范围；
+- 政策、法律、税务或安全复核；
+- 与风险匹配的批准人；
+- 明确执行窗口；
+- 验证材料与独立复核；
+- 事故或回退方案。
 
-完成与有效性验证必须分开记录。
+缺少批准或依据时，应暂停变更，而不是把待定方案写成实施计划。
 
-## 7. 证据谱系
+## 6. 控制完成与有效
 
-输入记录 `evidence_id`、`source_path`、`source_type`、`evidence_class`、范围和四轴；Agent 输出记录 `parent_evidence_ids`、推导方法、状态、限制和批准。
+控制“已执行”和“有效”不是同一件事。
 
-## 8. 结论上限
+- 培训记录可证明培训执行；
+- 权限截图可证明某时点权限收敛；
+- 周期复核记录可证明控制持续运行；
+- 后续抽查、事故或异常趋势才用于判断有效性。
 
-- 不预测 Amazon 内部风控评分；
-- 不保证账号不会关联、审核、限制或停用；
-- 不把合法控制包装成隐匿关系；
-- 平台允许性必须来自带日期依据或适格责任方。
+因此路线图应分别写执行证据、验证方法和验证时点。
 
-## 9. 来源可用性与业务状态
+## 7. 风险排序
 
-`source_availability_status` 与运营风险 `result_status/control status` 分列，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。前五项不得写成 0、无账号、无访问、无冲突或无风险；`true_zero` 仅用于范围完整且经核验的登记真实为零。
+优先处理：
 
-正例：完整权限登记确认孤儿高权限账号数为 0，可记 `true_zero`。反例：服务商访问尚未核验时记 `not_queried`，不能写“零第三方访问”或“无关联风险”。
+1. 暴露凭据、未授权管理员、离职未撤权等正在发生的访问风险；
+2. 主体、银行、税务或 KYC 的真实材料冲突；
+3. 无批准的敏感变更；
+4. 无边界或无到期的服务商访问；
+5. 缺少周期复核、审计留痕等长期治理问题。
+
+排序说明应基于影响范围、可利用性、持续时间和处置时限，不声称模拟 Amazon 内部风险评分。
+
+## 8. 三 MCP 边界
+
+`sif_mcp`、`sellersprite_mcp`、`sorftime_mcp` 均不能证明账号主体、KYC、访问身份、设备、权限、平台允许性或控制执行。公开 Listing、Review、商标、排名、销量、广告和市场数据不得改写为账号风控事实。
+
+所有关系、差距和控制建议只基于用户材料或可信上游，并说明直接依据、尚未核验部分和负责确认的人。

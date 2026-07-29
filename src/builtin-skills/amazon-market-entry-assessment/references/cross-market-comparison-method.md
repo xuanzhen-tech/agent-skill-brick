@@ -22,7 +22,7 @@
 
 - 所有原始金额保留 `raw_value + local_currency`。
 - 无用户或上游汇率时，不转换、不相加、不按金额大小排序。
-- 有汇率时必须记录来源、基准币、报价币、日期和公式；转换结果另列为 `source_type=agent`、`transformation_type=calculation`，引用输入 Evidence IDs，原值不覆盖。
+- 有汇率时必须记录来源、基准币、报价币、日期和公式；转换结果另列并回到输入依据，原值不覆盖。
 - 汇率换算不能补齐税、平台费、付款费、关税或物流成本。
 - 价格带比较优先使用当站销量/销额占比、分位或“低/中/高相对位置”，并保留计算方法。
 
@@ -41,7 +41,7 @@
 - 分母是商品、品牌、销量、销额、点击还是搜索；
 - Top N 的 N 是否一致；
 - 父体、子体和变体口径是否一致；
-- 两侧 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、对象和覆盖是否一致或具有明确的可比转换。
+- 两侧来源、数据期间、报告/估算/预测性质、Agent 换算方式、对象和覆盖是否一致或具有明确的可比转换。
 
 分母不同的百分比不得并排标成同一指标。
 
@@ -65,16 +65,14 @@
 
 若用户没有权重，使用非补偿式条件矩阵，不生成伪精确总分。
 
-## 外部缺口
+## 外部经营缺口
 
-比较表必须为以下信息保留独立状态：
+汇率、税费、合规、物流、文化与本地化、单位经济和团队能力必须逐项记录：
 
-- `fx_status`
-- `tax_status`
-- `compliance_status`
-- `logistics_status`
-- `culture_localization_status`
-- `unit_economics_status`
-- `team_readiness_status`
+- 已确认的直接依据及其日期；
+- 当前缺少或冲突的内容；
+- 缺口会阻碍哪项跨站比较或进入决策；
+- 应由用户、可信上游或专业责任人中的谁补齐；
+- 下一步材料或确认动作。
 
-这些字段只有用户或上游提供可追溯证据时才能从 `missing` 变为 `user_confirmed`、`upstream_ready` 或 `professional_confirmed`。SIF 市场数据不能改变这些状态。
+SIF、SellerSprite 或 Sorftime 的市场数据不能替代这些经营事项的正式依据。

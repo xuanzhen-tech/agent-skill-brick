@@ -1,101 +1,59 @@
 <!--
-文件功能：定义站外付费媒体的任务、受众假设、素材、落地页、预算、媒体干预事实、测量问题交接和上线闸门合同。
-职责边界：不定义 KPI、样本、停止规则、分析窗口或实验协议，不提供平台实时枚举、受众规模或价格，不连接账户、配置追踪或发布广告。
-重要关联：由 ../SKILL.md 在编制 brief 时读取；正式字段映射到 ../assets/templates/offsite-paid-media-brief-template.md。
+文件功能：说明站外付费媒体 brief 的目标、受众、素材、测量交接和人工上线门槛。
+职责边界：不连接账户、不配置像素、不发布 Campaign、不自行设计第 13 专家的实验协议。
+重要关联：由 ../SKILL.md 在形成 brief 时读取；正式交付使用 ../assets/templates/offsite-paid-media-brief-template.md。
 -->
 
-# 站外付费媒体 Brief 合同
+# 站外付费媒体 Brief 方法
 
-## 1. 顶层结果合同
+## 1. 从业务问题开始
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `MISSING_PLATFORM_RULES | AUDIENCE_UNVERIFIED | CREATIVE_RIGHTS_UNKNOWN | LANDING_PAGE_UNAVAILABLE | MEASUREMENT_HANDOFF_MISSING | ECONOMIC_GUARDRAIL_MISSING | EXPERIMENT_PROTOCOL_MISSING | SIF_SCHEMA_MISMATCH | OUT_OF_SCOPE_REQUEST`
+先确认平台候选、市场、商品/品牌、业务目标、决策窗口、预算/币种和人工负责人。平台未确定时可以比较需求，但不能写具体账户字段或受众规模。
 
-每次运行只允许这一组顶层结果字段；不得并列 `status` 或 `brief_status`。`publication_status` 是局部字段且固定为 `not_published`。
+## 2. 区分受众事实与假设
 
-## 2. 媒体任务
+受众事实来自用户研究、历史一方数据或可信品牌输出；平台兴趣、行为或规模必须由有权限的操作者确认。每个受众说明：
 
-- `media_brief_id`
-- `brand/product/market scope`
-- `platform_candidate`
-- `business_objective`
-- `decision_window`
-- `budget_currency/range`
-- `owner/approver`
-- `version`
-- `parent_evidence_ids`
+- 直接依据；
+- 为什么与业务目标相关；
+- 目前只是事实、推断还是待测试假设；
+- 主要反证或覆盖限制；
+- 如何通过媒体干预验证。
 
-## 3. 受众假设
+不得凭常识生成受众规模、CTR、CVR 或转化预测。
 
-| 字段 | 说明 |
-|---|---|
-| `audience_hypothesis_id` | 稳定编号 |
-| `description` | 业务描述 |
-| `evidence_ids` | 来源 |
-| `need_or_context` | 需求/情境 |
-| `include/exclude` | 约束 |
-| `product_fit` | 关联 |
-| `sensitive_attribute_risk` | 风险 |
-| `platform_feasibility` | confirmed_by_user/confirmation_required/not_applicable |
-| `validation_method` | 如何验证 |
+## 3. 素材与落地页准备
 
-不得填写未经平台资料支持的可触达规模。
+逐渠道列出所需画幅、时长、文案要素、商品信息、落地页版本和权利证明。人物、音乐、商标、评论引用及宣称缺少权利或合规确认时，阻塞对应素材。
 
-## 4. 素材需求
+素材存在不代表可投放；还要核对平台限制、品牌一致性、落地页可用性和追踪责任人。
 
-每项记录：
+## 4. 媒体结构只到人工计划层
 
-- `creative_requirement_id`
-- `audience_hypothesis_id`
-- `fact_ids`
-- `claim_restrictions`
-- `format_requirement`
-- `brand_asset_ids`
-- `rights_status`
-- `localization/accessibility`
-- `platform_spec_status`
-- `production_owner`
+结构说明目标、受众假设、素材组合、落地页、预算范围、人工上线顺序和停止条件。不填写未经确认的平台枚举、账户 ID 或固定行业 CPM/CPC/CPA。
 
-## 5. 落地页
+## 5. 与第 13 专家的测量交接
 
-| 字段 | 说明 |
-|---|---|
-| `destination_id/version` | 用户提供 |
-| `product/offer evidence` | 必填 |
-| `cta` | 明确 |
-| `locale/device scope` | 范围 |
-| `privacy/cookie/consent status` | 责任方确认 |
-| `tracking status` | reported/not_assessed |
-| `claim_consistency` | supported/conflicted/not_assessed |
+交接只提供：
 
-## 6. 媒体干预与测量问题交接
+- 当前媒体干预和稳定标识；
+- 已知的平台、受众、素材、落地页和预算事实；
+- 希望回答的测量问题与事件标签；
+- 希望观察的指标名称；
+- 已有实验协议的版本与适用范围。
 
-| 字段 | 规则 |
-|---|---|
-| `intervention_id` | 当前媒体干预稳定 ID，必填 |
-| `media_intervention_facts` | 平台候选、受众假设、素材/落地页版本、预算情景和人工计划时间等已证事实 |
-| `measurement_question` | 交给第13专家的决策问题，必填 |
-| `event_label` | 用户或可信上游提供的标签；不在本包定义事件实现 |
-| `desired_metric` | 指标名称或上游指标 ID；不在本包定义 KPI 公式 |
-| `experiment_protocol_id` | 仅引用第13专家已验收协议；可为 `missing` |
-| `protocol_version` | 保留第13上游版本 |
-| `protocol_status` | `referenced_applicable/referenced_mismatch/missing` |
-| `parent_evidence_ids` | 媒体事实和协议来源 |
+没有第 13 专家的已验收协议时，不自行定义 KPI 公式、样本、分组、停止规则、分析窗口、显著性或归因方法。
 
-禁止在本包新增或覆盖 KPI、分子/分母、样本、分组、停止规则、分析窗口、显著性规则和归因方法。仅当 `experiment_protocol_id` 存在且适用于 `intervention_id` 时才按协议填值。
+## 6. 预算与经济门槛
 
-## 7. 预算
+预算只在用户边界和专家 14 的利润/现金护栏内形成范围。未知的平台最低预算、行业费率和效果水平交给操作者确认，不补默认值。
 
-预算只用范围和第14护栏；不定义平台最低预算、行业价格或效果承诺。
+## 7. 三源和跨平台边界
 
-## 8. 局部上线字段
+SIF 可提供 Amazon 市场背景；SellerSprite `google_trend` 只在 Google/搜索兴趣任务中使用；Sorftime TikTok 工具只在任务平台明确为 TikTok 且实时 schema 支持时使用。
 
-- `publication_status`: 固定 `not_published`
-- `platform_confirmation_status`: `confirmed_by_user | confirmation_required`
-- `human_approval_status`: `pending | approved | rejected`
+记录供应商、实际工具、平台/市场/对象/期间、原始值、可复查位置和限制。不得把 Amazon 信号改写为 Meta/Google/TikTok 账户事实，也不得把 TikTok 信号移植到其他平台。
 
-Agent 不得声称已配置或已发布。
+## 8. 人工上线门
 
-## 9. 四轴与谱系
-
-每条记录包含 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path` 或 `parent_evidence_ids`。原始 SIF 背景对象额外直接保存 `source_provider=sif`、`source_tool`、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`query_scope`、覆盖/分页和 `raw_result_locator`，并使用 `transformation_type=reported`；`estimation_status` 按结果自述保留 `reported` 或 `estimated`。`agent_request_id` 与 `tool_call_id` 只取当前 AgentTool 调用上下文中的真实值；上下文未暴露对应字段时分别写 `not_returned`，不得自造。`provider_request_id` 只取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`；三类 ID 不得互相代填，也不得以本地 ID 冒充服务端 ID。Agent 派生对象不得继承 `source_type=sif_mcp`。
+上线前逐项确认账户/平台字段、受众、素材、权利、落地页、隐私/追踪、预算护栏、测量交接和批准人。正式 brief 始终标明“未发布，等待人工操作”。
