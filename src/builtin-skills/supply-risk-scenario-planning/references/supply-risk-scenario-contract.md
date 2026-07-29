@@ -1,110 +1,74 @@
 <!--
-文件功能：定义供应依赖、风险陈述、情景、触发器、缓解方案和决策闸门的数据合同。
-职责边界：不提供实时风险数据、固定概率或自动监控能力，不替代质量、物流、合规和利润责任方。
-重要关联：由 ../SKILL.md 在情景规划时读取；正式字段映射到 ../assets/templates/supply-risk-scenario-plan-template.md。
+文件功能：说明如何从供应依赖和已有证据构建风险情景、人工触发器、缓解选项与决策闸门。
+职责边界：不提供实时风险数据、固定概率或自动监控，不替代质量、物流、合规和利润责任方。
+重要关联：由 ../SKILL.md 在情景规划时读取，正式交付见 ../assets/templates/supply-risk-scenario-plan-template.md。
 -->
 
-# 供应风险情景合同
+# 供应风险情景规划方法
 
-## 1. 供应节点
+## 1. 画出真实供应依赖
 
-| 字段 | 说明 |
-|---|---|
-| `node_id` | 产品、部件、材料、供应商、工厂、模具或物流节点 |
-| `node_type` | 节点类别 |
-| `version_or_scope` | BOM、规格、地点或期间 |
-| `status` | `approved`、`candidate`、`reported`、`unknown` |
-| `parent_evidence_ids` | 状态证据 |
-| `valid_as_of` | 证据日期 |
-| `shared_dependency_ids` | 共同依赖 |
+先列出产品、关键部件、材料、供应商、工厂、模具和物流节点，并注明版本、地点、适用期间、当前能确认的关系和直接来源。
 
-多个候选共用关键节点时不得称“完全双源”。
+多个候选共用同一工厂、模具、关键材料或物流节点时，不能称为“完全双源”。不知道是否共用时，作为待核验依赖。
 
-## 2. 风险陈述
+## 2. 区分事实与情景
 
-每条记录：
+风险表述必须区分：
 
-- `risk_id`
-- `risk_object_ids`
-- `observation_or_condition`
-- `risk_basis`: `current_issue`、`historical_pattern`、`forward_scenario`、`unknown_exposure`
-- `parent_evidence_ids`
-- `potential_impact`
-- `time_horizon`
-- `uncertainty`
-- 四轴
+- 当前问题：有当前材料证明正在发生；
+- 历史模式：过去记录显示曾发生；
+- 前瞻情景：为了准备而假设的条件；
+- 未知暴露：关键依赖或能力没有足够材料。
 
-没有当前证据时禁止 `risk_basis=current_issue`。
+没有当前证据时，不得把前瞻情景写成“风险正在发生”。单次外部快照也不能证明趋势。
 
-## 3. 情景
+## 3. 构建情景
 
-| 字段 | 说明 |
-|---|---|
-| `scenario_id` | 稳定编号 |
-| `scenario_name` | 基准、压力或自定义，不暗示概率 |
-| `start_conditions` | 起始条件 |
-| `trigger_ids` | 可观察触发器 |
-| `affected_nodes` | 影响链 |
-| `quantity_scope` / `time_window` | 范围 |
-| `direct_impacts` / `secondary_impacts` | 分层影响 |
-| `assumption_ids` | 假设 |
-| `unknowns` | 未知项 |
-| `probability` | 只有用户提供合法依据时填写，否则 unknown |
+每个情景说明：
 
-## 4. 触发器
+- 起始条件；
+- 可观察触发信号；
+- 影响哪些节点、数量和时间窗口；
+- 直接影响和可能的二阶影响；
+- 依赖哪些假设；
+- 仍有哪些未知项。
 
-触发器包含：
+概率只有在用户或合格责任方提供可靠依据时才写入。Agent 不自定固定概率、损失率或通用阈值。
 
-- `trigger_id`
-- `observable_condition`
-- `evidence_source`
-- `check_owner`
-- `planned_check_time_or_frequency`
-- `threshold_source_evidence_id`
-- `action_if_met`
-- `action_if_unknown`
+## 4. 触发器是人工检查计划
 
-检查计划不等于系统监控。
+一个可用触发器包括具体可观察条件、证据来源、检查责任人、计划检查时点、阈值依据、触发后的动作以及事实仍未知时的处理。
 
-## 5. 缓解方案
+这些内容只是人工复核计划，不代表 Cron、后台监控或自动告警已经运行。
 
-| 字段 | 说明 |
-|---|---|
-| `option_id` | 稳定编号 |
-| `target_risk_ids` | 缓解对象 |
-| `action` | 待批准动作 |
-| `prerequisites` | 证据、测试、合同和批准 |
-| `lead_time` | 来源或 unknown |
-| `cost_input_status` | `provided`、`requires_expert14`、`unknown` |
-| `reversibility` | 可逆性 |
-| `new_dependencies` | 新增风险 |
-| `owner` | 执行责任方 |
-| `approval_status` | `proposed`、`approved`、`rejected` |
+## 5. 设计缓解选项
 
-## 6. 决策闸门
+每个选项说明目标风险、具体动作、前置测试/合同/批准、预计准备时间、可逆性、新增依赖、责任方和执行前条件。
 
-允许状态：
+成本或现金影响缺失时转第 14 专家，不自行估算；库存与物流影响分别转相应责任方。缓解方案存在不等于已经批准或执行。
 
-- `approve_preparation`
-- `approve_mitigation_with_conditions`
-- `hold_for_evidence`
-- `escalate_to_owner`
-- `accept_exposure_by_human_decision`
-- `not_assessable`
+## 6. 三 MCP 只能提供外部情景
 
-记录 `decision_scope`、`conditions`、`approved_by`、`decision_date`、`review_trigger`。
+SIF ASIN 画像和探索性阈值、SellerSprite Amazon 市场数据、Sorftime Amazon 商品详情/趋势，都只能帮助构造外部需求或售价情景，不能证明：
 
-## 7. 证据纪律
+- 用户一方需求已经变化；
+- 供应商、材料、产能、报价或交期事实；
+- 物流中断、生产异常或质量事件；
+- 某项风险正在发生。
 
-- 用户陈述和供应商陈述保留来源；
-- 当前、历史、未来和混合期间分开；
-- 估算、预测和未知分开；
-- Agent 风险判断为 inference 或 hypothesis；
-- `parent_evidence_ids` 不得为空；
-- 缺失和未查询不等于风险不存在。
+同类外部数据只有站点、商品、期间、单位和定义可比时才并列分析；冲突不平均，缺失说明覆盖限制。Sorftime 1688 不用于本风险包补供应事实。
 
-## 8. SIF 供应商计算对象
+使用 SIF `market_estimate_profit_threshold` 时，沿用寻源准备手册的十项显式输入和尺寸三项成组规则；任一正式输入缺失、冲突或未经验证就不调用。结果只作为外部压力情景，不能写成供应商报价或我方利润真相。
 
-`market_estimate_profit_threshold` 的正式 `arguments` 必须显式包含 `price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days`。每个键都必须映射到已验证输入 Evidence ID；缺失、冲突或未经验证即不得调用，不设默认值。`category` 必须来自用户或可信上游确认的费用类目口径，SIF ASIN 画像类目只能保留供应商快照语义，不能升级为官方类目事实或静默代填。`length_in`、`width_in`、`height_in` 只有三项均有父证据且机器 schema 同时支持时才成组传入，否则整组省略。
+## 7. 决策表达
 
-每次调用另建 `vendor_calculation` 对象，并在对象本体保存 `vendor_calculation_id`、`source_tool=market_estimate_profit_threshold`、正式 `arguments` 快照、逐参数映射的 `parent_input_evidence_ids[]`、三类 request ID、`raw_result_locator`、`transformation_type=vendor_calculation` 与限制。该对象不能直接证明需求变化、供应商产能、报价、交期、物流或中断。
+最终直接回答：
+
+- 当前可以准备哪个缓解动作；
+- 哪些动作只能在条件满足后考虑；
+- 哪些关键事实缺失，需要谁补充；
+- 是否需要责任方明确接受剩余暴露；
+- 下一次复核由什么新证据或触发器启动。
+
+每个判断都应能回到具体事实或显式情景，并清楚说明结论上限。

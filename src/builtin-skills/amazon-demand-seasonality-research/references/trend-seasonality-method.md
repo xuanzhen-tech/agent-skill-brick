@@ -6,53 +6,32 @@
 
 # 趋势与季节性研究方法
 
-## 一、证据账本
+## 一、原始序列账本
 
 每一条原始序列至少保留：
 
-| 字段 | 含义 |
+| 业务信息 | 要求 |
 |---|---|
-| `series_id` | 稳定序列标识，不含隐私 |
-| `collection_id` | 集合研究标识；单对象时可为空 |
-| `member_id` / `member_role` | 集合成员及其角色 |
-| `member_coverage_status` | 该成员的完整、部分、缺失或失败状态 |
-| `source_type` | `sif_mcp`、`user_input`、`upstream_output` 或 `agent` |
-| `source_path` / `evidence_id` | 当前来源文件或本层证据定位 |
-| `upstream_source_file` / `upstream_evidence_id` | 上游文件与原 Evidence ID；非上游证据写 `not_applicable` |
-| `upstream_source_type` | 上游原来源轴；缺失时保留空值并把证据降为 `partial` |
-| `upstream_temporal_scope` | 上游原时间轴；缺失时使用 `unknown` |
-| `upstream_estimation_status` | 上游原估算轴；缺失时使用 `unknown` |
-| `upstream_transformation_type` | 上游原处理轴；缺失时保留空值并把证据降为 `partial` |
-| `source_tool` | 实际调用的 SIF 工具名；非 SIF 证据写 `not_applicable` |
-| `agent_request_id` / `tool_call_id` | 只取当前 AgentTool 调用上下文暴露的对应真实值；仅当面向本 Agent 的上下文确实未暴露对应字段时写 `not_returned`，非 SIF 证据写 `not_applicable` |
-| `provider_request_id` | 只取 SIF 响应明确返回的服务端请求 ID；否则写 `not_returned`，不得复制 AgentTool 本地 ID |
-| `parent_input_evidence_ids` | 本次调用参数的直接父证据；若传 `arguments.country`，必须包含该站点值的直接 Evidence ID |
-| `raw_result_locator` | 原始 SIF 结果在 `temp/` 的位置 |
-| `marketplace` | Amazon 站点 |
-| `object_type` | `keyword`、`keyword_set` 或 `asin_set` |
-| `object_id` | 关键词、关键词集合或 ASIN 集合 ID |
-| `metric` | 原始字段名 |
-| `metric_meaning` | 运行时 schema 对字段的说明 |
-| `period_start` / `period_end` | 该值覆盖的期间 |
-| `granularity` | `day`、`week` 或 `month` |
-| `value` / `unit` | 原始值和单位 |
-| `temporal_scope` | `current`、`historical`、`future`、`mixed`、`not_applicable` 或 `unknown` |
-| `estimation_status` | `reported`、`estimated`、`forecast`、`mixed`、`not_applicable` 或 `unknown` |
-| `transformation_type` | `reported`、`normalized`、`calculation`、`coding`、`inference` 或 `hypothesis` |
-| `query_id` | 指向查询日志 |
-| `coverage_status` | `complete`、`partial`、`not_returned`、`not_queried`、`parse_failed`、`missing`、`conflicted` 或 `true_zero` |
-| `notes` | 口径、异常或缺失说明 |
+| 序列名称与集合成员 | 说明关键词、ASIN 或固定篮子，以及成员角色和实际覆盖 |
+| 来源 | 用户/上游文件，或 MCP 供应商与精确工具 |
+| 原始位置 | 文件或 `temp/` 中的原始结果位置 |
+| 站点与对象 | Amazon 站点、关键词/ASIN/集合，不混父子体 |
+| 指标 | 原始字段名、运行时定义、值和单位 |
+| 期间与粒度 | 起止日期，日/周/月或滚动窗口 |
+| 数值性质 | 来源报告、供应商估算/预测，还是 Agent 计算 |
+| 查询边界 | 筛选、分页、集合构成、压缩/截断和关键参数依据 |
+| 缺口与限制 | 未查询、未返回、解析失败、缺期、冲突或其他限制 |
 
-不得只保留画图后的汇总值。派生结果必须能回到这些原始列，并直接列出 `parent_evidence_ids`。普通 SIF 调用若传 `arguments.country`，该值必须绑定直接父 Evidence ID 并写入 `parent_input_evidence_ids`；没有直接父证据就不调用，目标非 US 且实时 schema 不支持时停止分支。上游证据在本层使用 `source_type=upstream_output`，同时保留上游谱系字段；不得伪装成本次 MCP 调用。原始 SIF 固定 `source_type=sif_mcp`、`source_provider=sif`、`transformation_type=reported`。`reported` 不等于 Amazon 一方观测；业务数值的 schema 未说明估算性质时使用 `estimation_status=unknown`。
+不得只保留画图后的汇总值。环比、同比、滚动基线和季节指数必须回到原始序列，并说明公式与直接依据。站点映射到当次 schema 实际字段；SIF 的 `country` 要能回到用户或上游依据。供应商报告值不等于 Amazon 一方观测。结果含压缩或截断标记时先缩小范围或分页，不得声称序列完整。
 
 ### 集合扇出
 
 当工具参数只接受单个关键词或 ASIN：
 
-1. 为每个成员创建独立 `query_id`；
+1. 为每个成员保留独立查询记录；
 2. 每个成员保留一条原始序列，不先求和或平均；
 3. 记录成员实际覆盖起止、缺失期间与失败状态；
-4. 只有指标、单位、粒度、期间和成员角色可比时，才生成 `source_type=agent`、`transformation_type=calculation` 的集合级结果；
+4. 只有指标、单位、粒度、期间和成员角色可比时，才生成集合级结果，并说明汇总公式与限制；
 5. 集合构成变化时建立结构断点，不能把成员加入/退出解释为自然需求变化。
 
 ## 二、完整期间
@@ -85,7 +64,7 @@
 | 指标 | 同一字段定义与单位 |
 | 粒度 | 同为日、周或月 |
 | 期间 | 同为自然期间或同为滚动窗口 |
-| 四轴标签 | 来源、时间范围、估算状态和处理方式必须可比；历史估算不得与未来预测混合 |
+| 数据形成方式 | 来源、时间范围、报告/估算/预测性质和计算方式必须可比；历史估算不得与未来预测混合 |
 | 集合 | ASIN 加入、退出或父子体变化必须记录 |
 
 出现 schema 版本变化、节点重映射或集合变化时，建立 `break_id`。断点两侧可以并列描述，不得无说明计算增长率。
@@ -154,7 +133,7 @@ $$
 
 ### 重复性检查
 
-`recurrent_pattern` 至少同时满足：
+要写为“可复核的重复模式”，至少同时满足：
 
 1. 两个以上完整周期；
 2. 候选高点或低点满足研究协议预先规定的位置偏移；
@@ -163,24 +142,18 @@ $$
 5. 移除单一异常点后结论仍成立；
 6. 至少一个不同语义的站内指标提供方向支持。
 
-峰位偏移、幅度、一致性、异常敏感性和反证标准由用户业务或取数前的研究协议定义。用户未定义且无法从业务约束确定时，只展示原始差异，最高标记 `recurrent_candidate`。只有单一指标重复、佐证指标不可得时同样停在 `recurrent_candidate`，不能升级为 `recurrent_pattern`。
+峰位偏移、幅度、一致性、异常敏感性和反证标准由用户业务或取数前的研究协议定义。用户未定义且无法从业务约束确定时，只展示原始差异，最多称为“重复候选”。只有单一指标重复、佐证指标不可得时同样只能称为“重复候选”，不能写成“可复核的重复模式”。
 
-### 状态机
+### 业务判断层级
 
-```text
-无研究
-  -> not_assessed
-有序列但不足一周期
-  -> insufficient_history
-一个完整周期
-  -> single_cycle_candidate
-两个以上周期但材料性规则或佐证不完整
-  -> recurrent_candidate
-两个以上周期且预设规则与不同语义佐证均通过
-  -> recurrent_pattern
-存在断点、峰值漂移或周期冲突
-  -> unstable_or_broken
-```
+| 历史证据 | 允许的业务表述 |
+|---|---|
+| 未开展研究 | 明确说明尚未研究季节性 |
+| 有序列但不足一个完整周期 | 仅描述短期变化 |
+| 一个完整周期 | 指出候选高低点，但不声称重复 |
+| 两个以上周期但材料性规则或佐证不完整 | 重复候选 |
+| 两个以上周期且预设规则与不同语义佐证均通过 | 可复核的重复模式 |
+| 存在断点、峰值漂移或周期冲突 | 模式不稳定，并列冲突和断点 |
 
 ## 六、异常检查
 
@@ -232,7 +205,7 @@ $$
 +\mathrm{Buffer})
 $$
 
-每项提前量都必须来自 `user_input` 或合法上游产物，并逐项记录 `value`、`unit`、`source`、`evidence_id`、`as_of` 和 `approval_status`。只要任一关键提前量缺失或未确认，就输出变量清单和待确认项，不给具体日期。
+每项提前量都必须来自用户输入或合法上游产物，并逐项记录数值、单位、来源与原始位置、截至时间和用户确认。只要任一关键提前量缺失或未确认，就输出变量清单和待确认项，不给具体日期。
 
 ## 九、最小复核样例
 

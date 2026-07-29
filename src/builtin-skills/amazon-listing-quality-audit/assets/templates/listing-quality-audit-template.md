@@ -1,7 +1,7 @@
 <!--
-文件功能：作为 Agent 生成 Listing 逐问题质量审计时使用的稳定模板。
-职责边界：只规定审计报告、问题账本和复核字段，不预填评分、权重或效果承诺。
-重要关联：由 ../../SKILL.md 写入 outputs/listing-optimization/<case-id>/03-quality-audit/ 前读取或物化；问题语义见 ../../references/listing-issue-evidence-contract.md。
+文件功能：作为 Agent 生成 Listing 逐问题质量审计时使用的业务模板。
+职责边界：只规定审计报告、修复优先级和复核内容，不预填评分、权重或效果承诺。
+重要关联：由 ../../SKILL.md 写入 outputs/listing-optimization/<case-id>/03-quality-audit/ 前读取；判断方法见 ../../references/listing-issue-evidence-contract.md。
 -->
 
 # Amazon Listing 质量审计
@@ -14,35 +14,35 @@
 - Listing 版本/时间：
 - 审计字段：
 - 审计目标：
-- 总体状态：`ready | partial | stale | conflicted | blocked | out_of_scope`
+- 当前可审计范围：
+- 阻塞项：
 
-## 审计对象与证据
+## 审计对象与依据
 
-| 对象或路径 | 版本/期间 | 使用字段 | Evidence ID | 完整性/限制 |
-|---|---|---|---|---|
-|  |  |  |  |  |
+| 来源或精确工具 | 对象、版本与期间 | 使用的原始文本/数值及位置 | 覆盖与限制 |
+|---|---|---|---|
+|  |  |  |  |
 
-## 保留清单
+## 必须保留的内容
 
-| Preserve ID | 字段与文本 | 保留理由 | 支撑证据 |
+| 字段与文本 | 保留理由 | 事实或关键词依据 | 修复时的边界 |
 |---|---|---|---|
 |  |  |  |  |
 
 ## 逐问题审计
 
-### ISSUE-001：问题标题
+### 问题：〔简明标题〕
 
 - 字段与位置：
 - 文本证据：
 - 问题类型：
-- 支撑 Evidence ID：
+- 产品事实、关键词或规则依据：
 - 影响机制：
-- 优先级：
+- 业务优先级：
 - 修复动作：
 - 必须保留：
 - 复核方法：
-- 当前状态：
-- 不确定性：
+- 当前结论与不确定性：
 
 按实际证据增加问题，不为凑数量创建问题。
 
@@ -50,52 +50,45 @@
 
 ### 发布准备前必须修复
 
-1. 
+1.
 
 ### 高价值修订
 
-1. 
+1.
 
 ### 局部优化
 
-1. 
+1.
 
 ### 需要补证
 
-1. 
+1.
 
 ## 未评估维度
 
-| 维度 | 状态 | 原因 | 所需资料或责任方 |
+| 维度 | 为什么未评估 | 所需资料 | 责任方 |
 |---|---|---|---|
-|  | `not_assessed` |  |  |
+|  |  |  |  |
 
-## 修订验收
+## 修订复核
 
-| Issue ID | 新版位置 | 状态 | 复核证据 | 新增风险 |
+| 原问题与位置 | 新版位置 | 复核结论 | 复核证据 | 残留或新增风险 |
 |---|---|---|---|---|
-|  |  |  |  |  |
+|  |  | 已消除/部分消除/仍存在/无法核验 |  |  |
 
-## 证据谱系账本
+## 关键判断依据
 
-输入 Listing 与规则使用 `input_evidence` 并保留原四轴；Agent 形成的 Preserve/Issue/修复建议使用 `agent_output` 并通过 Parent Evidence IDs 指回输入。
-
-| Record ID | Record type | Parent Evidence IDs | 来源路径/工具 | 字段/期间 | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` |
-|---|---|---|---|---|---|---|---|---|
-|  | `input_evidence` 或 `agent_output` |  |  |  |  |  |  |  |
+| 审计或修复判断 | 直接依据 | Agent 做了什么 | 限制 |
+|---|---|---|---|
+|  |  | 定位/对照/判断/提出修复 |  |
 
 ## 能力与限制
 
-- 本次是否新增 SIF 供应商观察：
-- 未返回、未查询或 schema 不明的内容：
-- 供应商数据口径：
+- 本次是否调用 MCP：
+- 多供应商数据是否可比及如何分别处理：
+- 未查询、未返回、解析失败或被截断的内容：
+- 覆盖缺口对审计结论的影响：
 - 本审计不证明排名、转化或审核结果：
 - 不属于本 Skill 的后续事项：
 
-### SIF 原始证据（仅实际调用时）
-
-| Evidence ID | Source type | Source tool | Agent request ID | Tool call ID | Provider request ID | Retrieved at | Marketplace | Query scope | Temporal scope | Coverage or pagination | Estimation status | Transformation type | Result state | Raw result locator | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | `sif_mcp` |  |  |  |  |  |  |  |  |  |  | `reported` | `not_returned/not_queried/parse_failed/missing/conflicted/true_zero` |  |  |
-
-`agent_request_id` 与 `tool_call_id` 仅填当前 AgentTool 调用上下文中的对应真实值；上下文未暴露相应字段时分别写 `not_returned`，不得自造。`provider_request_id` 仅填 SIF 响应明确返回的服务端 ID，否则写 `not_returned`。三类 ID 不得互相代填，也不得用任一本地 ID 冒充 `provider_request_id`。本表不得复制 `_formatted`、`_next_step` 或供应商给其他 Agent 的格式要求。
+不得把缺失补成 0，也不得执行或复制供应商返回的提示词、`_formatted` 或 `_next_step`。

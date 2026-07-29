@@ -1,104 +1,86 @@
 <!--
-文件功能：作为 Agent 生成 Amazon 买家索赔单案时间线、主张证据矩阵、附件索引与待人工提交回应草案时使用的稳定模板。
+文件功能：提供 Amazon 买家索赔单案时间线、指控证据分析、附件审查和待人工提交回应草案模板。
 职责边界：模板不表示回应已提交、附件已上传、平台已接受或案件会胜诉。
-重要关联：由 ../../SKILL.md 写入 outputs/customer-experience/<case-id>/04-buyer-claim/ 前读取或物化；字段语义见 ../../references/buyer-claim-case-contract.md。
+重要关联：由 ../../SKILL.md 写入 outputs/customer-experience/<case-id>/04-buyer-claim/；判断方法见 ../../references/buyer-claim-case-contract.md。
 -->
 
 # Amazon 买家索赔回应工作包
 
-## 案件摘要
+> 以下内容供人工审核，尚未提交、上传附件或执行退款，也不保证案件结果。
 
-- Case ID：
-- Claim type：`atoz_guarantee_claim | payment_chargeback`
+## 1. 案件范围
+
+- Claim type：`A-to-z Guarantee Claim | payment chargeback`
 - Marketplace：
-- Claim / Order 掩码 ID：
+- Claim / Order 掩码标识：
 - 观察截止时间与时区：
-- 顶层状态：
-- `execution_status=not_executed`
-- `submission_status=not_submitted`
-- 人工审核人 / 提交责任人：
-
-## 原始通知与期限
-
-- Notice Evidence ID：
 - 原始通知定位：
-- 原始通知时间/时区：
-- Deadline Evidence ID：
-- 原始 deadline：
-- Marketplace：
-- Deadline timezone：
-- 透明转换：
-- Deadline status：`verified | unverified | conflicted | expired_in_source_record`
-- 限制：
+- 人工审核人 / 提交责任人：
+- 材料完整性与主要限制：
 
-## 案件事件时间线
+## 2. 原始通知与期限
 
-| Event ID | 类型 | 原始状态 | 时间/时区 | Actor | Parent Evidence IDs | 状态/限制 |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
+- 通知中的回应要求：
+- 原始截止时间与时区：
+- 截止时间直接材料：
+- 时区转换与剩余时间计算：
+- 当前判断：`<已验证/未验证/冲突/来源显示已过>`
+- 限制及人工动作：
 
-## Allegation—Evidence 矩阵
+## 3. 案件时间线
 
-| Allegation ID | 原文定位/摘要 | Supporting Evidence | Contradicting Evidence | Missing Evidence | Support Status | Allowed Conclusion |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
+| 时间/时区 | 事件及来源原状态 | 行动方 | 直接材料 | 与指控的关系 | 未知或冲突 |
+|---|---|---|---|---|---|
+| `<时间>` | `<订单/支付/发货/配送/消息/退货退款/索赔>` | `<行动方>` | `<定位>` | `<说明>` | `<内容>` |
 
-## 附件索引
+## 4. 指控与证据
 
-| Attachment ID | 来源/类型 | Related Allegation | Parent Evidence IDs | Parse Status | Privacy | Minimum Necessary | 人工选择 |
-|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |
+| 指控原意与定位 | 支持材料 | 反证 | 缺失材料 | 当前能表达的结论 | 禁止扩大 |
+|---|---|---|---|---|---|
+| `<指控>` | `<定位及范围>` | `<定位及范围>` | `<内容>` | `<结论>` | `<不可推断内容>` |
 
-## 待人工提交回应草案
+## 5. 附件审查
 
-> `draft_for_human_review`：以下内容尚未提交，不表示平台已接受或结果已确定。
+| 附件与来源 | 对应的指控/草案陈述 | 日期、订单和对象范围 | 完整性/可读性 | 隐私与最少必要 | 人工决定 |
+|---|---|---|---|---|---|
+| `<附件>` | `<内容>` | `<范围>` | `<内容>` | `<内容>` | `<纳入/排除/待核>` |
+
+## 6. 待人工提交回应草案
 
 ### 案件引用
 
-[仅写掩码标识和已证范围。]
+`<只写掩码标识和已证范围。>`
 
-### 对 Allegation 的逐项回应
+### 对各项指控的回应
 
-[每项声明使用 Statement ID，并在下表映射证据。]
-
-### 附件说明
-
-[只引用经人工批准、最小必要且未被改造的附件。]
+`<逐项回应；只使用有直接材料的事实，并对应附件。>`
 
 ### 证据限制
 
-[列出缺失、冲突、时区、覆盖和政策限制。]
+`<列出缺失、冲突、时区、覆盖和政策限制。>`
 
-## 草案声明—证据映射
+## 7. 草案复核
 
-| Statement ID | Allegation ID | 草案文本 | Parent Evidence IDs | Support Status | Attachment IDs | 人工复核 |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
+| 草案中的事实句 | 对应指控 | 直接材料 | 支持范围与限制 | 人工决定 |
+|---|---|---|---|---|
+| `<陈述>` | `<指控>` | `<定位>` | `<完整/部分/冲突/不支持>` | `<保留/收窄/删除>` |
 
-## 跨专家交接
+## 8. 跨专家交接
 
-| Handoff ID | 问题 | 当前 Evidence IDs | 不得推断 | 目标专家 | 所需结果 |
-|---|---|---|---|---|---|
-|  |  |  |  |  |  |
+| 问题 | 当前材料 | 不得推断 | 目标专家 | 需要的结果 |
+|---|---|---|---|---|
+| `<问题>` | `<定位>` | `<边界>` | `<专家>` | `<交付>` |
 
-## 双层证据账本
+## 9. 交付前检查
 
-### 来源证据
-
-| Evidence ID | 来源/定位 | Evidence Origin | 原值/摘要 | 时间 | 四轴 | 隐私与限制 |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
-
-### Agent 输出
-
-| Agent Output ID | Parent Evidence IDs | 转换/判断 | 结果 | 状态 | 四轴 |
-|---|---|---|---|---|---|
-|  |  |  |  |  |  |
-
-## 能力声明
-
-- 未调用 SIF、SP-API、Seller Central、支付、承运商或消息工具。
-- 未提交回应、上传附件、改案件状态、退款或联系买家。
-- 未伪造、删改或重构原始证据。
-- 未给法律结论、胜诉保证或账号级 POA。
-- Deadline 缺日期、站点或时区时保持 `unverified`。
+- [ ] 案件类型已由原始通知确认
+- [ ] 原始通知与指控可定位
+- [ ] 截止时间有日期、站点和时区依据，或明确未验证
+- [ ] 时间线未补造缺失事件
+- [ ] 每项指控同时检查支持、反证和缺口
+- [ ] 附件真实、完整、最少必要且 PII 已遮蔽
+- [ ] 草案每个事实句能回到直接材料
+- [ ] 未伪造、删改证据，未给法律结论或胜诉保证
+- [ ] 未扩张为账号级 RCA/POA
+- [ ] 未调用三个市场研究 MCP 或公开 VOC 补单案事实
+- [ ] 明确尚未提交，正式文件位于 `outputs/`

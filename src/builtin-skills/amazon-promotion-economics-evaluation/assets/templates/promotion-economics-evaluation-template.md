@@ -1,110 +1,86 @@
 <!--
-文件功能：作为 Agent 生成促销增量经济评估、情景账本和无有限解说明时使用的稳定模板。
-职责边界：只约束变量、公式和决策字段，不预填成本、费用、销量倍数、lift或活动结论。
-重要关联：由 ../../SKILL.md 写入 outputs/promotion-management/<case-id>/02-economics-evaluation/ 前读取或物化；公式语义见 ../../references/promotion-economics-formula-contract.md。
+本模板用于复核促销增量经济性、敏感性和不可行条件。
+基础利润由第 14 专家提供；本模板只计算活动增量，不替代成本与利润底线的责任方。
 -->
 
-# Amazon 促销经济评估
+# 促销经济性评估
 
-## 任务摘要
+## 1. 评估范围
 
-- Case ID：
-- 站点与 SKU/变体：
-- 币种与期间：
-- 贡献目标：
-- 总体状态：`ready | limited | blocked_missing_profit_baseline | blocked_missing_volume_baseline | blocked_basis_mismatch | no_finite_solution | conflicted | out_of_scope`
+- 站点与币种：
+- 商品：
+- 促销方案：
+- 基准期：
+- 活动窗口：
+- 本次需要回答的经济问题：
 
-## 第 14 基线
+## 2. 基线输入
 
-| 变量 | 值 | 单位/币种 | 期间 | 上游路径 | Evidence ID | 口径/限制 |
+| 输入 | 数值 | 单位与口径 | 适用对象与时间 | 来源 | 可否直接采用 | 限制 |
 |---|---:|---|---|---|---|---|
-| `C0` |  |  |  |  |  |  |
-| `Q0` |  |  |  |  |  |  |
-| 价格底线 |  |  |  |  |  |  |
+| 基准销量 |  |  |  |  |  |  |
+| 基准售价 |  |  |  |  |  |  |
+| 活动前单位贡献 |  |  |  |  |  |  |
+| 可比价格底线 |  |  |  |  |  |  |
 
-## 促销增量变量
+## 3. 促销增量输入
 
-| 变量 | 值 | 单位 | 来源/假设 | Source Evidence ID | 四轴 | 缺失处理 |
-|---|---:|---|---|---|---|---|
-| `d` |  |  |  |  |  |  |
-| `f_redeem` |  |  |  |  |  |  |
-| `v_other` |  |  |  |  |  |  |
-| `r_delta` |  |  |  |  |  |  |
-| `F` |  |  |  |  |  |  |
-| `rho` |  |  |  |  |  |  |
+| 输入 | 数值或假设 | 单位与口径 | 直接依据 | 不确定性 |
+|---|---:|---|---|---|
+| 计划活动价 |  |  |  |  |
+| 折扣或 Coupon 成本 |  |  |  |  |
+| 活动费 |  |  |  |  |
+| 增量广告投入 |  |  |  |  |
+| 预计销量提升 |  |  |  |  |
+| 退货或履约增量 |  |  |  |  |
 
-## 优惠单位贡献
+## 4. 计算过程
 
-- `C_offer =`：
-- `available_contribution_before_discount =`：
-- 状态：`positive | zero | negative | no_finite_solution | blocked`
-- 触发解释：
+| 计算项 | 公式 | 代入值 | 结果 | 解释 |
+|---|---|---|---:|---|
+| 活动期单位贡献 |  |  |  |  |
+| 基准总贡献 |  |  |  |  |
+| 活动总贡献 |  |  |  |  |
+| 增量贡献 |  |  |  |  |
+| 盈亏平衡销量或提升率 |  |  |  |  |
 
-## 情景
+## 5. 情景与敏感性
 
-| 情景 | `Qp` | 倍数 | lift | `Qc` | `Qi` | `C_offer` | `C_blended` | 固定费 | 总贡献 | 与基线差 | 决策 |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-|  |  |  |  |  |  |  |  |  |  |  |  |
+| 情景 | 销量变化 | 活动价 | 增量费用 | 增量贡献 | 是否守住底线 | 主要解释 |
+|---|---:|---:|---:|---:|---|---|
+| 保守 |  |  |  |  |  |  |
+| 基准 |  |  |  |  |  |  |
+| 乐观 |  |  |  |  |  |  |
 
-## 维持基线贡献
+## 6. 无有限解或不可比情况
 
-- 使用单位贡献：`C_offer | C_blended`
-- `required_multiplier =`：
-- `required_lift =`：
-- 是否有有限解：
-- 公式与变量：
-- 不允许的解释：
+- 是否存在无有限盈亏平衡解：
+- 触发该结论的公式条件：
+- 缺失或冲突输入：
+- 因此不能下的结论：
 
-## 敏感项
+## 7. 外部阈值探索（如使用）
 
-| 变量 | 当前假设 | 可行范围/来源 | 决策翻转点 | 责任方 |
-|---|---|---|---|---|
-|  |  |  |  |  |
+| 提供方与精确工具 | 查询对象、范围和时间 | 参数 | 原始返回值 | 对本评估的直接用途 | 限制与原始结果位置 |
+|---|---|---|---|---|---|
+| SIF `market_estimate_profit_threshold` |  |  |  |  |  |
 
-## 双层证据账本
+> 外部阈值只能作为探索性参照，不能替代第 14 专家的已批准利润底线。
 
-### 来源证据层
+## 8. 结论与行动
 
-| Source Evidence ID | 来源/上游路径 | 字段 | 原值 | 币种/单位 | 期间 | 四轴 |
-|---|---|---|---:|---|---|---|
-|  |  |  |  |  |  |  |
+- 当前经济判断：
+- 支持该判断的关键计算：
+- 最敏感的假设：
+- 执行前必须补齐：
+- 建议责任方：
+- 建议复核时点：
 
-若来源为 `sif_mcp`，同一来源对象还须直接保存 `source_provider=sif`、`source_tool`、三类 request ID、`retrieved_at`、`marketplace`、`query_scope`、`temporal_scope`、覆盖/分页、`estimation_status` 和 `raw_result_locator`；销量趋势使用 `transformation_type=reported`，供应商利润阈值使用 `transformation_type=vendor_calculation`。
+## 9. 质量检查
 
-### SIF 供应商计算对象
-
-只在实际调用 `market_estimate_profit_threshold` 时填写；此对象本体必须保留输入父证据，不得仅在派生决策总账补写。
-
-| Vendor Calculation ID | Source Tool | Call Arguments Snapshot | `parent_input_evidence_ids[]` | Dimension Group Status | Agent Request ID | Tool Call ID | Provider Request ID | Raw Result Locator | Transformation Type | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `<vendor-calculation-id>` | `market_estimate_profit_threshold` | `<exact arguments>` | `<all mapped input evidence ids>` | `<complete/omitted>` | `<id>` | `<id>` | `<id/not_returned>` | `<path/object locator>` | `vendor_calculation` | `<vendor rate/exchange/schema limits>` |
-
-| Formal Argument | Value | Parent Input Evidence ID | Validation |
-|---|---|---|---|
-| `price` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `category` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `weight_oz` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `freight_cost` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `target_margin` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `country` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `price_currency` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `tariff_rate` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `is_apparel` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `turnover_days` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `length_in` | `<value/omitted>` | `<evidence-id/not_applicable>` | `<verified/omitted_with_group>` |
-| `width_in` | `<value/omitted>` | `<evidence-id/not_applicable>` | `<verified/omitted_with_group>` |
-| `height_in` | `<value/omitted>` | `<evidence-id/not_applicable>` | `<verified/omitted_with_group>` |
-
-前十项任一项不是 `verified` 时不得调用。尺寸三项只能全部 `verified` 后成组传入，否则整组省略；任何参数都不得使用默认值。
-
-### 派生决策层
-
-| Decision Evidence ID | 输入 Evidence IDs | 公式 | 假设 | 结果 | 状态 | 四轴 |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
-
-## 能力声明
-
-- 本评估没有重建第 14 的成本或利润真相。
-- SIF 销量趋势或供应商利润阈值没有被当作用户一方订单、`Q0`、转化、第14利润真相或真实增量。
-- 本 Skill 未预测实际销量、报名活动或执行改价。
+- [ ] 未在本报告重建基础成本或利润口径。
+- [ ] 公式、代入值、单位和币种可复核。
+- [ ] 活动费、广告费、Coupon 成本和履约增量未重复计入。
+- [ ] 情景变化只改变已声明的假设。
+- [ ] 无有限解时未伪造盈亏平衡数值。
+- [ ] 外部阈值与正式利润底线没有混用。

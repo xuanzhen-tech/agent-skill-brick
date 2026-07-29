@@ -1,6 +1,6 @@
 ---
 name: amazon-ad-search-term-optimization
-description: 将真实 Search Term、Target 与实体报表同第02专家关键词证据联接，并可用 SIF ASIN 关键词/流量贡献作独立外部对照，形成收割、迁移、否定候选、观察和人工复核行动账本。适用于搜索词治理、目标迁移和否定准备；不适用于重新做市场关键词研究、用 SIF 推断广告查询或替代真实报表、自动添加或否定关键词、修改匹配类型或提交广告账户变更。
+description: 将真实 Search Term、Target 与实体报表同第02专家关键词证据联接，并可按职责组合 SIF 关键词/流量贡献、SellerSprite PPC/广告排名与 Sorftime 自然排名趋势作独立外部对照，形成收割、迁移、否定候选、观察和人工复核行动账本。适用于搜索词治理、目标迁移和否定准备；不适用于重新做市场关键词研究、用供应商观察推断广告查询或替代真实报表、自动添加或否定关键词、修改匹配类型或提交广告账户变更。
 ---
 
 <!--
@@ -24,7 +24,7 @@ description: 将真实 Search Term、Target 与实体报表同第02专家关键�
 
 没有真实 Search Term/Target 报表时，不输出否词或迁移清单。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -32,21 +32,24 @@ description: 将真实 Search Term、Target 与实体报表同第02专家关键�
 - 可信上游 `outputs/` 中通过 `amazon-ad-performance-diagnosis` 验收的数据与稳定 ID 联接；
 - 第02专家的 Keyword/Cluster ID、意图、产品相关性、排除属性和日期；
 - 用户确认的商品范围、品牌保护、预算、利润、库存和合规限制。
-- 当前 Agent definitions 中真实存在的 `sif_mcp`，仅在真实 Search Term/Target 报表已验收后按需提供 ASIN 关键词或广告可见流量对照。
+- 已接入假设下的三个 MCP 外层工具，仅在真实 Search Term/Target 报表已验收后按职责提供广告可见、关键词/PPC 或自然排名对照。
 
-SIF 关键词、流量或广告贡献观察不能替代广告搜索词、点击、花费、订单或归因销售额，也不能单独生成收割、迁移或否定动作。
+三个供应商的关键词、流量或广告观察都不能替代广告搜索词、点击、花费、订单或归因销售额，也不能单独生成收割、迁移或否定动作。
 
 ### 外部数据边界
 
-- 新外部业务数据只允许通过当前 Agent 已注入的 `sif_mcp` 获取；
-- 候选路由限于 `market_get_asin_keyword_signals`、`ops_get_listing_keyword_distribution` 与 `ads_get_ad_group_keyword_breakdown`；每个工具在本任务首次调用前必须 `describe`，只按当次机器 `inputSchema` 调用；
+- 新外部市场数据只允许通过 `sif_mcp`、`sellersprite_mcp` 或 `sorftime_mcp` 获取；
+- SIF 候选路由限于 `market_get_asin_keyword_signals`、`ops_get_listing_keyword_distribution` 与 `ads_get_ad_group_keyword_breakdown`；每个工具在本任务首次调用前必须 `describe`，只按当次机器 `inputSchema` 调用；
+- SellerSprite 仅补充 `traffic_keyword`、`traffic_extend`、`keyword_order` 等关键词/PPC/广告排名对照；Sorftime 仅补充 `product_traffic_terms`、`product_ranking_trend_by_keyword`、`competitor_product_keywords` 或 `keyword_trend` 的自然证据；
 - `ads_get_ad_group_keyword_breakdown` 的 Campaign/Ad Group ID 必须沿同一 SIF 结果链传递，且其流量贡献不是 Search Term Report；
-- 不调用 Amazon Ads API、SP-API、Sorftime、Keepa、Web、浏览器或其他 MCP/API；
+- 不调用 Amazon Ads API、SP-API、Web、浏览器或未列明的其他 MCP/API；
 - 不登录广告账户、不下载报告、不提交 Target 或 Negative；
 - 不读取广告凭据，不安装自动化或后台任务；
 - 缺真实报表时输出数据就绪清单。
 
-当前 SIF 工具没有机器级 `outputSchema`。不得按 description 固化结果字段，不复制 `_formatted`、`_next_step` 或供应商格式要求；外层参数通过后仍须检查内层调用是否被 Gateway/SIF 接受。
+三个目录均无机器级 `outputSchema`。工具名未知时先由对应外层工具 `search`；已知精确工具名可直接 `describe`。每个任务对每个内层工具首次调用前必须实时 `describe`，再由同一外层工具 `call`；不得拼 Gateway、HTTP、shell、索取密钥或固化未实际返回字段。
+
+Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配，不得用名称子串推断其他候选的读写性质；其他候选必须以本任务实时 `describe` 判断副作用，副作用无法确认时失败关闭。
 
 ### 工作区
 
@@ -55,22 +58,13 @@ SIF 关键词、流量或广告贡献观察不能替代广告搜索词、点击�
 - `outputs/advertising/<case-id>/03-search-term-optimization/` 存放唯一正式行动账本；
 - 人工执行回执作为新版本证据，不覆盖建议。
 
-### 双层谱系
+### 证据与判断
 
-输入证据记录 `evidence_id`、`source_path`、报告 ID/签名、站点、账户、实体、期间、归因、四轴和限制。原始 SIF 对照另记录 `source_type=sif_mcp`、`source_provider=sif`、`source_tool`、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`query_scope`、覆盖/分页和 `raw_result_locator`；其 `transformation_type=reported`，`estimation_status` 按结果自述保留 `reported` 或 `estimated`。`agent_request_id` 与 `tool_call_id` 取当前 AgentTool 调用上下文中的真实值；上下文未暴露时分别写 `not_returned`，不得自造。`provider_request_id` 仅取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`，不得用本地 ID 冒充。
+输入材料记录来源路径、报告 ID/签名、站点、账户、实体、期间、归因和限制。每次 MCP 业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造的参数不调用。
 
-Agent 的归一、相关性编码、动作建议、迁移关系、否定范围和冲突判断为 `agent_output`，必须记录 `output_id`、`parent_evidence_ids`、转换类型、假设状态和人工批准状态。
+Agent 的归一、相关性判断、动作建议、迁移关系、否定范围和冲突判断必须直接引用真实报表与关键词证据，说明推理理由和是否需要人工批准。广告报表事实与 Agent 建议分开呈现。
 
-四轴字段：
-
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-
-广告报表是用户/上游 `reported` 输入；相关性和行动建议是 Agent `coding|inference`。
-
-SIF 对照使用 `not_returned | not_queried | parse_failed | missing | conflicted | true_zero` 六态，且只可作为 Agent 判断的 `parent_evidence_ids`；空数组不能写成“没有搜索词”或零广告流量。
+供应商未查询、未返回、解析失败、字段缺失或冲突都不能补成零；只有响应明确给出且口径可确认的零才按真实零处理。供应商对照只可作为 Agent 判断的父证据；先对齐站点、对象、期间、粒度、币种/单位、流量口径、分页、定义和采集时间，口径一致才比较且不平均，口径不同只作方向印证，冲突逐源分列。计划中的某个数据源缺失时明确降级覆盖范围；独有单源失败时只说明该来源不可用和当前没有相应证据。
 
 ## 启动检查
 
@@ -85,14 +79,11 @@ SIF 对照使用 `not_returned | not_queried | parse_failed | missing | conflict
 5. 第02专家或用户提供的关键词/意图证据；
 6. 用户希望优化的目标和人工执行责任人。
 
-### 唯一顶层结果合同
+### 结论表达
 
-每次运行只使用一组顶层结果字段：
+先说明哪些搜索词已有足够证据形成人工计划，哪些只能观察，哪些必须阻塞。真实 Search Term 报表缺失/未验收/尚未成熟、联接不稳定、商品锚点或关键词语境缺失、历史过短、平台枚举待确认时，逐项写明受影响搜索词、不能采取的动作和下一责任人。
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `NO_SEARCH_TERM_REPORT | REPORT_NOT_INGESTED | REPORT_IMMATURE | UNSTABLE_JOIN | PRODUCT_ANCHOR_MISSING | KEYWORD_CONTEXT_MISSING | LIMITED_HISTORY | PLATFORM_ENUM_CONFIRMATION_REQUIRED | OUT_OF_SCOPE_REQUEST`
-
-不得再用 `readiness_status` 或其他顶层状态表达同一结果。行动 `human_review_status`、`execution_status`、迁移状态和否定复核状态是局部生命周期字段，不替代 `result_status`。
+人工复核、执行回填、迁移和否定词复核分别跟随具体动作记录；不能用一个总状态代替业务理由。
 
 ## 执行流程
 
@@ -146,7 +137,7 @@ SIF 对照使用 `not_returned | not_queried | parse_failed | missing | conflict
 
 第02专家拥有发现和市场优先级；本 Skill 只决定广告动作候选。
 
-如需 SIF 外部对照，先通过外层 `sif_mcp` 对本任务首次使用的候选工具执行 `action=describe`、`kind=tool`、`name=<候选工具>`，再按机器 `inputSchema` 以 `action=call`、`name=<候选工具>`、`arguments={...}` 发起最小调用并保存原始证据。只要运行时 schema 含 `country`，就必须把有直接父证据的已验证站点映射显式写入 `arguments.country`，不得默认 `US`；目标为非美国且 schema 缺少或不支持该国家时，停止该外部对照。SIF 结果只能补充相关性、渠道依赖或待验证假设；任何动作仍必须由真实 Search Term/Target 报表、产品锚点和人工复核共同支撑。
+如需外部对照，工具名未知时先由对应外层工具 `search`，已知精确工具名可直接 `describe`；对本任务首次使用的每个精确工具都必须实时 `describe`，最后按实时 `inputSchema` 用同一外层 `call` 并保存原始证据。站点必须来自直接父证据并映射到该工具实际字段（如 `country|marketplace|amz_site|keyword_support_site|site`）；只有 schema 无法控制站点且默认/覆盖与目标不一致时才停止该供应商分支。所有外部结果只能补充相关性、渠道依赖或待验证假设；任何动作仍必须由真实 Search Term/Target 报表、产品锚点和人工复核共同支撑。
 
 ### 第五步：计算可用广告证据
 
@@ -234,16 +225,16 @@ SIF 对照使用 `not_returned | not_queried | parse_failed | missing | conflict
 
 ## 失败与降级
 
-- `NO_SEARCH_TERM_REPORT`：`blocked`，只输出数据准备；
-- `REPORT_NOT_INGESTED`：`blocked`，等待上游验收；
-- `REPORT_IMMATURE`：`ready_with_limitations`，标记复核日期；
-- `UNSTABLE_JOIN`：`blocked`，不生成迁移/否定；
-- `PRODUCT_ANCHOR_MISSING`：`blocked`，只做描述性表；
-- `KEYWORD_CONTEXT_MISSING`：`ready_with_limitations`，路由第02专家或只保留已证广告观察；
-- `LIMITED_HISTORY`：`ready_with_limitations`，默认 `observe`，不套固定阈值；
-- `PLATFORM_ENUM_CONFIRMATION_REQUIRED`：`ready_with_limitations`，保留抽象动作；
+- 缺少 Search Term 报表时，只输出所需报表、期间和粒度的数据准备清单；
+- 报表尚未被上游验收时，等待验收完成，不生成行动候选；
+- 归因尚未成熟时标明复核日期，暂不形成确定动作；
+- 跨表联接不稳定时，不生成迁移或否定候选，并列出需要稳定的连接键；
+- 缺少商品锚点时只做描述性观察，请责任方补充商品范围；
+- 缺少关键词语境时转第 02 专家，或只保留真实报表能够支持的广告观察；
+- 历史期间有限时保持观察，不套用固定阈值；
+- 平台枚举未确认时保留抽象动作，等待账户操作者回填；
 - SIF 参数错误时重新 `describe` 并修正一次；仍失败、无权限、限流、空结果或 schema 漂移时停止外部对照，不换源，不改变真实报表驱动的结果状态；
-- `OUT_OF_SCOPE_REQUEST`：`out_of_scope`，拒绝关键词研究、Ads API 写入、自动否定、自动迁移或预算调整。
+- 对关键词研究、Ads API 写入、自动否定、自动迁移或预算调整等越界请求，明确拒绝并说明可交付的人工候选范围。
 
 ## 正式交付
 
@@ -259,6 +250,8 @@ SIF 对照使用 `not_returned | not_queried | parse_failed | missing | conflict
 
 ## 质量门
 
+- 按 `references/ad-search-term-action-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；出现任一 marker 时不得声称完整关键词集合，须缩小范围/按内层分页，仍不完整则阻止依赖全量覆盖的动作。
+
 - 只有真实广告报表才产生搜索词动作；
 - Search Term、Target、实体和商品用稳定 ID；
 - 产品锚点与排除属性先于绩效动作；
@@ -269,7 +262,7 @@ SIF 对照使用 `not_returned | not_queried | parse_failed | missing | conflict
 - include/exclude、来源、目的和误伤检查完整；
 - 平台枚举未知时没有猜测；
 - 没有自动添加、否定、迁移或提交；
-- 双层谱系与工作区合同完整。
+- 每项搜索词判断与动作均能回到真实报表和关键词依据，并写明理由、限制和人工责任人。
 
 ## 资源读取
 

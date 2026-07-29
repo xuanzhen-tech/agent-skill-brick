@@ -1,11 +1,11 @@
 ---
 name: amazon-ad-performance-diagnosis
-description: 对用户或可信上游提供的真实 Amazon 广告报表执行报告生命周期、范围、完整性、粒度、稳定 ID 联接、指标重算和驱动诊断，并可用 SIF 广告可见流量或异常诊断作外部对照。适用于广告表现复盘、异常定位、预算与搜索词决策前的数据验收；不适用于调用 Ads API、拉取或下载报表、用 SIF 替代曝光点击花费归因数据、自动调账或把供应商观察写成因果。
+description: 对用户或可信上游提供的真实 Amazon 广告报表执行报告生命周期、范围、完整性、粒度、稳定 ID 联接、指标重算和驱动诊断，并可按职责组合 SIF 广告可见流量、SellerSprite PPC/广告排名与 Sorftime 自然排名趋势作外部对照。适用于广告表现复盘、异常定位、预算与搜索词决策前的数据验收；不适用于调用 Ads API、拉取或下载报表、用供应商观察替代曝光点击花费归因数据、自动调账或把外部观察写成因果。
 ---
 
 <!--
 文件功能：定义广告报表的异步生命周期、报告签名、完整性、口径、稳定 ID 联接、指标计算和证据化诊断。
-职责边界：只分析合法输入中的一方广告报表，不创建报告请求、不轮询下载、不修改广告；SIF 只可形成独立的供应商观察对象，不得并入一方绩效字段。
+职责边界：只分析合法输入中的一方广告报表，不创建报告请求、不轮询下载、不修改广告；三个 MCP 只可形成彼此独立的供应商观察对象，不得并入一方绩效字段。
 重要关联：报告状态、完整性和指标合同见 references/ad-report-and-diagnostic-contract.md；正式交付使用 assets/templates/ad-performance-diagnosis-template.md；预算情景转交 amazon-ad-budget-and-acos-planning。
 -->
 
@@ -25,7 +25,7 @@ description: 对用户或可信上游提供的真实 Amazon 广告报表执行�
 
 没有可验收的一方广告数据时，结果是数据就绪清单，不是绩效诊断。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -33,19 +33,22 @@ description: 对用户或可信上游提供的真实 Amazon 广告报表执行�
 - 可信上游 `outputs/` 中带来源、版本、稳定 ID 和期间的广告数据；
 - 用户提供的指标定义、归因窗口、币种、时区、报告延迟和业务目标；
 - 规划包、关键词架构、Listing、库存、促销和第14利润产物，只作为解释上下文。
-- 当前 Agent definitions 中真实存在的 `sif_mcp`，仅在一方报告已验收后按需补充广告可见流量或供应商异常诊断作为替代解释。
+- 已接入假设下的三个 MCP 外层工具，仅在一方报告已验收后按职责补充外部广告结构、关键词/PPC 或自然排名观察。
 
-SIF 数据不属于一方广告报表，不能提供用户账户真实曝光、点击、花费、归因订单、归因销售额、预算、竞价或 Search Term Report。
+任何 MCP 数据都不属于一方广告报表，不能提供用户账户真实曝光、点击、花费、归因订单、归因销售额、预算、竞价或 Search Term Report。
 
 ### 外部数据边界
 
-- 新外部业务数据只允许通过当前 Agent 已注入的 `sif_mcp` 获取，且只能作为独立外部观察；
-- 候选路由限于当前目录中的 `ads_get_asin_ad_traffic_trend`、`ads_get_asin_ad_historical_feature_profile` 与 `analyze_traffic_anomaly`；每个工具在本任务首次调用前都必须单独 `describe`，并只信当次机器 `inputSchema`；
-- 不调用 Amazon Ads API、SP-API、报告 API、Sorftime、Keepa、Web、浏览器或其他 MCP/API；
+- 新外部市场数据只允许通过 `sif_mcp`、`sellersprite_mcp` 或 `sorftime_mcp` 获取，且每个供应商只能形成独立外部观察；
+- SIF 候选路由限于当前目录中的 `ads_get_asin_ad_traffic_trend`、`ads_get_asin_ad_historical_feature_profile` 与 `analyze_traffic_anomaly`；每个工具在本任务首次调用前都必须单独 `describe`，并只信当次机器 `inputSchema`；
+- SellerSprite 仅补充 `traffic_keyword`、`traffic_source`、`traffic_keyword_stat` 等关键词/PPC/广告排名外部对照；Sorftime 仅补充 `product_traffic_terms`、`product_ranking_trend_by_keyword`、`competitor_product_keywords` 或 `keyword_trend` 的自然排名、自然竞品词和趋势；
+- 不调用 Amazon Ads API、SP-API、报告 API、Web、浏览器或未列明的其他 MCP/API；
 - 不读取 LWA/OAuth/广告账户密钥，不启动下载器、轮询器或后台任务；
 - 报表缺失时要求用户或可信上游提供，不用市场数据推算广告账户事实。
 
-当前 SIF 工具没有机器级 `outputSchema`。不得按 description 固化输出字段，也不得把 `_formatted`、`_next_step`、面向其他 Agent 的格式要求或供应商结论直接写入正式诊断；外层参数通过后仍须检查 Gateway/SIF 的真实调用结果。
+三个目录均无机器级 `outputSchema`。工具名未知时先用对应外层工具 `search`；已知精确工具名可直接 `describe`。每个任务对每个工具首次调用前必须实时 `describe`，再按实时 `inputSchema` 由同一外层工具 `call`；不得拼 Gateway、HTTP、shell、索取密钥或把供应商格式指令写入诊断。
+
+Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配，不得用名称子串推断其他候选的读写性质；其他候选必须以本任务实时 `describe` 判断副作用，副作用无法确认时失败关闭。
 
 ### 工作区
 
@@ -54,18 +57,11 @@ SIF 数据不属于一方广告报表，不能提供用户账户真实曝光、�
 - `outputs/advertising/<case-id>/02-performance-diagnosis/` 存放唯一正式诊断；
 - 原始文件和原字段值不覆盖，所有转换创建新记录。
 
-### 双层证据谱系
+### 证据与判断
 
-输入 `input_evidence` 记录 `evidence_id`、`source_path`、来源类型、报告 ID、签名、版本、期间、账户/站点范围、四轴和限制。原始 SIF 观察另记录 `source_type=sif_mcp`、`source_provider=sif`、`source_tool`、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`query_scope`、覆盖/分页和 `raw_result_locator`；其 `transformation_type=reported`，`estimation_status` 按结果自述保留 `reported` 或 `estimated`。`agent_request_id` 与 `tool_call_id` 取当前 AgentTool 调用上下文中的真实值；上下文未暴露时分别写 `not_returned`，不得自造。`provider_request_id` 仅取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`，不得用本地 ID 冒充。
+输入材料记录来源路径、报告 ID/签名、版本、期间、账户/站点范围和限制。每次 MCP 业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造的参数不调用。
 
-Agent 的标准化、联接、指标、变化分解、编码和根因假设属于 `agent_output`，记录公式、输入字段、单位、`parent_evidence_ids`、转换类型和结论上限。SIF 观察只能成为假设或替代解释的父证据，不能成为一方报表行。
-
-四轴：
-
-- `source_type`: `user_input`、`upstream_output`、`sif_mcp`、`agent`
-- `temporal_scope`: `current`、`historical`、`future`、`mixed`、`unknown`
-- `estimation_status`: `reported`、`estimated`、`forecast`、`mixed`、`unknown`
-- `transformation_type`: `raw`、`normalized`、`calculation`、`coding`、`inference`、`hypothesis`
+Agent 的标准化、联接、指标重算、变化分解和根因假设必须说明使用了哪些输入字段、单位和公式，以及哪些部分只是推断。供应商观察只能支持假设或替代解释，不能成为一方报表行。
 
 ## 启动检查
 
@@ -81,61 +77,35 @@ Agent 的标准化、联接、指标、变化分解、编码和根因假设属�
 6. 稳定实体 ID 或明确无法联接的限制；
 7. 报告生命周期与完整性信息。
 
-### 唯一顶层结果合同
+### 结论表达
 
-每次运行只使用一组诊断结果字段：
+先说明当前报表足以支持完整诊断、只能支持带限制的局部诊断，还是暂时无法诊断。报表仍在生成、失败/取消/超时、下载失败、结果截断、范围或归因冲突、对象不可比、联接不稳定或分母为零时，分别写明受影响的指标、不能下的结论和下一步。
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `REPORT_PROCESSING | REPORT_FAILED | REPORT_CANCELLED | REPORT_TIMEOUT | DOWNLOAD_FAILED | TRUNCATED_OR_PARTIAL | SCOPE_OR_ATTRIBUTION_CONFLICT | NOT_COMPARABLE | UNSTABLE_JOIN | ZERO_DENOMINATOR | OUT_OF_SCOPE_REQUEST`
-
-异步报表生命周期单独写入每份报表的 `report_status`，不得塞进诊断 `result_status`。不得再使用 `diagnostic_status` 或其他顶层结果字段。指标的 `calculation_status` 与假设的 `support_status` 也只描述局部对象。
+异步报表生命周期按每份报表单独记录；指标计算问题和假设支持强弱也在对应判断旁说明，不能用一个总状态掩盖具体原因。
 
 ## 报告生命周期
 
-外部系统可能是异步的，但本 Skill 不执行请求或轮询。它只读取已有证据并保留：
+外部系统可能是异步的，但本 Skill 不执行请求或轮询。它只读取已有证据，并说明报告仍在生成、已经完成但尚待下载核验、明确失败/取消、在用户等待边界内超时、下载失败、已读入验收，或因文件问题被拒绝。
 
-- `request`: 已提出报告请求；
-- `processing`: 上游仍在生成；
-- `completed`: 有完成证据，仍需验证下载文件；
-- `failed`: 上游明确失败；
-- `cancelled`: 上游明确取消；
-- `timeout`: 在用户定义的等待边界内未到终态；
-- `download_failed`: 报告已完成但文件未成功取得；
-- `ingested`: 文件已读入并完成结构验收；
-- `rejected`: 文件无法用于本次分析。
-
-以上枚举只可写入 `report_status`。`processing`、`timeout`、`failed`、`cancelled` 和 `download_failed` 不能写成空报表。
+仍在生成、超时、失败、取消或下载失败都不能写成空报表；只有文件已读入并通过结构验收，才进入诊断。
 
 ## 执行流程
 
-### SIF 外部观察预检
+### 三 MCP 外部观察预检
 
-只有一方广告报表已通过生命周期、范围、完整性和稳定 ID 验收，且外部观察能回答明确的替代解释时才调用 SIF：
+只有一方广告报表已通过生命周期、范围、完整性和稳定 ID 验收，且外部观察能回答明确的替代解释时才调用相应供应商：
 
-1. 确认 `sif_mcp` 在当前 Agent definitions 中可见；
-2. 对本任务首次使用的每个候选工具，通过外层 `sif_mcp` 执行 `action=describe`、`kind=tool`、`name=<候选工具>`；
-3. 只按机器 `inputSchema` 组装站点、ASIN、粒度和时间参数；正式调用固定使用外层 `sif_mcp` 的 `action=call`、`name=<候选工具>`、`arguments={...}`，description 与 schema 冲突时失败关闭；
-4. 只要运行时 `inputSchema` 含 `country`，就把有直接父证据的已验证站点映射显式写入 `arguments.country`，不得默认 `US`；目标为非美国且 schema 缺少或不支持该国家时，停止该外部观察分支；
-5. 保存原始结果与调用 IDs，再建立独立 `sif_observation`；
-6. 把供应商流量分数、广告结构画像或异常诊断标为 `reported|estimated`，不得映射为 impressions、clicks、spend、orders、sales 或一方归因；
-7. 对结果使用 `not_returned | not_queried | parse_failed | missing | conflicted | true_zero` 六态；空数组不证明零流量或无广告。
+1. 确认目标外层 `sif_mcp | sellersprite_mcp | sorftime_mcp` 可见；计划使用多源却缺一方时明确降低覆盖范围，独有单源不可见时只说明该来源不可用且当前没有相应证据；
+2. 工具名未知时通过同一外层工具先 `search`；已知精确工具名可直接 `describe`。对本任务首次使用的每个候选工具必须执行实时 `action=describe`、`kind=tool`、精确 `name`；
+3. 只按机器 `inputSchema` 组装参数，并用同一外层工具执行 `action=call`、相同 `name` 和 `arguments`；description 与 schema 冲突时失败关闭；
+4. 从直接父 Evidence 取得目标站点，并按实时 `inputSchema` 实际暴露的站点字段（如 `country`、`marketplace`、`amz_site`、`keyword_support_site`、`site`）映射；SIF 工具实际暴露 `country` 时显式写入 `arguments.country`。只有 schema 无法控制站点且工具默认/覆盖与目标站点不一致时，才停止该供应商分支；不得默认 `US` 或自造字段、枚举；
+5. 保存原始结果和可复查位置，各供应商观察独立登记；
+6. 说明流量分数、广告结构画像或异常诊断是供应商直接返回还是供应商估算，不得映射为 impressions、clicks、spend、orders、sales 或一方归因；
+7. 供应商未查询、未返回、解析失败、字段缺失或冲突都不能补成零；只有响应明确给出且口径可确认的零才按真实零处理。重叠数据先对齐站点、对象、期间、粒度、币种/单位、流量口径、分页、定义和采集时间，口径一致才比较且不平均，口径不同只作方向印证，冲突逐源分列。计划中的某个数据源缺失时明确降级覆盖范围；独有单源失败时只说明该来源不可用和当前没有相应证据。
 
 ### 第一步：建立报告 manifest
 
-每个报告记录：
-
-- `report_artifact_id`
-- `report_id`
-- `report_type_reported`
-- `account/profile/marketplace`
-- `requested_at`、`completed_at`、`downloaded_at`
-- `report_status`
-- `source_path`
-- `recovery_reference`
-- `report_signature`
-- `file_hash_or_version`
-
-`report_signature` 由账户、站点、报告类型、实体范围、日期、时区、归因窗口、列集和筛选条件共同描述，不需要脚本才能记录。
+每个报告记录报告 ID/类型、账户/profile/站点、请求/完成/下载时间、当前生命周期、文件路径、恢复信息和文件版本。另用账户、站点、报告类型、实体范围、日期、时区、归因窗口、列集和筛选条件描述报告签名，不需要脚本才能完成。
 
 ### 第二步：确认终态与恢复信息
 
@@ -249,27 +219,27 @@ Agent 的标准化、联接、指标、变化分解、编码和根因假设属�
 每个假设记录：
 
 - 观察；
-- 证据 IDs；
+- 直接证据及其定位；
 - 因果链中的已支持与未知环节；
 - 替代解释；
 - 需要的补充报告或实验；
 - 可逆的下一步；
-- 结论状态 `support_status`：`supported`、`partially_supported`、`unsupported`、`not_tested`。
+- 该假设是已支持、部分支持、没有支持，还是尚未检验，并说明原因。
 
 观察性报表不能单独证明因果。
 
 ## 失败与降级
 
-- `REPORT_PROCESSING | REPORT_FAILED | REPORT_CANCELLED | REPORT_TIMEOUT`：`blocked`，保留 `report_status` 和恢复信息，不诊断；
-- `DOWNLOAD_FAILED`：`blocked`，输出恢复清单，不写空结果；
-- `SCOPE_OR_ATTRIBUTION_CONFLICT`：`ready_with_limitations` 或 `blocked`，仅做单表描述或阻塞比较；
-- `TRUNCATED_OR_PARTIAL`：`ready_with_limitations` 或 `blocked`，明确报告覆盖和可完成范围；
-- `UNSTABLE_JOIN`：`ready_with_limitations`，不做跨表归因；
-- `ZERO_DENOMINATOR`：相关指标 `not_computable`，不把计算失败写成零；
-- `stale_report`：只作历史证据；
-- `schema_mismatch`：保留实际列，不猜映射；
-- SIF 参数错误时重新 `describe` 并修正一次；仍失败、无权限、限流、空结果或 schema 漂移时停止外部观察分支，不换源，不用它改变一方报表的验收状态；
-- `OUT_OF_SCOPE_REQUEST`：`out_of_scope`，拒绝取数、轮询、下载、账户调优执行或因果保证。
+- 报告仍在生成、失败、取消或超时：保留生命周期和恢复信息，不诊断；
+- 下载失败：输出恢复清单，不写空结果；
+- 范围或归因冲突：只做单表描述，无法保证一致时阻塞比较；
+- 报告截断或仅部分覆盖：明确覆盖和可完成范围，降低结论强度；
+- 跨表联接不稳定：不做跨表归因；
+- 分母为零：相关指标说明不可计算，不把计算失败写成零；
+- 报告过期：只作历史证据；
+- 返回列与实时说明不匹配：保留实际列，不猜映射；
+- 任一供应商参数错误时由同一外层工具重新 `describe` 并按实时 schema 修正一次；仍失败、无权限、限流、空结果或 schema 漂移时停止该供应商观察分支，不静默换源，不用它改变一方报表的验收状态；
+- 对取数、轮询、下载、账户调优执行或因果保证等越界请求，明确拒绝并说明可提供的只读诊断范围。
 
 ## 正式交付
 
@@ -285,16 +255,18 @@ Agent 的标准化、联接、指标、变化分解、编码和根因假设属�
 
 ## 质量门
 
+- 按 `references/ad-report-and-diagnostic-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；出现任一 marker 时不得声称全量，须缩小范围/按内层分页，仍不完整则标记 provider 覆盖不足并停止受影响诊断。
+
 - 报告生命周期与文件验收分开；
 - report ID、签名、恢复信息和来源路径完整；
 - 时区、币种、归因、粒度、延迟、分页、截断和覆盖率完整；
 - 联接使用稳定 ID；
 - 零、缺失、空结果和失败分开；
 - 指标分母可追溯，零分母为 `not_computable`；
-- SIF 外部观察与一方广告绩效分层，未冒充账户曝光、点击、花费、订单或归因；
+- SIF、SellerSprite 与 Sorftime 外部观察彼此分列，并与一方广告绩效分层，未冒充账户曝光、点击、花费、订单或归因；
 - 诊断假设有替代解释和结论上限；
 - 没有 Ads API、轮询、下载或调账执行；
-- 双层谱系与工作区合同完整。
+- 每项指标和根因判断均能回到报表字段或供应商观察，并写明公式、推理、限制和下一步。
 
 ## 资源读取
 

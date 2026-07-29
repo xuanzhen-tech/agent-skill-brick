@@ -1,91 +1,58 @@
 <!--
-文件功能：定义商品合规中的产品事实、现行依据、证据保真翻译、要求候选、文档覆盖和专业核验状态。
-职责边界：不提供具体法规要求或认证结论，不替代实验室、认证机构、律师或监管责任方。
-重要关联：由 ../SKILL.md 在合规就绪分析时读取；正式字段映射到 ../assets/templates/product-compliance-readiness-template.md。
+文件功能：说明如何冻结产品事实、现行依据和文件覆盖，形成商品合规专业确认准备包。
+职责边界：不自定认证或法律要求，不宣布产品合规，也不执行测试、注册、认证或报关。
+重要关联：由 ../SKILL.md 读取，正式交付见 ../assets/templates/product-compliance-readiness-template.md。
 -->
 
-# 商品合规证据合同
+# 跨境商品合规就绪方法
 
-## 1. 产品事实集
+## 1. 先冻结产品事实
 
-- `product_fact_set_id`
-- `product/variant IDs`
-- `spec/BOM/label/package versions`
-- `materials/components/functions`
-- `intended_use/user_group`
-- `claims`
-- `responsible_entity_roles`
-- `fact_evidence_ids`
-- `unknowns/conflicts`
+至少确认：
 
-## 2. 现行依据
+- 产品、型号、变体和版本；
+- 功能、用途和预期用户；
+- 材料、成分、电气/电池/无线/儿童使用等关键属性；
+- 包装、标签、说明书和声明；
+- 生产主体、品牌主体、进口/责任主体；
+- 目标国家/地区、站点和销售渠道。
 
-| 字段 | 规则 |
-|---|---|
-| `authority_evidence_id` | 稳定编号 |
-| `title/issuer` | 原值 |
-| `source_path` | 用户或可信上游路径 |
-| `publication/effective/revision dates` | 不明写 unknown |
-| `jurisdiction` | 必填 |
-| `product/responsible-party scope` | 必填 |
-| `source_language` | 必填 |
-| `document_status` | original/summary/translation/professional_opinion |
-| `validity_confirmed_by` | 责任方或 unknown |
-| `limitations` | 必填 |
+材料未知或冲突时，不得用商品标题、类目或供应商挂牌页补成事实。
 
-## 3. 翻译对齐
+## 2. 现行依据必须带上下文
 
-每段记录：
+法规、标准、官方指南或专业意见应记录发布主体、标题、版本/发布日期、有效日期、辖区、适用范围、原文位置、语言和限制。
 
-- `source_segment_id`
-- `source_text_location`
-- `target_segment_id`
-- `translation_text`
-- `term_choices`
-- `qualifiers/exceptions/negation`
-- `dates/units/defined_terms`
-- `uncertainties`
-- `review_status`
+静态知识、历史版本、摘要或二手文章不能直接当现行义务。
 
-Agent 翻译状态不得写 `official_translation`。
+## 3. 翻译要可回到原文
 
-## 4. 要求候选
+涉及翻译时，保留原段落、译文、关键术语、限定条件和定位。对可能影响义务的歧义列出专业核验问题，不以流畅改写替代法律/技术含义。
 
-| 字段 | 说明 |
-|---|---|
-| `requirement_candidate_id` | 稳定编号 |
-| `trigger_conditions` | 适用触发 |
-| `requirement_or_prohibition` | 原文约束 |
-| `exceptions` | 例外 |
-| `required_evidence_or_action` | 资料/测试/标签等 |
-| `responsible_party` | 责任主体 |
-| `timing` | 时间点 |
-| `parent_authority_evidence_ids` | 必填 |
-| `interpretation_status` | extracted/needs_qualified_interpretation |
+## 4. 从事实映射要求候选
 
-## 5. 文档覆盖
+每个要求候选说明：
 
-状态：
+- 触发它的产品事实和辖区；
+- 现行依据的具体条款；
+- 可能需要的测试、认证、标签、包装、技术文件或责任主体；
+- 当前已有材料；
+- 缺口及谁能专业确认；
+- 不能下的结论。
 
-- `evidence_available`
-- `evidence_partial`
-- `scope_mismatch`
-- `expired_or_stale`
-- `authority_confirmation_required`
-- `qualified_review_required`
-- `missing`
-- `not_assessed`
+它始终是“要求候选/就绪问题”，直到合格责任方确认适用性。
 
-每项记录产品版本、市场、依据、文档路径、有效期和限制。
+## 5. 文件覆盖
 
-## 6. 四轴与谱系
+逐项核对报告、证书、声明、标签、说明书和技术文件是否：
 
-所有记录保留 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path` 或 `parent_evidence_ids`。
+- 对应同一产品/型号/版本；
+- 覆盖目标市场和适用标准；
+- 在有效期内；
+- 主体名称和地址一致；
+- 内容完整、可读且可追溯；
+- 由有权责任方确认。
 
-Agent 的要求映射是 inference，不是法律事实。
+## 6. 外部数据边界
 
-## 7. 来源可用性与业务状态
-
-`source_availability_status` 与商品合规 `result_status` 分列，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。前五项不得写成 0、无要求、无缺口或无风险；`true_zero` 仅用于完整可验证范围明确为零的字段，不能替代当前依据与专业判断。
-
-正例：完整 BOM 经责任方确认无线模块数为 0，可记 `true_zero`。反例：法规原文未查询时记 `not_queried`，不能写“无需认证”。
+本方法不直接调用三个 MCP。若用户明确要求并提供可信上游的 Sorftime 商品/1688 结果，只可把页面名称、SKU、挂牌材料陈述作为待核验产品线索；不得升级为材料、认证、法规、标准或合规结论。

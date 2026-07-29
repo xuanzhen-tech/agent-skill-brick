@@ -431,15 +431,23 @@ try {
     "amazon-operating-analysis",
     "amazon-product-image-generation"
   ]);
-  const expertBuiltinNames = listBuiltinSkills()
-    .map((skill) => skill.name)
-    .filter((name) => !legacyBuiltinNames.has(name));
+  const expertBuiltinCatalog = listBuiltinSkills()
+    .filter((skill) => !legacyBuiltinNames.has(skill.name));
+  const expertBuiltinNames = expertBuiltinCatalog.map((skill) => skill.name);
+  const expertBuiltinByName = new Map(
+    expertBuiltinCatalog.map((skill) => [skill.name, skill])
+  );
   assert.equal(expertBuiltinNames.length, 64);
 
   for (const skillName of expertBuiltinNames) {
     const validation = await validateSkillPackage(path.resolve("src", "builtin-skills", skillName));
     assert.equal(validation.valid, true, `${skillName}: ${validation.diagnostics.join("; ")}`);
     assert.equal(validation.metadata.name, skillName);
+    assert.equal(
+      validation.metadata.description,
+      expertBuiltinByName.get(skillName).description,
+      `${skillName}: catalog description must match SKILL.md`
+    );
   }
 
   const expertBuiltinRoot = path.join(tempRoot, "expert-builtin-managed");
@@ -464,9 +472,11 @@ try {
 
   const opportunityReference = await selectedExpertSkills.readReference(
     "amazon-opportunity-discovery",
-    "references/sif-research-contract.md"
+    "references/mcp-provider-research-contract.md"
   );
   assert.match(opportunityReference.loadedSkillReference.content, /sif_mcp/);
+  assert.match(opportunityReference.loadedSkillReference.content, /sellersprite_mcp/);
+  assert.match(opportunityReference.loadedSkillReference.content, /sorftime_mcp/);
   const opportunityAsset = await selectedExpertSkills.resolveAsset(
     "amazon-opportunity-discovery",
     "assets/templates/discovery-report-template.md"

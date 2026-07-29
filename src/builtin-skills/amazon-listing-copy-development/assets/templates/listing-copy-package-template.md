@@ -1,7 +1,7 @@
 <!--
-文件功能：作为 Agent 生成 Amazon Listing 文案包及证据映射时使用的稳定模板。
-职责边界：只规定交付结构，不预填产品事实、关键词、固定字段数量或字符限制。
-重要关联：由 ../../SKILL.md 写入 outputs/listing-optimization/<case-id>/02-copy-development/ 前读取或物化；宣称等级见 ../../references/listing-copy-evidence-and-localization-contract.md。
+文件功能：作为 Agent 生成 Amazon Listing 文案包及事实映射时使用的业务模板。
+职责边界：只规定交付结构，不预填产品事实、关键词、字段数量或字符限制。
+重要关联：由 ../../SKILL.md 写入 outputs/listing-optimization/<case-id>/02-copy-development/ 前读取；方法见 ../../references/listing-copy-evidence-and-localization-contract.md。
 -->
 
 # Amazon Listing 文案包
@@ -9,32 +9,28 @@
 ## 任务摘要
 
 - Case ID：
-- Amazon 站点：
-- 目标语言：
+- Amazon 站点与目标语言：
 - 产品与变体：
-- 写作模式：`new | rewrite | localization | partial`
+- 写作任务：新建/改写/本地化/局部修订
 - 目标字段：
-- 总体状态：`ready | limited_keywords | blocked_missing_facts | blocked_claim_risk | conflicted_sources | upstream_contract_mismatch | stale_upstream | out_of_scope`
+- 当前可交付范围：
+- 阻塞项：
 
-## 输入证据账本
+## 输入与事实边界
 
-这里仅记录 `input_evidence`，保留输入原四轴。
-
-| Evidence ID | 来源路径/工具 | 版本/期间 | 使用字段 | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 限制 |
-|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |
-
-## 发布前事实边界
+| 来源或精确工具 | 对象、版本与期间 | 使用的原始文本/数值及位置 | 适用变体 | 限制 |
+|---|---|---|---|---|
+|  |  |  |  |  |
 
 ### 可使用事实
 
-| Fact ID | 事实 | 适用变体 | 宣称等级 | 来源 |
+| 产品事实 | 适用变体 | 来源及原始位置 | 允许的表达 | 条件/限制 |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
 ### 禁止或待确认
 
-| 项目 | 原因 | 影响字段 | 所需确认 |
+| 项目 | 原因 | 影响字段 | 谁来确认/需要什么 |
 |---|---|---|---|
 |  |  |  |  |
 
@@ -42,37 +38,35 @@
 
 ### 标题
 
-> 
+>
 
-- 使用的 Fact ID：
-- 使用的 Keyword ID：
-- 风险状态：
+- 使用的产品事实：
+- 使用的关键词及放置理由：
+- 风险与待核事项：
 
 ### 要点
 
 #### 要点 1
 
-> 
+>
 
-- 使用的 Fact ID：
-- 使用的 Keyword ID：
-- 风险状态：
+- 使用的产品事实：
+- 使用的关键词及放置理由：
+- 风险与待核事项：
 
-#### 其余要点
-
-按实际任务需要增加，不为凑数量创建空泛要点。
+按实际任务增加要点，不为凑数量创建空泛内容。
 
 ### 描述
 
-> 
+>
 
-- 使用的 Fact ID：
-- 使用的 Keyword ID：
-- 风险状态：
+- 使用的产品事实：
+- 使用的关键词及放置理由：
+- 风险与待核事项：
 
 ### 后台词候选
 
-| 候选词 | 来源 Keyword ID | 去重状态 | 政策核验状态 | 风险 |
+| 候选词 | 来源与依据 | 去重说明 | 发布前政策核验 | 风险 |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
@@ -80,36 +74,34 @@
 
 仅在用户要求时填写，并说明每个版本唯一改变的表达角度。
 
-| 版本 | 改变的角度 | 文案 | 不变事实 |
+| 版本 | 唯一改变的角度 | 文案 | 保持不变的事实 |
 |---|---|---|---|
 |  |  |  |  |
 
+## 句子与依据
+
+| 字段及句子/短语 | 产品事实与原始位置 | 关键词依据 | Agent 做了什么 | 风险与人工复核 |
+|---|---|---|---|---|
+|  |  |  | 改写/压缩/本地化 |  |
+
 ## 多语言质量检查
 
-| Copy ID | 数字/单位 | 条件/否定 | 事实含义 | 关键词自然度 | 人工审核 |
+| 字段及句子 | 数字/单位 | 条件/否定 | 事实含义 | 关键词自然度 | 人工审核 |
 |---|---|---|---|---|---|
 |  |  |  |  |  |  |
 
-## Agent 文案谱系账本
-
-这里仅记录 `agent_output`；Parent Evidence IDs 必须能在输入证据账本中找到。
-
-| Copy ID | 字段 | Fact ID | Keyword ID | Parent Evidence IDs | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | Review status |
-|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  | `agent` |  |  | `coding` |  |
-
 ## 发布前待办
 
-- [ ] 所有事实性句子都有来源。
+- [ ] 所有事实性句子都能定位到来源。
 - [ ] 未证宣称已删除或隔离。
 - [ ] 变体范围正确。
 - [ ] 数字、单位、条件和否定保持一致。
 - [ ] 站点规则由当前可信资料核验。
 - [ ] 高风险内容已安排合格人工审核。
 
-## 能力声明
+## 能力与限制
 
-- 本 Skill 未直接调用 SIF 或其他外部业务数据源：
-- 使用的上游对象及其原始四轴/父证据 ID：
-- 未查询或不可见的内容：
+- 本 Skill 不直接调用 SIF、SellerSprite、Sorftime；采用的外部研究仅来自可信上游：
+- 上游供应商的工具、查询范围、原始值和覆盖限制：
+- 未查询、不可见或冲突的内容：
 - 本 Skill 未执行上传、发布、索引验证或排名保证。

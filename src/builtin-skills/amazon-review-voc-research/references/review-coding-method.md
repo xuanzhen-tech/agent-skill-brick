@@ -51,17 +51,17 @@
 5. 冻结为 `version=1` 后再编码完整样本。
 6. 遇到新主题时记录待决案例；只有证据足够时新增代码并升级版本。
 
-## 编码产物的四轴
+## 编码产物如何追溯
 
-| 产物 | source_type | temporal_scope | estimation_status | transformation_type |
-|---|---|---|---|---|
-| 当前 Agent 新建的 codebook 定义 | `agent` | `not_applicable` | `not_applicable` | `coding` |
-| 单条评论的主题、方向或旅程代码 | `agent` | 继承评论的 `historical` 或 `unknown` | `not_applicable` | `coding` |
-| 样本计数、分母、频率或加权结果 | `agent` | 继承合格样本范围；跨当前查询与历史评论时为 `mixed` | `not_applicable` | `calculation` |
-| 从编码结果得到的产品或服务含义 | `agent` | 按所引用证据范围填写 | `not_applicable` | `inference` |
-| 面向未来的验证命题 | `agent` | `future` | `not_applicable` | `hypothesis` |
+| 产物 | 必须说明的依据与限制 |
+|---|---|
+| Codebook 定义 | 校准样本、正反例、纳入/排除规则和版本变更原因 |
+| 单条评论代码 | 匿名评论编号、命中文本和代码定义 |
+| 样本计数或频率 | 合格样本范围、分子、分母、去重和加权方法 |
+| 产品或服务洞察 | 支持它的代码与计数、反例和不能外推的内容 |
+| 待验证命题 | 历史依据、假设条件和下一验证动作 |
 
-原样复用上游 codebook 时使用 `source_type=upstream_output`，保留上游来源文件、evidence ID 和原四轴。当前 Agent 只要合并、改名或修改定义，就应创建新版本，使用 `source_type=agent`、`transformation_type=coding`，同时保留上游谱系和直接 `parent_evidence_ids`。
+原样复用上游 codebook 时保留上游文件、版本和原有限制。当前 Agent 只要合并、改名或修改定义，就创建新版本，并说明修改依据；不得覆盖上游版本。
 
 ## 代码质量
 
@@ -91,7 +91,7 @@ sample_frequency(C) = coded_review_count(C) / eligible_deduplicated_reviews
 
 > 26% 的消费者认为安装困难。
 
-若采用按星级等额抽样，跨星级总体频率没有自然分布意义。只能分别报告各星级，或在获得真实星级分布且说明加权方法后生成 `source_type=agent`、`transformation_type=calculation` 的加权结果。
+若采用按星级等额抽样，跨星级总体频率没有自然分布意义。只能分别报告各星级，或在获得真实星级分布且说明加权方法后生成加权结果。
 
 ## 分层分析
 
@@ -122,10 +122,10 @@ sample_frequency(C) = coded_review_count(C) / eligible_deduplicated_reviews
 
 每项洞察按顺序写：
 
-1. 直接证据：匿名摘录和 evidence ID；
+1. 直接证据：匿名摘录及其评论来源、原始行号或工具结果位置；
 2. 编码观察：主题、方向、分层和样本频率；
 3. 反证：相反评价、未覆盖分层或冲突；
 4. 推断：可能的产品、内容或服务含义；
 5. 下一步：能验证该推断的低成本动作。
 
-原文没有明确表达的动机、身份和因果关系一律标记为 `source_type=agent`、`transformation_type=inference`，或放入报告的“开放问题”状态；“开放问题”不是四轴标签。
+原文没有明确表达的动机、身份和因果关系只能作为 Agent 条件化解释，列出直接评论依据、替代解释和局限，或放入报告的“开放问题”；不得写成评论原始事实。

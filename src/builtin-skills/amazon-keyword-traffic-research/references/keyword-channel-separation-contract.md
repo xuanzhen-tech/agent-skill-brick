@@ -10,7 +10,7 @@
 
 ### 市场关键词
 
-SIF 的关键词需求、历史、竞争与机会工具描述供应商口径下的市场信号。它不能证明目标 ASIN 获得该词流量、订单或利润。
+三个供应商的关键词需求、历史、竞争与机会工具描述各自口径下的市场信号。它们不能证明目标 ASIN 获得该词流量、订单或利润。
 
 ### ASIN 关键词
 
@@ -18,11 +18,11 @@ ASIN keyword signals、ABA footprint 与 Listing keyword distribution 描述供�
 
 ### Listing 流量
 
-流量 overview、structure、trend 与 detail 描述 SIF 可见的 Listing 流量信号。它们不是 Amazon Business Report，也不能自动拆成自然、广告、点击、订单或归因销售，除非本次实际字段明确且结论仍标为供应商口径。
+流量 overview、structure、trend、traffic terms 等描述供应商可见的 Listing 流量信号。它们不是 Amazon Business Report，也不能自动拆成自然、广告、点击、订单或归因销售。
 
 ### 广告可见结构
 
-`ads_*` 工具只能说明 SIF 可见的广告类型、Campaign、Ad Group、关键词或流量贡献结构。它们不能证明用户账户配置、Search Term Report、预算、出价、曝光、点击、花费、订单、ACoS、ROAS 或归因收入。
+本包精确白名单中的 SIF 广告工具或其他供应商广告可见字段，只能说明其真实返回的广告类型、Campaign、Ad Group、关键词或流量贡献结构。工具族标签不能作为 `call.name`；实际调用名称必须来自当次目录 `search`，经实时 `describe` 后仍属于本包精确白名单。它们不能证明用户账户配置、Search Term Report、预算、出价、曝光、点击、花费、订单、ACoS、ROAS 或归因收入。
 
 Campaign ID 与 Ad Group ID 必须沿前序 SIF 结果传递，不得凭名称拼接。
 
@@ -35,7 +35,7 @@ Campaign ID 与 Ad Group ID 必须沿前序 SIF 结果传递，不得凭名称�
 - `normalization_actions`；
 - `language` 与 `marketplace`。
 
-仅允许用于确定性匹配的小写、首尾空白、连续空白和标点规范化。词干化、同义词、翻译或品牌词聚类必须建立 `source_type=agent`、`transformation_type=inference` 的独立对象，并列出直接 `parent_evidence_ids`。
+仅允许用于确定性匹配的小写、首尾空白、连续空白和标点规范化。词干化、同义词、翻译或品牌词聚类必须单独记录，并说明直接依据、归并规则、歧义和限制。
 
 ## 交叉分类
 
@@ -58,7 +58,7 @@ Campaign ID 与 Ad Group ID 必须沿前序 SIF 结果传递，不得凭名称�
 4. 周、月或滚动粒度没有混算；
 5. 字段单位、供应商定义和估算状态明确；
 6. 分页与对象覆盖足以支持集合结论；
-7. 每条 Agent 解释都能回到直接父 evidence ID。
+7. 每条 Agent 解释都能回到直接来源和原始结果位置。
 
 不满足时只能并列展示，状态为 `conflicted` 或 `blocked`。
 
@@ -68,13 +68,13 @@ Campaign ID 与 Ad Group ID 必须沿前序 SIF 结果传递，不得凭名称�
 
 - 只在同通道、同期间、同单位样本内计算分位；
 - 公开原始值、方向、公式和缺失处理；
-- 计算用 `source_type=agent`、`transformation_type=calculation`；
-- 解释用 `source_type=agent`、`transformation_type=inference`；
+- 计算公开公式、分母和直接依据；
+- 解释说明所用通道、替代解释和局限；
 - 缺失通道不填 0、不填均值；
 - 不把任一关键词、流量或广告结构字段设为跨类目万能闸门。
 
 ## 输出边界
 
-允许输出关键词通道矩阵、证据覆盖、缺口、冲突、可验证假设和下一条 SIF/用户/上游证据。
+允许输出关键词通道矩阵、供应商分列证据、覆盖、缺口、冲突、可验证假设和下一条 MCP/用户/上游证据。
 
 禁止输出 Campaign、Ad Group、Match Type、Bid、预算、否定词执行、投放日程、Listing 文案，以及“必投”“必转化”“绝对蓝海”等承诺。

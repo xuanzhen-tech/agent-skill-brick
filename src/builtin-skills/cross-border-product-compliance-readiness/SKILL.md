@@ -24,7 +24,7 @@ description: 根据产品、目标市场、站点和用户提供的带日期现�
 
 本 Skill 的最高结论是 `ready_for_qualified_review` 或资料缺口，不是“产品已合规”。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -37,7 +37,8 @@ description: 根据产品、目标市场、站点和用户提供的带日期现�
 
 ### 外部数据边界
 
-- 本 Skill 不调用 `sif_mcp`；当前 SIF 目录没有认证、标签、法规、标准或商品合规能力，市场/商品信号也不能证明法律要求；
+- 本 Skill 不调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；三个目录都没有可确认认证、标签、法规、标准或商品合规义务的能力；
+- 只有用户已明确要求，且可信上游能说明 Sorftime 的实际工具、查询对象、适用范围、直接返回内容、限制和原始结果定位时，该商品/1688 结果才可作为产品名称、SKU、页面陈述或挂牌材料的待核验线索；不得把它升级为材料真相、认证状态、合规要求或合规结论；
 - 运行时输入仅限用户对话、只读 `uploads/` 与带来源/日期/版本的可信 `outputs/`；
 - 不使用 Web、浏览器、Firecrawl、Bright Data、法规数据库、标准网站、DeepL、其他 MCP/API；
 - 不读取密钥、不购买标准、不提交注册或认证申请；
@@ -50,23 +51,11 @@ description: 根据产品、目标市场、站点和用户提供的带日期现�
 - `outputs/compliance/<case-id>/01-product-readiness/` 存放唯一正式就绪包；
 - 新法规、产品版本或责任方意见作为新版本，不覆盖历史证据。
 
-### 双层证据谱系
+### 证据与判断
 
-`input_evidence` 记录：
+产品事实、法规/标准要求、证书或测试材料分别保留来源、日期、版本、辖区、覆盖的产品/变体、原文定位、权威性和限制。页面宣称或供应商描述只作为待核验产品事实，不能替代材料证明或合格机构结论。
 
-- `evidence_id`
-- `source_path`
-- `source_type`
-- `source_date`
-- `source_version`
-- `jurisdiction`
-- `product_scope`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- 权威性、有效状态与限制
-
-Agent 的产品分类候选、要求映射、缺口、影响和问题属于 `agent_output`，必须记录 `parent_evidence_ids`、转换类型、假设状态和结论上限。
+每个产品分类、要求匹配、缺口和影响判断都要说明直接依据、匹配理由、尚未覆盖的变体或辖区、结论上限，以及下一位专业责任人。缺失不是“不适用”；证书过期、型号不匹配或范围仅部分覆盖时必须明确降级。
 
 ## 启动检查
 
@@ -81,25 +70,15 @@ Agent 的产品分类候选、要求映射、缺口、影响和问题属于 `age
 5. 用户提供的现行依据或明确“尚未取得”；
 6. 希望做出的决策和专业责任人。
 
-### 状态
+### 启动判断
 
-- `ready_for_qualified_review`
-- `evidence_ready_partial`
-- `current_authority_missing`
-- `product_scope_conflicted`
-- `document_scope_mismatch`
-- `expired_or_stale`
-- `translation_review_required`
-- `blocked`
-- `out_of_scope`
+先判断事实包是否足以交给合格责任方复核。现行依据缺失、产品范围冲突、文件型号不匹配、证书过期或只覆盖部分变体时，分别列出受影响对象、直接缺口和补充责任人，不能用笼统状态代替。
 
 没有当前依据时，不得基于静态常识列“必须认证清单”。
 
-### 来源缺失语义（与业务状态分列）
+### 缺失与冲突
 
-业务 `result_status` 继续使用上述商品合规就绪状态；每个依据、产品事实或文档字段另记 `source_availability_status`，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。`true_zero` 仅用于完整、可验证范围明确返回的真实零，其他五项都不是零。
-
-前五项不得写成 0、无要求、无证书缺口或无风险，也不得覆盖 `current_authority_missing/document_scope_mismatch/...` 等业务门禁。正例：完整 BOM 经责任方确认无线模块数量为 0，可记 `true_zero`，但是否适用认证仍由当前依据决定。反例：当前法规原文未查询时记 `not_queried`，不能据此写“无需认证”。
+材料未取得、未查询、未返回、无法解析或互相冲突时，按实际原因和受影响产品范围说明，不能写成无要求、无证书缺口或无风险。完整 BOM 经责任方确认某组件数量为零，也不代表相关认证当然不适用。
 
 ## 执行流程
 
@@ -107,7 +86,7 @@ Agent 的产品分类候选、要求映射、缺口、影响和问题属于 `age
 
 记录：
 
-- `product_fact_set_id`
+- 本次事实冻结所覆盖的产品、型号与版本；
 - SKU/ASIN/型号/变体；
 - 材料、成分、功率、电池、无线、食品接触、儿童使用等用户提供事实；
 - 预期用途、误用风险和用户群体；
@@ -190,18 +169,7 @@ Agent 只做结构化和候选映射，不宣布法律适用性。
 
 ### 第七步：判断就绪而非合规
 
-每项状态：
-
-- `evidence_available`
-- `evidence_partial`
-- `scope_mismatch`
-- `expired_or_stale`
-- `authority_confirmation_required`
-- `qualified_review_required`
-- `missing`
-- `not_assessed`
-
-不得使用 `compliant/non_compliant`，除非该状态直接来自合格责任方的可追溯结论，并仍需注明范围和日期。
+逐项说明证据是否完整、只覆盖部分产品、范围不匹配、已经过期、仍需主管机构/合格责任方确认、材料缺失或尚未评估。不得自行写“合规/不合规”；只有合格责任方的可追溯结论可以原样引用，并仍需注明范围和日期。
 
 ### 第八步：建立缺口与责任
 
@@ -236,7 +204,7 @@ Agent 只做结构化和候选映射，不宣布法律适用性。
 - `document_expired`：只作历史证据；
 - `translation_uncertain`：保留原文并要求专业复核；
 - `qualified_opinion_missing`：不宣布合规；
-- `out_of_scope`：认证申请、法律意见、测试执行、注册、标签签署或保证上市。
+- 当请求涉及认证申请、法律意见、测试执行、注册、标签签署或保证上市时，继续执行会越过合规准备边界并造成错误承诺；仅整理适用要求、现有证据、待补缺口与需合格机构确认的事项。
 
 ## 正式交付
 
@@ -261,7 +229,7 @@ Agent 只做结构化和候选映射，不宣布法律适用性。
 - 使用就绪状态而非 Agent 自定合规结论；
 - 无 Web、法规抓取、DeepL 或外部工具；
 - 无注册、测试或认证执行；
-- 双层谱系与工作区合同完整。
+- 每项要求、缺口和就绪判断均能回到直接依据，并写明范围、限制和专业复核责任人。
 
 ## 资源读取
 

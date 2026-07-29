@@ -1,184 +1,88 @@
 <!--
-文件功能：定义寻源准备中的规格、RFQ、候选池、证据和就绪状态字段。
-职责边界：只规定数据合同，不提供真实供应商、不代替质量或法律责任方确认，也不执行外部查询。
-重要关联：由 ../SKILL.md 在建立采购对象、RFQ 和证据账本时读取；输出字段映射到 ../assets/templates/supplier-sourcing-readiness-template.md。
+文件功能：说明如何把产品目标、规格、验收、数量和商业边界整理成可外发 RFQ，并在明确请求时保留 1688 待核验线索。
+职责边界：不推荐或核验供应商，不执行询价、验厂、下单、企业搜索或外部 OSINT。
+重要关联：由 ../SKILL.md 在寻源准备时读取，正式交付见 ../assets/templates/supplier-sourcing-readiness-template.md。
 -->
 
-# 寻源准备合同
+# 供应商寻源准备方法
 
-## 1. 证据四轴
+## 1. 先把采购对象说清楚
 
-| 轴 | 允许值 | 说明 |
-|---|---|---|
-| `source_type` | `user_input`、`upstream_output`、`sif_mcp`、`agent` | SIF 只能支撑 ASIN 当前画像或探索性采购上限 |
-| `temporal_scope` | `current`、`historical`、`future`、`mixed`、`not_applicable`、`unknown` | 采购目标通常是 `future` |
-| `estimation_status` | `reported`、`estimated`、`forecast`、`mixed`、`not_applicable`、`unknown` | 供应商宣传仍是 `reported`，不是核验事实 |
-| `transformation_type` | `raw`、`normalized`、`calculation`、`coding`、`inference`、`hypothesis` | Agent 提出的规格建议通常是 `inference` 或 `hypothesis` |
+至少确认产品/部件/包装对象、版本、目标市场、使用场景和外发范围。图纸、BOM、规格、图片或上游材料冲突时并列保留，先请责任方确认，不能擅自选一个版本。
 
-## 2. 输入证据
+## 2. 把需求改写成供应商可回答的问题
 
-| 字段 | 必填 | 规则 |
-|---|---:|---|
-| `evidence_id` | 是 | 本案件唯一且稳定 |
-| `source_path` | 是 | 对话定位、只读 uploads 路径或可信 outputs 路径 |
-| `source_type` | 是 | 使用四轴枚举 |
-| `source_date` | 是 | 不清楚时写 `unknown` |
-| `source_version` | 是 | 文件、图纸、BOM 或上游产物版本 |
-| `scope` | 是 | 产品、部件、变体、市场和期间 |
-| `limitations` | 是 | 缺页、未签字、估算、过期或适用范围 |
-| 四轴 | 是 | 四个字段不得合并成一句备注 |
+每项需求应包含：
 
-## 3. Agent 输出
+- 要求类别：功能、材料、尺寸、性能、外观、包装、标签、合规或交付；
+- 明确要求及值、单位、公差；
+- 优先级：硬约束、偏好、可选、允许供应商提案或待确认；
+- 验收方式；
+- 直接依据；
+- 谁有权批准偏差。
 
-每种派生对象的正式本体必须使用自己的稳定 ID 和以下对象级合同；不得只用统一 `output_id` 代替领域 ID：
+只有目标、没有依据或验收方式的内容应标为提案或待确认，不能伪装成冻结规格。
 
-| `output_type` | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 必要载荷 |
-|---|---|---|---|---|---|---|---|
-| `normalized_requirement` | `requirement_id` | 支撑要求的输入 Evidence IDs | 固定 `agent` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` | `normalized` / `inference` | 要求、单位/公差、验收、批准和状态 |
-| `gap` | `gap_id` | 支撑缺失或冲突判断的输入 Evidence IDs | 固定 `agent` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` | `coding` / `inference` | 缺口、影响、补证、责任人、截止和状态 |
-| `rfq_clause` | `clause_id` | 支撑条款内容的 Evidence/Requirement IDs | 固定 `agent` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` | `normalized` / `inference` | 条款类别、精确问题、响应格式、授权和限制 |
-| `assumption` | `assumption_id` | 支撑假设的 Evidence/Instruction IDs | 固定 `agent` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` | 固定 `hypothesis` | 假设、情景、影响、批准状态和失效触发 |
-| `candidate_field` | `candidate_field_id` | 支撑字段值或状态的输入 Evidence IDs | 固定 `agent` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` | `normalized` / `coding` | Candidate ID、字段名、值/状态、提供者和核验要求 |
+## 3. 数量与交付情景
 
-每个对象还记录 `assumption_status`（`not_assumption` / `proposed` / `user_approved` / `rejected`）和 `confidence_note`；五项血缘字段不能被合并成备注。
+样品、小批、首单和补货应分开说明数量、单位、目标出货/到货时间、时区、交付地点、是否允许拆分及贸易条款。
 
-## 4. 需求记录
+Incoterms 只给缩写而没有版本和指定地点时不完整。尚未确认的数量或日期可以作为显式假设，但必须说明如果假设错误会改变什么、谁来批准、何时失效。
 
-| 字段 | 说明 |
-|---|---|
-| `requirement_id` | 稳定编号 |
-| `object_id` | 产品、部件或包装对象 |
-| `category` | 功能、材料、尺寸、性能、外观、包装、标签、合规、交付 |
-| `requirement_text` | 可执行且避免空泛词 |
-| `priority` | `must`、`should`、`option`、`supplier_to_propose`、`tbd` |
-| `value` / `unit` / `tolerance` | 可测量要求 |
-| `acceptance_method` | 如何验证 |
-| `evidence_ids` | 事实来源 |
-| `parent_evidence_ids` | 支撑要求值、优先级和验收方式的输入 Evidence IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `normalized` / `inference` |
-| `approval_owner` | 谁可确认或批准偏差 |
-| `status` | `confirmed`、`proposed`、`conflicted`、`missing` |
+## 4. RFQ 必问项
 
-只有目标但无证据时，`status=proposed`；来源冲突时保留各自版本并标 `conflicted`。
+供应商至少应逐项回应：
 
-## 5. 数量与交付情景
-
-每个情景记录：
-
-- `scenario_id`
-- `stage`: `sample`、`pilot`、`first_order`、`replenishment`
-- `quantity` 和 `unit`
-- `target_ship_date`、`target_arrival_date`、`timezone`
-- `delivery_location`
-- `incoterm_rule`、`incoterm_version`、`named_place`
-- `split_delivery_allowed`
-- `assumption_ids`
-
-Incoterms 只有缩写而没有版本和地点时不完整。
-
-每个采购假设必须另建正式 `assumption` 对象：
-
-| 字段 | 规则 |
-|---|---|
-| `assumption_id` | 本层稳定唯一 |
-| `scenario_id` / `assumption` / `impact` | 适用情景、假设内容和若错误的影响 |
-| `parent_evidence_ids` | 支撑假设的 Evidence/Instruction IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | 固定为 `hypothesis` |
-| `assumption_status` / `invalidated_by` | `proposed` / `user_approved` / `rejected` 及失效触发 |
-
-## 6. RFQ 报价字段
-
-每个外发问题必须形成正式 `rfq_clause` 对象：
-
-| 字段 | 规则 |
-|---|---|
-| `clause_id` | 本层条款稳定唯一 |
-| `clause_category` / `question` / `response_format` | 条款类别、精确问题及供应商响应格式 |
-| `parent_evidence_ids` | 支撑条款的 Evidence/Requirement IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `normalized` / `inference` |
-| `external_share_status` / `limitations` | `approved` / `pending` / `rejected` 与外发限制 |
-
-必须要求供应商逐项提供：
-
-- 报价币种、计价单位、税务口径；
+- 报价币种、计价单位和税务口径；
 - MOQ、样品数量、数量阶梯与单价；
-- 报价日期、有效期；
-- 样品费、模具费、包装、标签、测试、认证、运输；
-- 包含项、排除项和可选项；
-- Incoterms 规则、版本、指定地点；
-- 付款节点、交期定义和起算条件；
-- 产能口径、变更重报价条件；
-- 偏差、替代材料和分包披露。
+- 报价日期和有效期；
+- 样品、模具、包装、标签、测试、认证和运输费用；
+- 包含项、排除项、可选项和未知项；
+- Incoterms 规则、版本和指定地点；
+- 付款节点、交期定义与起算条件；
+- 产能口径和发生变更时的重报价条件；
+- 偏差、替代材料、关键分包和工厂角色披露。
 
-## 7. 候选池字段
+外发前核对保密范围、附件版本和授权。RFQ 是询问框架，不代表供应商已确认。
 
-候选池可以为空。已有候选时记录：
+## 5. 候选池可以为空
 
-- `supplier_candidate_id`
-- `legal_name_reported`
-- `trading_name_reported`
-- `candidate_source_evidence_id`
-- `manufacturer_or_trader_claim`
-- `product_process_claim`
-- `location_claim`
-- `certification_claim`
-- `identity_conflict_status`
-- `verification_status`
-- `owner`
-- `next_action`
+没有用户提供候选，且用户未明确要求 1688 线索时，候选池为空是正确结果。此时交付完整搜索要求和候选核验字段，不自行搜索或填造供应商。
 
-所有 `claim` 都是待核验陈述，不得改名为 `verified_*`。
+若用户明确要求 1688 线索，Sorftime 返回的商品、店铺、SKU、相似货源或挂牌信息只能作为待核验线索。法定主体、联系方式、资质、MOQ、正式报价、产能、样品、交期和履约仍需用户或合格责任方核验。
 
-候选池中的每个字段必须形成正式 `candidate_field` 对象，而不是把整行候选当成已核验事实：
+## 6. 三 MCP 如何服务寻源准备
 
-| 字段 | 规则 |
-|---|---|
-| `candidate_field_id` | 本层候选字段稳定唯一 |
-| `supplier_candidate_id` / `field_name` / `field_value_or_status` | 候选、字段名及原值或缺失/冲突状态 |
-| `parent_evidence_ids` | 支撑字段值或状态的输入 Evidence IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `normalized` / `coding` |
-| `provided_by` / `verification_status` / `verification_required` | 提供者、当前核验状态及所需动作 |
+| 提供方与工具 | 允许用途 | 不能替代 |
+|---|---|---|
+| SIF `market_get_asin_profile` | 目标或可比 ASIN 的当前市场画像 | 供应商事实或正式采购要求 |
+| SIF `market_estimate_profit_threshold` | 输入完整时的探索性采购成本上限 | 供应商报价、landed cost 或第 14 利润真相 |
+| SellerSprite `product_research` / `competitor_lookup` / `asin_detail` | Amazon 市场需求或售价背景 | 供应商身份、能力或报价 |
+| Sorftime 1688 五个正文白名单工具 | 用户明确要求时的未核验候选线索 | 已寻源、已尽调或推荐供应商 |
 
-每个缺失或冲突还必须形成正式 `gap` 对象：
+多个 MCP 的 Amazon 市场数据只有对象、站点、期间、单位和定义真正可比时才并列分析；冲突分列，不取平均。某个计划中的市场来源缺失时说明覆盖下降。
 
-| 字段 | 规则 |
-|---|---|
-| `gap_id` | 本层缺口稳定唯一 |
-| `gap_description` / `affected_scope` / `required_evidence_or_decision` | 缺口、影响及最小补充项 |
-| `parent_evidence_ids` | 支撑缺失或冲突判断的输入 Evidence IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `coding` / `inference` |
-| `owner` / `due_date` / `status` | 责任人、截止和 `open` / `resolved` / `blocked` |
+Sorftime 1688 是独有单源分支。失败时只说明该来源不可用或当前没有相应证据，不能写成多源交叉验证仍成立。
 
-## 8. 就绪判定
+## 7. 探索性利润阈值的使用条件
 
-`ready_for_rfq` 需要同时满足：
+只有以下十项都来自用户或可信上游、没有冲突，并符合运行时 schema，才可调用 SIF `market_estimate_profit_threshold`：
+
+`price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days`。
+
+其中 `category` 必须是已确认的费用类目，不能由 ASIN 画像类目或工具建议值代填。`length_in`、`width_in`、`height_in` 只有三项都有直接依据且 schema 同时支持时才成组传入，否则全部省略。
+
+交付中记录提供方与精确工具、对象/范围/时间、实际参数及直接依据、原始结果、业务用途、限制和原始结果位置即可。阈值只用于探讨 RFQ 成本问题，不能写成真实报价或批准底线。
+
+## 8. 可以外发 RFQ 的判断
+
+只有同时满足以下条件，才可建议外发：
 
 - 采购对象和版本明确；
-- 所有 `must` 有可执行验收方式；
-- 数量情景、地点和时间明确；
-- 报价字段及包含/排除项齐全；
-- 外发权限和保密范围明确；
+- 所有硬约束均可执行并有验收方式；
+- 数量、地点和时间情景明确；
+- 报价范围、包含/排除项和有效期问题齐全；
+- 保密与外发权限明确；
 - 未决事项不会改变供应商范围或报价基础。
 
-否则使用 `ready_with_assumptions`、`clarification_required`、`conflicted` 或 `blocked`，并列出阻塞字段。
-
-## 9. SIF 供应商计算对象
-
-`market_estimate_profit_threshold` 的正式 `arguments` 必须显式包含 `price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days`。每个键都必须映射到已验证输入 Evidence ID；缺失、冲突或未经验证即不得调用，不设默认值。`category` 必须来自用户或可信上游确认的费用类目口径，SIF ASIN 画像类目只能保留供应商快照语义，不能升级为官方类目事实或静默代填。`length_in`、`width_in`、`height_in` 只有三项均有父证据且机器 schema 同时支持时才成组传入，否则整组省略。
-
-每次调用另建 `vendor_calculation` 对象，并在对象本体保存 `vendor_calculation_id`、`source_tool=market_estimate_profit_threshold`、正式 `arguments` 快照、逐参数映射的 `parent_input_evidence_ids[]`、三类 request ID、`raw_result_locator`、`transformation_type=vendor_calculation` 与限制。该对象不是供应商报价、landed cost 或第 14 利润真相。
+否则直接说明可以带哪些假设继续、必须先澄清什么、冲突在哪里、由谁负责补齐。

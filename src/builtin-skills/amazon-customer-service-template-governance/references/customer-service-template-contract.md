@@ -1,134 +1,94 @@
 <!--
-文件功能：定义客服模板的来源、变量、声明、翻译、风险、生命周期、版本和人工使用字段。
-职责边界：只约束模板治理，不授权消息发送、平台同步、自动批准或跨客户数据复用。
-重要关联：由 ../SKILL.md 在模板治理前读取；正式字段落入 ../assets/templates/template-governance-register.md。
+文件功能：提供客服模板素材筛选、变量设计、声明审查、翻译和版本治理方法。
+职责边界：不授权消息发送、平台同步、自动批准或跨客户数据复用。
+重要关联：由 ../SKILL.md 在模板治理前读取；正式交付结构见 ../assets/templates/template-governance-register.md。
 -->
 
-# 客服模板治理合同
+# 客服模板治理方法
 
-## 一、模板记录
+## 1. 判断什么值得复用
 
-| 字段 | 要求 |
-|---|---|
-| `template_id` / `version` | 稳定 ID 与显式版本 |
-| `use_case` | 单一、可理解场景 |
-| `marketplace` / `language` | 适用站点和语言 |
-| `owner` / `approvers` | 业务、政策、隐私、语言责任人 |
-| `applicable_scope` / `exclusions` | 适用与禁止范围 |
-| `source_evidence_ids` | 历史材料、政策和品牌证据 |
-| `authorization_status` | verified / unverified / conflicted |
-| `policy_evidence_ids` | 当前政策依据 |
-| `lifecycle_status` | 仅使用允许枚举 |
-| `risk_status` | 标准、待审或敏感阻塞 |
-| `supersedes` / `superseded_by` | 版本关系 |
-| `execution_status` / `send_status` | not_executed / not_sent |
+适合复用的是结构和沟通方法，例如：
 
-## 二、生命周期
+- 如何确认买家的核心问题；
+- 如何提出最少必要澄清；
+- 如何说明下一步与责任边界；
+- 如何保持品牌语气和可读性。
 
-只允许：
+不适合复用的是未核对的个案事实、金额、日期、订单状态、责任结论、政策资格和特殊补偿。
 
-```text
-draft_for_review
-approved_for_manual_use
-deprecated
-retired
-```
+### 正例
 
-状态转换需要操作人、时间、理由、Evidence IDs 与批准记录。不得静默覆盖旧版。
+把“我们已于 6 月 3 日退款 29.99 美元”改成仅在当前退款记录已核验时才显示的受控段落，并将金额、币种和日期设为必需变量。
 
-## 三、风险状态
+### 反例
 
-```text
-standard_review
-needs_policy_review
-needs_language_review
-needs_privacy_review
-blocked_sensitive_promise
-source_or_authorization_unverified
-```
+因为历史回复常写“退款将在 3–5 天到账”，就把这句话放进所有站点和所有付款方式的通用模板。
 
-生命周期与风险状态分开：模板可以处于 `draft_for_review + blocked_sensitive_promise`，但不能以风险字段替代审批状态。
+## 2. 来源准入
 
-## 四、变量字段
+高价值历史材料应具备：
 
-| 字段 | 要求 |
-|---|---|
-| `variable_id` / `name` | 稳定、可读名称 |
-| `meaning` / `data_type` | 业务定义与类型 |
-| `required` | yes / no / conditional |
-| `allowed_source` | 当前案件 Evidence 类型 |
-| `validation_rule` | 格式、范围、一致性和时效 |
-| `missing_action` | block / clarify / omit |
-| `conflict_action` | block_and_escalate |
-| `display_format` | 呈现规则 |
-| `privacy_class` | public / internal / sensitive / restricted |
-| `default_value` | 高风险和事实变量禁止默认 |
+- 完整上下文，而非孤立一句；
+- 可识别的站点、语言、场景和时间；
+- 明确 owner 与使用授权；
+- PII 可可靠去除；
+- 可以与当前政策和流程比对。
 
-## 五、声明与承诺
+来源不明、客户数据混杂、含个案特批或已过期政策的材料只能用于风险提示。
 
-| 字段 | 要求 |
-|---|---|
-| `statement_id` | 模板事实或政策单元 |
-| `source_locator` | 历史候选或 Agent 生成定位 |
-| `template_text` | 去标识、变量化文本 |
-| `parent_evidence_ids` | 直接支撑 |
-| `statement_type` | courtesy / case_fact / policy / procedure / promise / escalation |
-| `support_status` | supported / partially_supported / unsupported / conflicted |
-| `promise_class` | none / informational / procedural / financial / legal_or_policy |
-| `human_review_status` | pending / approved / revise / rejected |
+## 3. 变量设计
 
-未经批准的 financial/legal_or_policy 声明必须 `blocked_sensitive_promise`。
+变量名称要表达业务含义，避免 `{value1}` 这类无上下文占位。事实变量应从当前案件材料取得，并有：
 
-## 六、翻译字段
+- 必填或条件必填规则；
+- 格式、范围、币种、日期和时区检查；
+- 缺失时的阻塞或澄清路径；
+- 冲突时的升级责任人；
+- 隐私要求。
 
-| 字段 | 要求 |
-|---|---|
-| `translation_id` / `segment_id` | 稳定且一一对应 |
-| `source_locator` | 原文定位 |
-| `translation_type` | agent_generated_translation |
-| `glossary_version` | 无术语表时 none |
-| `numbers_dates_negations_preserved` | yes / no / needs_review |
-| `qualifier_notes` | 条件、例外、责任、程度 |
-| `human_language_review` | not_required / pending / approved / rejected |
+模板必须在变量缺失时“安全失败”，不能留下空白后仍允许发送。
 
-翻译不得覆盖原文或改变变量语义。
+## 4. 承诺审查
 
-## 七、来源准入与隐私
+任何会让买家合理理解为卖家已经决定或保证某结果的内容，都属于承诺。判断时考虑：
 
-每份历史材料必须记录：
+- 是否涉及金额、时间、资格、保修、法律或平台结果；
+- 当前案件材料是否直接支持；
+- 说话人是否有权限；
+- 站点政策是否仍适用；
+- 翻译是否扩大了确定性。
 
-- owner 与授权；
-- 版本、时间、站点、语言、场景；
-- 完整性与上下文；
-- PII、支付、法律、安全和承诺风险；
-- policy Evidence；
-- 是否允许抽取。
+无法同时满足时，改成澄清、条件式或升级说明，而不是保留确定措辞。
 
-来源不明、未授权、截断或含不可去除敏感数据的材料不得进入批准模板。
+## 5. 版本治理
 
-## 八、四轴、谱系与缺失
+新版本应说明：
 
-每条来源和 Agent 输出分别记录：
+- 为什么修改；
+- 哪些场景、变量、政策或语气变化；
+- 谁完成业务、政策、隐私和语言审核；
+- 旧版何时停止新用；
+- 已有案件是否需要重新审核。
 
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- `parent_evidence_ids`，仅 Agent 输出
+不要直接覆盖旧版，否则无法解释历史回复使用了哪个版本。
 
-缺失枚举固定为：
+## 6. 测试用例
 
-```text
-not_returned / not_queried / parse_failed / missing / conflicted / true_zero
-```
+批准前至少测试：
 
-## 九、人工使用
+- 所有必填事实完整的标准案件；
+- 金额、日期或政策资格缺失；
+- 两项材料冲突；
+- 高风险安全/法律/索赔案件；
+- PII 输入过多；
+- 不同站点或语言；
+- 否定和条件复杂的翻译。
 
-`approved_for_manual_use` 模板每次使用仍需：
+预期结果应包括允许生成、要求澄清、阻塞或升级，而不只是查看文本是否通顺。
 
-- 当前案件 Evidence；
-- 变量验证；
-- 当前政策检查；
-- PII 和敏感承诺检查；
-- 人工语言复核；
-- 授权人员在本 Skill 外决定是否发送。
+## 7. 三 MCP 边界
+
+三个市场研究 MCP 不能提供私有消息、客服模板、个案事实或模板批准依据。公开 Review/VOC 不能成为当前政策或客服承诺依据。
+
+模板治理只基于合法消息、模板、政策和可信上游材料，并在重要决定附近说明直接依据和适用范围。

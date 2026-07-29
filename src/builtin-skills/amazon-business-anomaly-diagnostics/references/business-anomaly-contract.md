@@ -1,242 +1,80 @@
 <!--
-文件功能：定义异常预检、SIF 供应商观察、基线、阈值、偏离、候选驱动、反证和状态不变量。
-职责边界：只规定按需诊断合同；SIF 诊断只能作为候选背景，不拥有第一方基线或因果；不创建后台监控或告警，不输出已证根因或领域执行动作。
-重要关联：由上级 SKILL.md 在异常识别前读取；交付结构见 assets/templates/business-anomaly-template.md。
+文件功能：提供经营异常的数据质量、基线、阈值、分解、候选驱动和验证方法。
+职责边界：不运行持续告警，不把供应商观察或相关性写成已证根因。
+重要关联：由 ../SKILL.md 在异常诊断前读取；正式交付结构见 ../assets/templates/business-anomaly-template.md。
 -->
 
-# 经营异常诊断合同
+# 经营异常诊断方法
 
-## 1. 分析控制
+## 1. 异常的三种来源
 
-```yaml
-analysis_id: ana-...
-metric_id: metric-...
-metric_contract_version: ""
-analysis_period: ""
-timezone: ""
-marketplace: ""
-entity_scope: []
-grain: ""
-question: ""
-analysis_mode: on_demand
-owner: ""
-```
+- **数据异常**：缺失、重复、延迟、回填、定义或映射变化；
+- **统计异常**：相对可解释基线出现罕见偏离；
+- **业务异常**：偏离具有实际业务影响，并由业务机制解释。
 
-`analysis_mode` 固定为 `on_demand`。
+先区分三者，再讨论原因。
 
-## 2. 来源证据
+## 2. 基线选择
 
-```yaml
-evidence_id: ev-...
-record_type: metric_observation | event_observation | data_quality_metadata
-source_type: user_input | uploaded_file | trusted_upstream_output | sif_mcp
-source_locator: ""
-source_owner: ""
-metric_id: null
-business_time: ""
-observed_at: ""
-retrieved_at: ""
-marketplace: ""
-entity_scope: []
-grain: ""
-unit_or_currency: ""
-coverage: ""
-source_latency: ""
-version: ""
-limitations: []
-temporal_scope: point_in_time | period | historical | current_rule | scenario
-estimation_status: observed | reported | estimated | agent_estimated | not_applicable
-transformation_type: raw | reported | normalized | deduplicated | aggregated
-```
+好的基线与当前窗口在季节、星期结构、活动、库存和业务制度上相似。可使用：
 
-当 `source_type=sif_mcp` 时，同一来源对象必须直接增加：
+- 稳健滚动中位数；
+- 同星期/同季节；
+- 去年同期；
+- 匹配业务条件的对照期；
+- 合理的季节性模型。
 
-```yaml
-source_provider: sif
-source_tool: verified-tool-name
-agent_request_id: agent-request-id
-tool_call_id: tool-call-id
-provider_request_id: provider-id-or-not_returned
-query_scope: explicit-object-time-grain-and-filters
-coverage_or_pagination: explicit-coverage
-raw_result_locator: temp-relative-raw-result-location
-```
+### 正例
 
-`agent_request_id` 与 `tool_call_id` 只取当前 AgentTool 调用上下文中的对应真实值；若该上下文未暴露相应字段，则对应字段各写 `not_returned`，不得自造。`provider_request_id` 只取 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三者不得互代。
+日销售存在明显周末模式，因此用过去八个同星期几的中位数与分位区间，并排除大型促销日。
 
-SIF 原始对象固定 `transformation_type=reported`，按结果自述选择 `estimation_status=reported` 或 `estimated`。每个业务工具首次调用前必须 `describe` 并只服从机器 `inputSchema`；当前没有机器 `outputSchema`。`analyze_traffic_anomaly` 的结果仍是供应商诊断，只能成为候选驱动的父 Evidence，不得自动升级为根因或因果。
+### 反例
 
-## 3. 数据质量预检
+用上个月全月平均比较促销日的小时销售，然后宣布异常。
 
-```yaml
-precheck_id: pre-...
-parent_evidence_ids: []
-freshness_status: pass | fail | unknown
-latency_status: pass | fail | unknown
-coverage_status: pass | fail | unknown
-schema_version_status: pass | fail | unknown
-grain_status: pass | fail | unknown
-timezone_status: pass | fail | unknown
-currency_status: pass | fail | unknown
-deduplication_status: pass | fail | unknown
-missing_states: []
-precheck_status: pass | data_quality_issue | blocked
-source_type: agent
-temporal_scope: point_in_time | period | historical
-estimation_status: not_applicable
-transformation_type: data_quality_assessment
-```
+## 3. 比率异常
 
-任何必要检查 fail 时不得继续输出无条件经营解释。
+比率 `r = x / n` 变化时，至少同时看：
 
-## 4. 基线与阈值
+- 分子 `x`；
+- 分母 `n`；
+- 样本量；
+- 两者的延迟和缺失；
+- 定义是否一致。
 
-```yaml
-baseline_id: base-...
-metric_id: metric-...
-history_period: ""
-sample_count: null
-seasonality_handling: ""
-event_handling: ""
-method: ""
-parameters: {}
-minimum_history_rule: ""
-parent_evidence_ids: []
-baseline_status: ready | insufficient_history | conflicted
-source_type: agent
-temporal_scope: historical
-estimation_status: not_applicable | agent_estimated
-transformation_type: baseline_construction
+小分母会放大相对变化。只有百分比而没有样本量，不足以判断重要性。
 
-threshold_id: threshold-...
-threshold_source: user_defined | transparently_derived
-direction: upper | lower | two_sided
-value: null
-unit: ""
-derivation_summary: ""
-parameters: {}
-parent_evidence_ids: []
-valid_until: null
-invalidation_triggers: []
-source_type: agent
-temporal_scope: current_rule
-estimation_status: not_applicable | agent_estimated
-transformation_type: direct_carry_forward | threshold_derivation
-```
+## 4. 贡献分解
 
-禁止 `threshold_source=industry_default` 或未记录推导过程。
+总变化可按分群贡献拆分：
 
-## 5. 偏离
+`总差异 = Σ(当前分群值 - 基线分群值)`
 
-```yaml
-agent_output_id: ao-...
-output_type: observed_deviation
-metric_id: metric-...
-observed_value: null
-expected_value: null
-absolute_deviation: null
-relative_deviation: null
-threshold_id: threshold-...
-parent_evidence_ids: []
-source_type: agent
-temporal_scope: period
-estimation_status: not_applicable | agent_estimated
-transformation_type: deviation_calculation
-transformation_summary: ""
-rule_version: business-anomaly-contract-v1
-generated_at: ""
-uncertainty: none | bounded | material | unknown
-diagnostic_status: anomaly_candidate | insufficient_history | expected_event_effect | data_quality_issue
-reason_codes: []
-```
+对于比率或价格/数量共同变化，可进一步使用加权或数量—价格分解，但要展示公式和剩余项。分解说明“变化来自哪里”，不自动说明因果。
 
-expected 为真实零时 `relative_deviation=undefined`。
+## 5. 候选驱动检验
 
-## 6. 候选驱动链
+一个好的候选应满足：
 
-```yaml
-hypothesis_id: hyp-...
-observed_deviation_id: ao-...
-parent_evidence_ids: []
-candidate_driver: ""
-candidate_scope: ""
-supporting_evidence_ids: []
-contradicting_evidence_ids: []
-missing_evidence_ids: []
-falsification_condition: ""
-next_check: ""
-domain_owner: ""
-source_type: agent
-temporal_scope: point_in_time | period
-estimation_status: agent_hypothesis
-transformation_type: hypothesis
-causal_status: not_established
-```
+- 时间顺序合理；
+- 影响范围与异常范围一致；
+- 有可解释机制；
+- 预期伴随信号能观察；
+- 替代解释被检查；
+- 有可执行的证伪动作。
 
-`agent_hypothesis` 是候选驱动派生记录专用的 `estimation_status`；它不属于来源证据枚举，也不能替代 observed cause。
+如果候选只满足“同时发生”，可信度较弱。
 
-没有反证搜寻或可证伪条件的候选不得升级。
+## 6. 外部观察
 
-## 7. 上下文、分解与缺口派生记录
+供应商趋势适合回答市场/竞品是否也发生变化。它们不能替代第一方经营数据，也不能证明内部广告、库存、价格或订单事实。
 
-```yaml
-agent_output_id: ao-...
-output_type: context_alignment | decomposition | diagnostic_gap
-parent_evidence_ids: []
-source_type: agent
-temporal_scope: point_in_time | period
-estimation_status: not_applicable | agent_estimated
-transformation_type: context_alignment | decomposition | gap_classification
-transformation_summary: ""
-rule_version: business-anomaly-contract-v1
-generated_at: ""
-uncertainty: none | bounded | material | unknown
-reason_codes: []
-```
+多源冲突时分别保留，并从时间、定义、样本、粒度和覆盖解释差异。
 
-事件本身仍保留来源 Evidence ID；Agent 只派生时间对齐。分解与缺口记录不得脱离父证据，也不得升级为根因。
+## 7. 下一步优先级
 
-## 8. 缺失语义
+优先选择能最大幅度减少不确定性的检查，而不是罗列所有可能原因。例如：
 
-```text
-not_returned
-not_queried
-parse_failed
-missing
-conflicted
-true_zero
-```
-
-前五项不得进入数值补零、基线或阈值推导。
-
-## 9. 状态解释
-
-| 状态 | 含义 |
-|---|---|
-| `anomaly_candidate` | 偏离超过透明阈值，原因仍未建立 |
-| `insufficient_history` | 历史不足以建立所需基线 |
-| `expected_event_effect` | 偏离与已证事件一致，但因果仍有限 |
-| `data_quality_issue` | 数据质量足以妨碍经营解释 |
-
-不允许 `root_cause_confirmed`。
-
-## 10. 不变量
-
-```text
-monitoring_status=not_created
-alert_status=not_sent
-action_status=not_executed
-causal_status=not_established
-```
-
-## 11. 交付检查
-
-- KPI 合同和版本明确；
-- 数据质量预检优先；
-- 阈值来自用户或透明历史；
-- 无固定 30%；
-- 缺失未补零；
-- 支持与反证并列；
-- 下一步检查可证伪；
-- 无“已证根因”；
-- 无后台、告警或执行动作。
+- 一次库存可售状态核对可同时排除多个供给候选；
+- 一份 Listing 变更历史可验证内容变更时间；
+- 一个小范围实验可区分价格与内容解释。

@@ -25,7 +25,7 @@ description: 对用户或可信上游提供的带日期 Amazon 政策原文执�
 
 首次只有一个版本时只能建立 `baseline_only`，不能声称发生变化。
 
-## 运行合同
+## 使用边界
 
 ### 合法输入
 
@@ -38,9 +38,9 @@ description: 对用户或可信上游提供的带日期 Amazon 政策原文执�
 
 ### 外部数据边界
 
-- 不调用 `sif_mcp`；当前 SIF 目录没有 Amazon 政策原文、政策效力或账号政策能力；
+- 不调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；三个目录都不能提供可确认效力、版本和适用范围的 Amazon 政策原文；
 - 运行时输入仅限用户对话、只读 `uploads/` 与带来源/日期/版本的可信 `outputs/`；
-- 不使用 Web、浏览器、RSS、Google Trends、LinkFox、CrossPulse、Firecrawl、其他 MCP/API；
+- 不使用 Web、浏览器、RSS、Google Trends、LinkFox、CrossPulse、Firecrawl 或其他 MCP/API；
 - 不调用 Feishu、邮件或推送；
 - 不创建 Cron、后台监控、订阅或自动告警；
 - 缺当前原文时只输出获取清单，失败关闭。
@@ -52,18 +52,11 @@ description: 对用户或可信上游提供的带日期 Amazon 政策原文执�
 - `outputs/compliance/<case-id>/03-policy-impact/` 存放唯一正式评估；
 - 每次评估冻结输入，不覆盖旧版本。
 
-### 双层谱系
+### 证据与判断
 
-`input_evidence` 保存 `evidence_id`、`source_path`、政策 ID、站点、语言、发布/生效/修订/提供日期、版本、四轴、权威性和限制。
+每条政策依据保留政策名称或 ID、站点、语言、版本、原文段落定位、发布/生效/修订日期、提供方和使用限制。旧版与新版必须分别定位，不能用摘要替代正文。
 
-Agent 的段落对齐、差异编码、适用性候选、影响、行动和 handoff 为 `agent_output`，记录 `parent_evidence_ids`、转换类型、假设状态和专业复核状态。
-
-四轴：
-
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
+段落变化、适用对象、业务影响和行动建议分别写明：直接依据是什么、为什么得出该判断、仍有哪些范围或翻译限制、谁应在何时复核。缺失日期、版本冲突或只覆盖部分站点时必须降低结论强度。
 
 ## 启动检查
 
@@ -78,31 +71,13 @@ Agent 的段落对齐、差异编码、适用性候选、影响、行动和 hand
 5. 业务对象、流程和责任人；
 6. 用户希望做出的决策。
 
-### 状态
+### 启动判断
 
-- `baseline_only`
-- `diff_ready`
-- `impact_ready`
-- `current_text_missing`
-- `previous_text_missing`
-- `version_conflict`
-- `scope_uncertain`
-- `translation_review_required`
-- `blocked`
-- `out_of_scope`
+先说明当前材料只能支持基线整理、版本差异比较，还是已经足以评估业务影响。当前原文缺失、旧版缺失、版本冲突、适用范围不清或翻译仍待复核时，逐项列出缺口和责任人；不得用一个状态码掩盖不同原因。
 
-### 来源缺失语义（与业务状态分列）
+### 缺失与冲突
 
-业务 `result_status` 继续使用上述政策状态；每个输入字段另记 `source_availability_status`，只允许：
-
-- `not_returned`：已核验的合法来源未返回该字段；
-- `not_queried`：本次未向合法来源查询；
-- `parse_failed`：材料存在但无法可靠解析；
-- `missing`：范围已确定，但必需材料未提供；
-- `conflicted`：同一范围的证据互相冲突；
-- `true_zero`：完整、可验证覆盖明确证明数值或记录数为零。
-
-前五项不得写成 0、无政策、无变化或无影响，也不得覆盖 `baseline_only/current_text_missing/...` 等业务门禁。正例：两版完整原文逐段覆盖后，删除条款数确为 0，可记 `true_zero`，业务状态仍按 diff/impact 门禁判断。反例：尚未取得当前正文必须记 `not_queried` 或 `missing`，不能写“变化数为 0”或“政策未变化”。
+材料未取得、未查询、未返回、无法解析或互相冲突时，按实际原因和受影响段落说明，不能写成“变化数为 0”或“政策未变化”。只有两版完整原文逐段覆盖后，才可陈述某类变化确实为零。
 
 ## 执行流程
 
@@ -157,16 +132,7 @@ Agent 的段落对齐、差异编码、适用性候选、影响、行动和 hand
 
 ### 第五步：段落级差异
 
-允许状态：
-
-- `added`
-- `removed`
-- `modified`
-- `moved_without_substantive_change`
-- `unchanged`
-- `not_alignable`
-
-每项保留旧/新段落 ID、短摘要、结构变化和原文证据。不要只给全文摘要。
+逐段说明内容是新增、删除、修改、仅移动而无实质变化、保持不变，还是因版本/结构原因无法对齐。每项保留旧/新段落 ID、短摘要、结构变化和原文证据，不要只给全文摘要。
 
 ### 第六步：区分事实、解释和适用性
 
@@ -211,12 +177,12 @@ Agent 不能把适用性候选写成 Amazon 或法律的终局结论。
 
 至少生成：
 
-- `policy_evidence_id`
-- `policy_document_ids`
+- 政策原文的文件或页面及具体段落位置；
+- 本次对比的旧版、新版文档名称、版本和位置；
 - 站点、发布日期、生效日；
-- `diff_ids`
-- 受影响对象 IDs；
-- 行动、责任人和状态；
+- 逐项文档差异及其旧版、新版原文位置；
+- 受影响对象的名称与范围；
+- 行动、责任人、截止时间和当前进展；
 - 适用性/专业复核限制。
 
 对 Product 内置经营分析生成 `policy-impact-handoff.md`，只提供可追溯变化和业务输入，不声称已调用或更新内置 Skill。
@@ -226,7 +192,7 @@ Agent 不能把适用性候选写成 Amazon 或法律的终局结论。
 报告必须注明：
 
 - `assessment_mode=one_time`
-- `monitoring_status=not_running`
+- 明确说明未启动监控、订阅或告警
 - `as_of`
 - 下次复核触发器由用户/责任方人工定义。
 
@@ -240,7 +206,7 @@ Agent 不能把适用性候选写成 Amazon 或法律的终局结论。
 - `version_conflict`：并列版本并暂停 diff；
 - `translation_uncertain`：保留原文和专业复核；
 - `scope_uncertain`：影响标候选；
-- `out_of_scope`：监控、抓取、推送、法律裁决、自动整改或平台提交。
+- 当请求涉及持续监控、自动抓取或推送、法律裁决、自动整改或平台提交时，继续执行会越过影响评估边界并可能造成未经授权的外部动作；仅整理已提供政策事实、受影响事项、整改建议与需人工执行的后续步骤。
 
 ## 正式交付
 
@@ -266,7 +232,7 @@ Agent 不能把适用性候选写成 Amazon 或法律的终局结论。
 - 计划没有写成已执行；
 - handoff 不冒充已调用内置能力；
 - 无 Web/RSS/LinkFox/CrossPulse/推送/监控；
-- 双层谱系与工作区合同完整。
+- 每项变化和影响判断均能回到政策原文，并写明理由、限制和复核责任人。
 
 ## 资源读取
 

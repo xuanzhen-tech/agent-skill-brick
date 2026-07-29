@@ -1,5 +1,5 @@
 <!--
-文件功能：提供广告组合、实体、目标、预算护栏、实施批次和证据谱系的正式交付模板。
+文件功能：提供广告组合、目标、预算护栏、实施批次和判断依据的正式交付模板。
 职责边界：模板不执行广告账户操作；所有平台 ID、枚举和启用状态必须由人工从真实账户回填。
 重要关联：由 ../../SKILL.md 物化；字段和状态遵循 ../../references/ad-portfolio-entity-contract.md。
 -->
@@ -16,57 +16,52 @@
 | `profile_id` | `<value/missing>` |
 | `currency/timezone` | `<values>` |
 | `plan_version` | `<version>` |
-| `result_status` | `<从下方允许值中选择一个>` |
-| `reason_codes[]` | `<从下方允许值中选择零个或多个>` |
+| 当前可实施范围 | `<哪些实体可交人工、哪些受限或阻塞>` |
+| 关键缺口与责任人 | `<缺口、受影响实体、下一责任人>` |
 
-模板允许的字面合同：
+## B. 目标与成功标准
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `ACCOUNT_SCOPE_MISSING | PRODUCT_SCOPE_CONFLICT | KEYWORD_EVIDENCE_MISSING | ECONOMIC_GUARDRAIL_MISSING | PLATFORM_ENUM_CONFIRMATION_REQUIRED | PARTIAL_RESULT | OUT_OF_SCOPE_REQUEST`
-
-## B. 目标合同
-
-| Objective ID | Business Question | Primary Metric | Guardrails | Window/Timezone | Required Report | Causal Limit | Evidence IDs |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<question>` | `<metric contract>` | `<metrics>` | `<window>` | `<abstract>` | `<limit>` | `<ids>` |
+| 业务问题 | 主指标 | 护栏指标 | 观察窗口/时区 | 所需报表 | 因果限制 | 直接依据 |
+|---|---|---|---|---|---|---|
+| `<question>` | `<metric>` | `<metrics>` | `<window>` | `<report>` | `<limit>` | `<source>` |
 
 ## C. 实体规划
 
-| Plan Entity ID | Level | Parent Plan ID | Display Name | Platform ID | Product Scope | Objective ID | Budget/Bid Scenario | Status | Version |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<portfolio/campaign/ad_group/target/ad>` | `<id>` | `<name>` | `<pending human fill>` | `<ids>` | `<id>` | `<scenario-id>` | `<draft/ready_for_human_implementation>` | `<version>` |
+| 层级 | 上层实体 | 人工规划名称 | 现有平台 ID/待回填 | 商品范围 | 服务目标 | 预算/竞价边界 | 设计理由 | 待确认 |
+|---|---|---|---|---|---|---|---|---|
+| `<portfolio/campaign/ad_group/target/ad>` | `<parent>` | `<name>` | `<platform id/pending>` | `<scope>` | `<objective>` | `<scenario>` | `<reason>` | `<items>` |
 
 ## D. Target 映射
 
-| Plan Target ID | Source ID/Type | Include | Exclude | Product Anchors | Abstract Type | Platform Enum Status | Overlap Purpose | Migration Evidence |
-|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<id/type>` | `<attributes>` | `<attributes>` | `<ids>` | `<type>` | `<known/tbd_platform_enum>` | `<purpose>` | `<requirements>` |
+| Target/词簇来源 | 纳入 | 排除 | 商品锚点 | 抽象类型 | 平台枚举待确认 | 重叠目的 | 迁移依据 |
+|---|---|---|---|---|---|---|---|
+| `<source/type>` | `<attributes>` | `<attributes>` | `<products>` | `<type>` | `<value>` | `<purpose>` | `<requirements>` |
 
 ## E. 预算与竞价护栏
 
-| Scenario ID | Currency | Total Limit | Entity Range | Bid Range | Economic Evidence | Approval Owner | Stop/Review Trigger |
-|---|---|---:|---|---|---|---|---|
-| `<id>` | `<currency>` | `<value/tbd>` | `<range>` | `<range/tbd>` | `<ids>` | `<owner>` | `<trigger>` |
+| 币种 | 总预算边界 | 适用实体 | 竞价边界 | 经济依据 | 批准人 | 停止/复核条件 |
+|---|---:|---|---|---|---|---|
+| `<currency>` | `<value/tbd>` | `<scope>` | `<range/tbd>` | `<source>` | `<owner>` | `<trigger>` |
 
 ## F. 实施批次
 
-| Batch ID | Planned Actions | Preconditions | Human Executor | Verification | Rollback/Stop | Status |
-|---|---|---|---|---|---|---|
-| `<id>` | `<manual actions>` | `<requirements>` | `<owner>` | `<platform IDs/evidence>` | `<rule>` | `<draft/not_started>` |
+| 人工实施批次 | 计划动作 | 前置条件 | 执行人 | 上线后核验 | 回滚/停止条件 |
+|---|---|---|---|---|---|
+| `<sequence/name>` | `<manual actions>` | `<requirements>` | `<owner>` | `<platform values/report>` | `<rule>` |
 
 ## G. 数据缺口
 
-| Gap ID | Field | Impact | Required Evidence | Owner | Due | Status |
+| 缺口 | 影响 | 所需材料/确认 | 负责人 | 截止日期 |
+|---|---|---|---|---|
+| `<field>` | `<impact>` | `<evidence>` | `<owner>` | `<date/tbd>` |
+
+## H. 判断依据
+
+| 规划判断 | 来源/实际工具 | 账户、商品与期间 | 直接依据 | 设计理由 | 限制、冲突或待确认 | 原文定位 |
 |---|---|---|---|---|---|---|
-| `<id>` | `<field>` | `<impact>` | `<evidence>` | `<owner>` | `<date/tbd>` | `<open/resolved>` |
+| `<structure/budget/target>` | `<user/upstream/SIF/SellerSprite/Sorftime + tool>` | `<scope>` | `<raw basis>` | `<reason>` | `<limits>` | `<path/row/result locator>` |
 
-## H. 证据谱系
-
-| Record ID | Layer | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Scope | Limitations |
-|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<scope>` | `<limits>` |
-
-若来源为 `sif_mcp`，同一输入对象还须直接保存 `source_provider=sif`、`source_tool`、三类 request ID、`retrieved_at`、`marketplace`、`query_scope`、覆盖/分页、`raw_result_locator` 和 `transformation_type=reported`；Agent 输出另建对象并回指 `parent_evidence_ids`。
+供应商信号不能填入用户账户实体字段；三方结果只有对象和定义一致时才比较，绝不平均。覆盖缺口和冲突逐项展示。
 
 ## I. 质量门
 

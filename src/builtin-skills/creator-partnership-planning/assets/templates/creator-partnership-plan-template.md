@@ -1,136 +1,76 @@
 <!--
-文件功能：提供 creator dossier 证据、定性门禁、shortlist、rights/disclosure 缺口和合作 brief 的正式模板。
-职责边界：模板只支持人工评审，不表示身份已验证、候选已选定、已联系、已签约、已付款或已发布。
-重要关联：字段语义见 references/creator-partnership-evidence-contract.md；生成前遵守上级 SKILL.md。
+文件功能：提供 Creator 候选核对、shortlist、风险门禁和合作 brief 的业务模板。
+职责边界：模板不表示身份、受众、rights、报价或效果已被公开数据验证，也不代表已联系或签约。
+重要关联：由 ../../SKILL.md 物化；判断方法见 ../../references/creator-partnership-evidence-contract.md。
 -->
 
-# Creator 合作规划工作包
+# Creator 合作规划
 
-## 1. 运行摘要
+## 1. 合作范围
 
-| 字段 | 值 |
-|---|---|
-| Partnership / Campaign ID |  |
-| Brand / Product |  |
-| Marketplace / Locale / Channels |  |
-| Goal / Period |  |
-| Owner / Reviewer |  |
-| Generated At / Version |  |
-| Result Status | `plan_ready_for_review / blocked / out_of_scope` |
-| Reason Codes | `[none]` |
-| Outreach Status | `not_contacted` |
-| Contract Status | `not_executed` |
-| Payment Status | `not_executed` |
-| Publish Status | `not_published` |
+- 平台/站点：
+- 活动目标与目标受众：
+- Creator 的预期角色：
+- 预算/时间/交付边界：
+- 品牌安全与排除项：
+- 权利、披露和商业条件要求：
+- 人工审核人：
 
-## 2. 合作要求
+## 2. 候选身份与资料
 
-| Requirement ID | Definition | Evidence IDs | Owner | Source Type | Source Locator | Temporal Scope | Estimation Status | Transformation Type | Currentness | Status |
-|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  | `current_rule` |  |  |  |  |
+| 候选 | 公开账号定位 | 身份/代表权核验 | Dossier 与公开观察的冲突 | 当前能确认 | 待补材料 |
+|---|---|---|---|---|---|
+| `<候选>` | `<定位>` | `<已核/未核及责任方>` | `<内容>` | `<范围>` | `<动作>` |
 
-## 3. Creator 索引
+## 3. 内容与受众匹配
 
-| Agent Output ID | Creator ID | User-provided Handle / Locator | Dossier Date / Version | Source Owner | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Identity Verification Status | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  | `agent` | `point_in_time` | `not_applicable` | `identity_mapping` | `not_performed / user_confirmed / qualified_owner_confirmed / conflicted` |  |
+| 候选 | 样本范围 | 稳定内容主题/形式 | 与品牌任务的匹配 | 受众证据 | 公开指标限制 | 品牌安全/竞品风险 |
+|---|---|---|---|---|---|---|
+| `<候选>` | `<时间、视频数量、覆盖>` | `<观察>` | `<判断>` | `<一方/自报/公开观察>` | `<限制>` | `<内容>` |
 
-## 4. Dossier 证据
+## 4. Shortlist
 
-| Evidence ID | Creator ID | Record Type | Source Type | Source Locator | Temporal Scope | Estimation Status | Transformation Type | Observed / Business Time | Verified / Valid Until | Fields Used | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  |  |  |
+| 候选 | 决定 | 主要理由 | 直接材料 | 阻塞或限制 | 下一步与负责人 |
+|---|---|---|---|---|---|
+| `<候选>` | `<进入人工沟通/待补证/不建议/仅作灵感>` | `<理由>` | `<定位>` | `<内容>` | `<动作>` |
 
-## 5. 评价规则
+## 5. 权利与披露门
 
-| Criterion ID | Definition | Scale / Values | Weight | Missing Rule | Threshold / Gate | Owner / Version | Parent Evidence IDs | Source Type | Source Locator | Temporal Scope | Estimation Status | Transformation Type |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  | `current_rule` |  |  |
+| 事项 | 当前情况 | 必须确认的内容 | 责任方 | 对合作的影响 |
+|---|---|---|---|---|
+| `<内容所有权/使用渠道/期限/地域/剪辑/付费放大/排他/音乐/披露/终止>` | `<情况>` | `<问题>` | `<责任方>` | `<阻塞/谈判项/可继续>` |
 
-> 用户未提供权重时：`overall_score=not_computable`，`ranking=not_produced`。
+## 6. 合作 brief
 
-## 6. 逐维度判断
+### `<候选名称>`
 
-| Agent Output ID | Creator ID | Criterion | Assessment | Supporting Evidence | Contradicting Evidence | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Uncertainty | Open Question |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  | `supported / uncertain / blocked / not_applicable / exclude_by_user_rule` |  |  |  | `agent` |  |  |  |  |  |
+- 为什么选择：
+- 活动目标与目标受众：
+- Creator 角色：
+- 核心信息与必须准确的产品事实：
+- 创意空间：
+- 禁区与品牌安全要求：
+- 交付物与时间：
+- 审核和修改流程：
+- 权利、披露、报价和付款待确认：
+- 衡量假设与所需一方数据：
+- 升级/终止条件：
 
-## 7. Rights / Disclosure
+## 7. 给用户的说明
 
-| Record ID | Creator ID | Type | Channels / Territory / Term | Source Type | Source Locator | Temporal Scope | Estimation Status | Transformation Type | Currentness | Status | Qualified Owner | Parent Evidence IDs | Conclusion Limit |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  |  | 第 09 / 合格责任人 |  |  |
+- 已核实：
+- 仅为 Sorftime 公开观察：
+- 无法由公开数据证明：
+- 当前最重要的尽调动作：
+- 哪些候选可进入人工沟通：
 
-## 8. 商业条件
+## 8. 交付前检查
 
-### 8.1 来源商业条件
-
-| Source Evidence ID | Term ID | Creator ID | Type | Amount / Currency | Tax Basis | Conditions | Parent Evidence IDs | Source Type | Source Locator / Owner | Temporal Scope | Estimation Status | Transformation Type | Approval |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  | `user_input / uploaded_file / trusted_upstream_output` |  |  |  | `raw / normalized` |  |
-
-`Source Type` 不得为 `agent`；此表不允许覆盖原始金额、币种、条件或批准状态。
-
-### 8.2 Agent 规范化引用（可选）
-
-| Normalized Term ID | Agent Output ID | Creator ID | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Normalization Summary |
-|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `agent` |  | `not_applicable` | `normalized` |  |
-
-## 9. Shortlist
-
-| Agent Output ID | Creator ID | Decision | Criterion Results | Supporting Evidence | Contradicting Evidence | Currentness | Open Questions | Human Decision | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  | `include_for_review / hold_for_evidence / exclude_by_user_rule` |  |  |  |  |  | required |  | `agent` |  |  |  |
-
-## 10. 合作 Brief
-
-| 字段 | 内容 |
-|---|---|
-| Brief ID / Creator ID |  |
-| Agent Output ID |  |
-| Content Intent |  |
-| Approved Claim IDs |  |
-| Proposed Deliverables |  |
-| Asset Requirements / 04 Handoff |  |
-| Draft Timeline / Dependencies |  |
-| Rights / Disclosure Gaps |  |
-| Commercial Term IDs |  |
-| Measurement Question / 13 Handoff |  |
-| Parent Evidence IDs |  |
-| Source Type | `agent` |
-| Temporal Scope |  |
-| Estimation Status |  |
-| Transformation Type |  |
-
-## 11. Agent 派生记录
-
-每个 eligibility、风险、shortlist 决策和 brief 项必须各占一行。
-
-| Agent Output ID | Output Type | Creator / Object ID | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Transformation Summary | Rule Version | Uncertainty | Human Review |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `agent` |  |  |  |  |  |  |  |
-
-`temporal_scope`、`estimation_status` 和 `transformation_type` 必须使用 `creator-partnership-evidence-contract.md` 派生 schema 的允许值；身份验证仍单独使用 `identity_verification_status`。
-
-## 12. 缺口与人工待办
-
-| Gap ID | Agent Output ID | Creator / Dimension | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Evidence State | Reason Code | Required Resolution | Owner | Effect |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `agent` |  | `not_applicable` | `gap_classification` |  |  |  |  |  |
-
-## 13. 人工审核
-
-- [ ] 每位 creator 有稳定 locator 和资料日期
-- [ ] 自报、观察、估算和 Agent 假设分开
-- [ ] 未将粉丝/互动写成独立验证事实
-- [ ] 未采用用户未批准的评分权重
-- [ ] rights/disclosure 已由第 09 或合格责任人提供证据
-- [ ] 商业金额保留币种、条件和来源
-- [ ] PII 已最小化
-- [ ] 未调用 Web、抓取、邮件、shell 网络或社媒 API
-- [ ] 外联、合同、付款和发布均未执行
-
-## 14. 未执行声明
-
-本工作包没有抓取或验证任何 creator 账号，没有寻找私人联系方式，没有发送邮件或私信，没有谈判、签约、付款、排程或发布。shortlist 仅供人工进一步尽调与审批。
+- [ ] 账号与法律身份/代表权未混写
+- [ ] 内容判断覆盖多个样本
+- [ ] 公开指标未被写成去重受众、购买力或效果
+- [ ] 品牌安全线索没有升级为无证定性
+- [ ] shortlist 理由和限制透明
+- [ ] 权利、披露、报价和付款保留人工确认
+- [ ] 未联系、签约、付款或发布
+- [ ] 正式文件位于 `outputs/`

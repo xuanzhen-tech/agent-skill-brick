@@ -5,7 +5,7 @@ description: 基于已核实产品事实、可追溯关键词架构和用户品�
 
 <!--
 文件功能：定义 Amazon Listing 文案开发与本地化的事实闸门、写作流程、失败语义和正式交付。
-职责边界：只在已证产品事实与关键词约束内生成文案，不调用 DeepL、SIF、Pangolinfo 或其他外部写作服务，不发布到 Seller Central。
+职责边界：只在已证产品事实与关键词约束内生成文案；不直接调用 MCP 或外部写作服务，不发布到 Seller Central。三供应商证据只能作为可追溯上游背景，不能补产品事实或合规宣称。
 重要关联：宣称与跨语言检查见 references/listing-copy-evidence-and-localization-contract.md；正式交付使用 assets/templates/listing-copy-package-template.md；关键词输入优先来自相邻 amazon-listing-keyword-architecture。
 -->
 
@@ -30,33 +30,23 @@ description: 基于已核实产品事实、可追溯关键词架构和用户品�
 - 可信上游 `outputs/` 中的产品事实、关键词架构、VOC 证据和竞品研究；
 - Agent 基于上述证据进行的写作、重组和语言质量判断。
 
-上游文件必须记录路径、版本或日期、使用字段和证据 ID。竞品文案只能用于识别结构或未满足需求，不得拼接、近似改写或冒充原创。
+上游文件必须记录路径、版本或日期、使用字段和原始依据位置。竞品文案只能用于识别结构或未满足需求，不得拼接、近似改写或冒充原创。
 
 ### 禁止
 
-- 本 Skill 不直接调用 `sif_mcp`；如果关键词架构或市场研究曾使用 SIF，只消费其已经交付、可追溯的上游对象；
-- 不调用 DeepL MCP、Pangolinfo、网页、浏览器、Amazon 抓取、其他 MCP 或 API；
+- 本 Skill 不直接调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；只消费市场研究、关键词架构、质量审计或 VOC 已交付的可追溯上游对象；
+- 上游 MCP 证据必须保留供应商与精确工具、原始结果位置、对象/期间/覆盖口径和原有限制；本包读取时保留上游文件与版本；
+- 上游供应商同类数据只有口径可比时才可共同影响文案重点；不得盲目平均或把冲突隐藏。供应商覆盖缺口、压缩或截断必须传递，不能写成三源一致；
+- 不调用网页、浏览器、Amazon 抓取、其他 MCP/API、Gateway/HTTP/shell；
 - 不安装翻译或写作服务，不读取或索要密钥；
 - 不把用户未提供的认证、质保、材质、性能、测试结果、兼容性、原产地或环保属性写入文案；
 - 不使用“业内最佳”等无法证明的绝对表述；
 - 不把后台词候选说成已写入、已索引或已生效；
 - 不复制候选 Skill、竞品 Listing、评论或来源模板的表达。
 
-### 四轴证据
+### 文案句子的依据
 
-对支撑文案的证据记录：
-
-- `source_type`：`user_input`、`upstream_output` 或 `agent`；
-- `temporal_scope`：`current`、`historical`、`future`、`mixed`、`not_applicable` 或 `unknown`；
-- `estimation_status`：`reported`、`estimated`、`forecast`、`mixed`、`not_applicable` 或 `unknown`；
-- `transformation_type`：`raw`、`normalized`、`calculation`、`coding`、`inference` 或 `hypothesis`。
-
-文案句子是 Agent 转换，不是来源原文，应使用 `source_type=agent`、`transformation_type=coding`，并通过 `parent_evidence_ids` 引用所依赖的事实与关键词证据。证据账本必须区分：
-
-- `input_evidence`：保留用户或上游输入的来源路径、Evidence ID 和原四轴；
-- `agent_output`：记录 Copy ID、本层四轴以及支撑它的 `parent_evidence_ids`。
-
-上游对象在本包固定使用 `source_type=upstream_output`，同时在独立的 `upstream_original_axes` 中保留其原始四轴与父证据 ID；不得把上游原始来源重标为本包直接取数，也不得用 Agent 产物的一组四轴覆盖输入证据的原四轴。
+每条标题、五点、描述或后台词都要列出其直接依赖的产品事实、关键词意图、品牌规则和用户要求，并说明 Agent 如何把这些依据转写成当前句子、采用了什么取舍、有哪些风险或待确认项。输入材料保留来源路径、版本和原有限制；文案不能覆盖原始事实，也不能把上游供应商信号写成 Amazon 官方事实。
 
 ### 工作区
 
@@ -98,11 +88,11 @@ description: 基于已核实产品事实、可追溯关键词架构和用户品�
 文案任务不主动取数。使用用户资料或可信上游前必须：
 
 1. 确认来源路径、版本、站点、产品与变体范围可定位；
-2. 确认所用 Fact ID、Keyword ID、Evidence ID 和字段真实存在；
-3. 保留上游原始四轴、期间、估算属性、限制和父证据 ID；
+2. 确认所用产品事实、关键词、来源位置和字段真实存在；
+3. 保留上游来源、版本、期间、供应商报告或估算性质、直接依据和限制；
 4. 仅使用上游明确交付的字段，不从供应商展示块、描述或未返回字段扩写产品事实；
-5. 对 `not_returned`、`not_queried`、`parse_failed`、`missing`、`conflicted` 和有明确零证据的 `true_zero` 分别处理；
-6. 上游合同、站点或版本不匹配时停止受影响文案，不直接调用 SIF 或其他来源补齐。
+5. 对未查询、未返回、解析失败、资料缺失、来源冲突和来源明确给出的零值分别处理；
+6. 上游合同、站点、实体/变体、期间、粒度、单位、定义、覆盖或版本不匹配时停止受影响文案，不直接调用 MCP 或其他来源补齐。
 
 现有资料足够时继续写作并披露没有新增外部取数；不足时生成数据准备清单。
 
@@ -112,11 +102,11 @@ description: 基于已核实产品事实、可追溯关键词架构和用户品�
 
 读取 `references/listing-copy-evidence-and-localization-contract.md`，为每个候选卖点记录：
 
-- 原始事实和 Fact ID；
+- 原始事实及其来源位置；
 - 适用变体、站点和条件；
 - 允许的中性表述；
 - 不允许扩张的含义；
-- 证据来源与四轴；
+- 证据来源、版本、直接依据与限制；
 - 是否需要用户确认。
 
 事实矩阵先于写作。不要先写出吸引人的句子再寻找支持。
@@ -126,7 +116,7 @@ description: 基于已核实产品事实、可追溯关键词架构和用户品�
 优先读取 `amazon-listing-keyword-architecture` 的正式输出，并保留：
 
 - 字段推荐词与使用目的；
-- 产品事实 ID；
+- 产品事实及其来源位置；
 - 必须自然表达的词；
 - 禁用、品牌和风险词；
 - 未解决证据缺口。
@@ -151,7 +141,7 @@ description: 基于已核实产品事实、可追溯关键词架构和用户品�
 3. 删除空泛形容词、重复卖点和无信息密度句子；
 4. 单位、范围、条件和否定词保持精确；
 5. 使用目标语言自然语序，不逐字翻译源语言；
-6. 对关键选择保留“句子 → Fact ID → Keyword ID”的映射。
+6. 对关键选择保留“句子 → 产品事实及原始位置 → 关键词依据”的映射。
 
 除非用户明确要求方案比较，不默认生成固定数量的版本。需要备选时，只改变表达角度，不改变事实。
 
@@ -168,7 +158,7 @@ Agent 可以生成目标语言草案，但不得声称使用 DeepL、人工母�
 
 从成稿逐句反查：
 
-- 是否有对应 Fact ID；
+- 是否有对应产品事实及原始位置；
 - 是否把用户主张升级为独立事实；
 - 是否把供应商估算写成确定结果；
 - 是否加入来源没有的认证、保证或比较；
@@ -191,9 +181,9 @@ Agent 可以生成目标语言草案，但不得声称使用 DeepL、人工母�
 - `blocked_claim_risk`：关键宣称无法支持，提供安全替代表述或请求证据。
 - `limited_keywords`：只有用户词，允许有限文案但不称全面 SEO 优化。
 - `conflicted_sources`：来源事实冲突，列出冲突与受影响句子，等待确认。
-- `upstream_contract_mismatch`：停止受影响字段，列出缺失 ID、版本或口径，不直接取数补齐。
+- 上游材料的字段、版本或口径不符合当前任务：停止受影响字段，列出具体缺口，不直接取数补齐。
 - `stale_upstream`：可做语言或结构草案，不声称当前市场匹配。
-- `out_of_scope`：发布、广告、图片生成、法律判断或后台自动化。
+- 请求涉及发布、广告、图片生成、法律判断或后台自动化时，明确说明超出本 Skill 职责并转交相应责任方。
 
 失败不会触发其他外部数据源。
 
@@ -202,7 +192,7 @@ Agent 可以生成目标语言草案，但不得声称使用 DeepL、人工母�
 数据就绪时至少生成：
 
 1. `listing-copy-package.md`：字段成稿、备选（如用户要求）、理由和发布前检查；
-2. `claim-evidence-ledger.md`：分开记录输入证据与 Agent 文案，使用 Evidence ID、Copy ID、`parent_evidence_ids`、来源路径、原四轴和本层四轴；
+2. `claim-evidence-ledger.md`：分开记录输入依据与 Agent 文案，列出文案位置、来源路径、直接依据、转写说明和限制；
 3. 多语言任务另生成 `localization-qc.md`：关键含义对照、风险与人工审核项。
 
 使用 `assets/templates/listing-copy-package-template.md`。如果核心事实不足，只生成 `data-readiness.md`；不得交付看似完整但包含占位事实的文案。最终回复只链接 `outputs/` 中的正式文件。
@@ -216,7 +206,7 @@ Agent 可以生成目标语言草案，但不得声称使用 DeepL、人工母�
 - 多语言版本保留数字、单位、条件、否定和风险限定；
 - 没有固定万能字符上限或无来源平台规则；
 - 没有排名、转化、审核通过或已发布承诺；
-- 没有直接调用 SIF、DeepL、Pangolinfo 或其他外部服务；
+- 没有直接调用三个 MCP、外部写作服务或其他外部来源；供应商上游没有填补产品事实、合规或知识产权宣称；
 - 正式文件位于 `outputs/`，中间文件位于 `temp/`。
 
 ## 资源读取

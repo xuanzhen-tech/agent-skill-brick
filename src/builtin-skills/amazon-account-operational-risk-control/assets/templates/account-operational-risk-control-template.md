@@ -1,91 +1,91 @@
 <!--
-文件功能：提供合法账号运营的实体关系、访问权限、材料一致性、敏感变更、事件和控制路线图模板。
-职责边界：模板不得用于设计反检测、身份伪造、代理轮换或封禁规避；占位状态不是事实。
-重要关联：由 ../../SKILL.md 物化；字段和硬拒绝遵循 ../../references/account-operational-risk-control-contract.md。
+文件功能：提供合法账号运营风险评估与控制路线图的正式业务模板。
+职责边界：模板不得用于反检测、身份伪造、代理轮换或封禁规避；占位内容不是事实。
+重要关联：由 ../../SKILL.md 物化；判断方法见 ../../references/account-operational-risk-control-contract.md。
 -->
 
 # Amazon 账号运营风险控制
 
-## A. 元数据与安全筛查
+## 1. 评估范围与安全边界
 
-| 字段 | 内容 |
-|---|---|
-| `case_id` | `<case-id>` |
-| `entity/account/marketplace scope` | `<masked values>` |
-| `as_of` | `<timestamp + timezone>` |
-| `assessment_status` | `<control_assessment_ready/entity_incomplete/policy_or_approval_missing/material_conflict/high_risk_access_open/prohibited_evasion_request/partial/blocked>` |
-| `intent_screen` | `<legitimate_governance/prohibited_evasion_request/mixed>` |
-| `monitoring_status` | `not_running` |
-| `conclusion_limit` | `不预测平台算法，不保证账号不关联或不受限制` |
+- 经营主体、账号和站点：`<掩码范围>`
+- 评估截止时间：`<时间与时区>`
+- 纳入的人员、服务商、设备和材料：`<范围>`
+- 未取得的关键信息：`<列表及影响>`
+- 请求意图：`<合法治理/含违规部分并已拒绝>`
+- 结论上限：不预测平台算法，不保证账号不会被审核、关联或限制。
 
-## B. 硬拒绝记录
+## 2. 真实关系与批准
 
-| Request Category | Decision | Safe Reason | Permitted Alternative | Sensitive Detail Retained |
+| 主体/账号/品牌/服务商关系 | 真实业务理由 | 直接材料 | 生效时间 | 披露、批准或专业复核 | 冲突与待核事项 | 负责人 |
+|---|---|---|---|---|---|---|
+| `<关系>` | `<理由>` | `<路径或定位>` | `<日期/未知>` | `<要求与进度>` | `<内容>` | `<负责人>` |
+
+## 3. 人员与服务商访问
+
+| 人员或服务商 | 职责 | 所需权限与当前权限 | MFA/获批设备/远程访问 | 授权、复核、到期和撤权 | 主要风险 | 整改 |
+|---|---|---|---|---|---|---|
+| `<掩码标识>` | `<职责>` | `<比较>` | `<已核验/用户说明/待核>` | `<日期与责任人>` | `<风险>` | `<动作>` |
+
+### 职责冲突
+
+| 高风险流程 | 发起/批准/执行者 | 冲突 | 现有控制 | 建议的分离或补偿控制 |
 |---|---|---|---|---|
-| `<category>` | `<refused/not_applicable>` | `<brief reason>` | `<disclosure/governance/professional review>` | `no` |
+| `<流程>` | `<角色>` | `<内容>` | `<内容>` | `<具体控制>` |
 
-## C. 实体—账号关系
+## 4. 关键材料一致性
 
-| Relationship ID | From → To | Type | Evidence IDs | Status | Effective Dates | Business Reason | Disclosure/Approval | Owner | Limitations |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<objects>` | `<ownership/control/authorization/service/brand_use>` | `<ids>` | `<verified/reported/unverified/conflicted>` | `<dates>` | `<reason>` | `<status/evidence>` | `<owner>` | `<limits>` |
+| 材料类别 | 当前记录与真实情况 | 直接材料 | 差异是否有合法解释 | 影响范围 | 需要的判断或修正 | 负责人 |
+|---|---|---|---|---|---|---|
+| `<主体/地址/银行/税务/联系人/品牌/合规>` | `<掩码内容>` | `<定位>` | `<判断>` | `<账号/站点>` | `<动作>` | `<负责人>` |
 
-## D. 授权访问与服务商
+## 5. 敏感变更
 
-| Principal ID | Employment/Contract | Duty | Required/Current Role | MFA | Approved Device/Remote Access | Authorization/Review/Expiry/Revocation | Approver | Evidence IDs | Risk/Action |
-|---|---|---|---|---|---|---|---|---|---|
-| `<masked id>` | `<relationship>` | `<duty>` | `<roles>` | `<reported/verified/unknown>` | `<approved controls>` | `<dates>` | `<owner>` | `<ids>` | `<item>` |
-
-## E. 材料一致性
-
-| Material ID | Category | Current Value Masked | Evidence ID | Expected Truth | Status | Effective Date | Affected Scope | Professional Review | Owner/Action |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<entity/address/bank/tax/contact/brand/compliance>` | `<value>` | `<id>` | `<truth/unknown>` | `<consistent/explained_difference/unexplained_conflict/unknown>` | `<date>` | `<scope>` | `<required/status>` | `<value>` |
-
-## F. 敏感变更
-
-| Change ID | Reason | Before → After | Evidence IDs | Risk Review | Policy/Professional Review | Approver | Owner/Window | Validation Evidence | Incident/Rollback Plan | Status |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<reason>` | `<masked values>` | `<ids>` | `<result>` | `<status/ids>` | `<owner>` | `<value>` | `<ids/required>` | `<plan>` | `<proposed/approved/in_progress/user_claimed_completed/verified_completed/blocked>` |
-
-## G. 事件登记
-
-| Incident ID | Type | Detected/Reported Time | Affected Scope | Evidence IDs | Containment Owner/Status | RCA Route | Unknowns |
+| 变更 | 业务原因与影响范围 | 政策/专业复核 | 批准人 | 执行窗口与负责人 | 验证材料 | 回退或事故计划 | 当前进度 |
 |---|---|---|---|---|---|---|---|
-| `<id>` | `<unauthorized_access/material_conflict/credential_exposure/platform_notice/vendor_issue>` | `<time/tz>` | `<scope>` | `<ids>` | `<value>` | `<expert10 RCA/expert09/none>` | `<items>` |
+| `<前后变化>` | `<原因/范围>` | `<结果或待补>` | `<负责人>` | `<安排>` | `<已有/所需>` | `<计划>` | `<建议/已批准/执行中/用户称完成/已验证>` |
 
-## H. 控制路线图
+## 6. 事件与立即处置
 
-| Control ID | Risk | Current Evidence | Objective | Control Design | Owner | Dependency | Due | Status | Verification | Residual Risk | Approval |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<risk>` | `<ids>` | `<objective>` | `<control>` | `<owner>` | `<dependency>` | `<date>` | `<proposed/approved/in_progress/user_claimed_completed/verified_completed/blocked>` | `<method/ids>` | `<risk>` | `<status>` |
+| 事件 | 发现时间 | 影响范围 | 已知事实与直接材料 | 立即遏制责任人 | 需要路由的专家 | 未知 |
+|---|---|---|---|---|---|---|
+| `<未授权访问/材料冲突/凭据暴露/平台通知/服务商问题>` | `<时间>` | `<范围>` | `<事实与定位>` | `<负责人>` | `<RCA/第09/无>` | `<待核>` |
 
-## I. 证据谱系
+## 7. 控制路线图
 
-| Record ID | Layer | Evidence Class | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Scope | Limitations |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<class>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<scope>` | `<limits>` |
+| 优先级 | 风险 | 控制目标与具体设计 | 负责人 | 依赖与期限 | 当前进度 | 执行证据 | 有效性验证 | 剩余风险 |
+|---|---|---|---|---|---|---|---|---|
+| `<立即/近期/持续>` | `<风险>` | `<控制>` | `<负责人>` | `<内容>` | `<建议/已批准/执行中/用户称完成/已验证>` | `<材料>` | `<方法与时点>` | `<内容>` |
 
-## J. 来源可用性与业务状态
+## 8. 给用户的说明
 
-| Entity/Access/Control Field ID | `source_availability_status` | Business `result_status/control status` | Evidence Scope | Interpretation |
-|---|---|---|---|---|
-| `<id>` | `<not_returned/not_queried/parse_failed/missing/conflicted/true_zero>` | `<risk/control status>` | `<ids/scope>` | `<bounded meaning>` |
+### 需要立即处理
 
-前五种来源状态不得写成 0、无账号、无访问、无冲突或无风险。正例：完整权限登记确认孤儿高权限账号数为 0，记 `true_zero`。反例：服务商访问未核验，记 `not_queried`，不得写“零第三方访问”。
+`<正在发生的高风险访问、凭据或材料问题>`
 
-## K. 质量门
+### 可以确认
 
-- [ ] 请求经过规避意图筛查
-- [ ] 多实体有真实理由、完整关系和披露/批准状态
-- [ ] 不以隐藏痕迹为目标
-- [ ] 访问遵循最小权限、MFA、到期和撤销
-- [ ] 设备和远程访问是合法安全控制
-- [ ] 材料差异未被自动解释或人为制造
-- [ ] 敏感变更有审批与验证
-- [ ] 服务商访问有合同边界和撤权
-- [ ] 未记录凭据、Cookie、session 或恢复码
-- [ ] 不预测算法或保证账号安全
-- [ ] 所有实施动作保持真实状态
-- [ ] 来源六态与业务状态分列，前五项未补零
-- [ ] 正式文件位于 `outputs/`
+`<结论与直接依据>`
+
+### 尚不能确认
+
+`<缺口、冲突及其影响>`
+
+### 下一步最小动作
+
+`<按责任人和期限列出>`
+
+## 9. 交付前检查
+
+- [ ] 已拒绝并剔除反检测、伪造、代理、账号农场或规避要求
+- [ ] 多实体有真实理由，关系和披露/批准要求清楚
+- [ ] 权限遵循最小权限、MFA、到期与撤销
+- [ ] 职责冲突有分离或补偿控制
+- [ ] 设备措施用于安全治理而非伪装
+- [ ] 材料差异按真实事实解释，未人为制造
+- [ ] 敏感变更有审批、验证和回退准备
+- [ ] 服务商访问有合同边界和退出机制
+- [ ] 未记录密码、Cookie、session 或恢复码
+- [ ] 建议、执行中、用户称完成和已验证没有混写
+- [ ] 未调用三个公开市场 MCP 证明账号事实
+- [ ] 敏感信息已掩码，正式文件位于 `outputs/`

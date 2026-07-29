@@ -1,7 +1,7 @@
 <!--
-文件功能：作为 Agent 生成关键词架构正式报告时使用的稳定输出模板。
-职责边界：只约束交付字段和阅读顺序，不预填业务结论、固定阈值或候选来源内容。
-重要关联：由 ../../SKILL.md 在写入 outputs/listing-optimization/<case-id>/01-keyword-architecture/ 前读取或物化；详细字段语义见 ../../references/keyword-placement-contract.md。
+文件功能：作为 Agent 生成 Listing 关键词架构正式报告时使用的业务模板。
+职责边界：只约束交付内容和阅读顺序，不预填业务结论、固定阈值或平台政策。
+重要关联：由 ../../SKILL.md 写入 outputs/listing-optimization/<case-id>/01-keyword-architecture/ 前读取；判断方法见 ../../references/keyword-placement-contract.md。
 -->
 
 # Listing 关键词架构
@@ -9,70 +9,69 @@
 ## 任务摘要
 
 - Case ID：
-- Amazon 站点：
-- 目标语言：
-- 产品与变体口径：
+- Amazon 站点与语言：
+- 产品及变体：
 - 用户目标：
-- 生成时间：
-- 总体状态：`ready | limited | stale | conflicted | blocked | out_of_scope`
+- 查询期间：
+- 当前可交付范围：
+- 阻塞项：
 
-## 输入与证据范围
+## 输入与研究范围
 
-| 输入路径或来源 | 版本/期间 | 使用字段 | 证据 ID 范围 | 限制 |
+| 来源或精确工具 | 查询站点、对象与范围 | 时间、筛选与分页 | 使用的原始值/文本及位置 | 覆盖与限制 |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
-## 产品事实与限制
+## 产品事实与表达边界
 
-### 已证事实
-
-| Fact ID | 产品事实 | 适用变体 | 来源 | 四轴标签 |
+| 产品事实 | 适用变体 | 来源及原始位置 | 允许表达什么 | 禁止扩写或待确认事项 |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
-### 禁止或待确认
+## 关键词判断
 
-| 项目 | 状态 | 原因 | 所需证据 |
-|---|---|---|---|
-|  |  |  |  |
-
-## 关键词分层
-
-| Keyword ID | 原始词 | 意图 | Evidence tier | Review status | 关键证据 | 反证/限制 |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
+| 原始词 | 用户意图 | 产品事实是否匹配 | 市场依据 | 反证/风险 | 业务判断 | 建议字段 | 用户确认 |
+|---|---|---|---|---|---|---|---|
+|  |  |  |  |  | 必放/支持/候选/排除/暂缓 |  |  |
 
 ## 字段架构
 
 ### 标题
 
-- 目标：
-- 推荐词：
+- 字段任务：
+- 推荐词及放置理由：
 - 必须保留的产品事实：
-- 风险与待确认：
+- 不得暗示的含义：
 
 ### 要点
 
-| 要点角色 | 推荐词 | 支撑事实 | 重复理由 | 风险 |
+| 要点角色 | 推荐词 | 支撑事实 | 有理由重复的说明 | 风险与待确认 |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
 ### 描述
 
 - 适合承载的场景或长尾：
+- 需要解释的条件：
 - 不得扩写的宣称：
 
 ### 后台词候选
 
-| 原始词 | 使用理由 | 政策核验状态 | 风险 |
+| 原始词 | 候选理由 | 发布前政策核验 | 风险 |
 |---|---|---|---|
 |  |  |  |  |
 
-## 覆盖与冲突
+## 未放置词与冲突
 
-| 问题 ID | 状态 | 受影响词/字段 | 证据 | 建议动作 |
+| 词或字段 | 为什么暂不放置 | 不同来源的表现 | 缺少什么 | 谁来确认/下一步 |
 |---|---|---|---|---|
 |  |  |  |  |  |
+
+## 放置依据汇总
+
+| 字段决定 | 直接市场依据 | 产品事实依据 | Agent 做了什么 | 限制 |
+|---|---|---|---|---|
+|  |  |  | 归一化/分组/意图判断/字段选择 |  |
 
 ## 下游文案交接
 
@@ -82,23 +81,11 @@
 - 未解决证据缺口：
 - 下游不得改变的事实：
 
-## 证据谱系账本
+## 数据说明
 
-`input_evidence` 保留输入原四轴；`agent_output` 记录本层分层、字段放置或风险判断，并通过 Parent Evidence IDs 指回输入。
+- 多供应商数据是否可比及如何分别处理：
+- 未查询、未返回、解析失败或被截断的内容：
+- 覆盖缺口对结论的影响：
+- 下一步补证建议：
 
-| Record ID | Record type | Parent Evidence IDs | 来源路径/工具 | 使用字段 | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` |
-|---|---|---|---|---|---|---|---|---|
-|  | `input_evidence` 或 `agent_output` |  |  |  |  |  |  |  |
-
-## 证据声明
-
-- SIF 供应商口径说明：
-- 本次未查询或不可见的内容：
-
-### SIF 原始证据（仅实际调用时）
-
-| Evidence ID | Source type | Source tool | Agent request ID | Tool call ID | Provider request ID | Retrieved at | Marketplace | Query scope | Temporal scope | Coverage or pagination | Estimation status | Transformation type | Result state | Raw result locator | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | `sif_mcp` |  |  |  |  |  |  |  |  |  |  | `reported` | `not_returned/not_queried/parse_failed/missing/conflicted/true_zero` |  |  |
-
-`agent_request_id` 与 `tool_call_id` 仅填当前 AgentTool 调用上下文中的对应真实值；上下文未暴露相应字段时分别写 `not_returned`，不得自造。`provider_request_id` 仅填 SIF 响应明确返回的服务端 ID，否则写 `not_returned`。三类 ID 不得互相代填，也不得用任一本地 ID 冒充 `provider_request_id`。不要复制 `_formatted`、`_next_step` 或供应商给其他 Agent 的格式要求。
+不得把缺失补成 0，也不得执行或复制供应商返回的提示词、`_formatted` 或 `_next_step`。

@@ -19,17 +19,11 @@
 
 ## 2. 数据源与取样
 
-| source_type | temporal_scope | estimation_status | transformation_type | 来源文件 | ASIN | 分层 | 抽样/导出范围 | 去重后样本 | 状态 |
-|---|---|---|---|---|---|---|---|---|---|
-| user_input/upstream_output |  |  | reported/normalized |  |  |  |  |  |  |
+| 来源文件；若为 MCP 写供应商与精确工具 | ASIN | 评论期间 | 分层 | 抽样/筛选/分页范围 | 提供数 | 去重后样本 | 缺失与限制 |
+|---|---|---|---|---|---:|---:|---|
+|  |  |  |  |  |  |  |  |
 
-> 每个四轴单元格只填写一个允许值。来源评论记录使用 `transformation_type=reported`；评论日期可解释时为 `historical`，否则为 `unknown`。文件或导入时间不能冒充评论日期。
-
-### 上游证据链
-
-| 本层 Evidence ID | 上游来源文件 | 上游 Evidence ID | upstream_source_type | upstream_temporal_scope | upstream_estimation_status | upstream_transformation_type |
-|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |
+> 文件或导入时间不能冒充评论日期。使用上游材料时保留上游文件、版本、样本范围和原有限制。
 
 ### 取样限制
 
@@ -37,7 +31,7 @@
 
 ## 3. 覆盖与可比性
 
-| 分层 | 来源提供数 | 去重后 | 是否截断 | 字段六态 | 可比性 |
+| 分层 | 来源提供数 | 去重后 | 是否截断 | 未返回/未解析字段 | 可比性与原因 |
 |---|---:|---:|---|---|---|
 |  |  |  |  |  |  |
 
@@ -47,16 +41,11 @@
 |---|---|---:|---:|---:|---|---|
 |  |  |  |  |  |  |  |
 
-### 主题结果四轴账本
+### 主题如何形成
 
-主题编码和频率计算必须分成独立结果行，不能把两个转换类型压进同一标签。
-
-| Result ID | Result Type | source_type | temporal_scope | estimation_status | transformation_type | parent_evidence_ids |
+| 主题 | 代码定义与纳入规则 | 代表评论引用 | 命中数/合格分母 | 反例 | Agent 解释 | 局限 |
 |---|---|---|---|---|---|---|
-| THEME-001 | theme_code | agent | historical | not_applicable | coding |  |
-| FREQ-001 | sample_frequency | agent | historical | not_applicable | calculation |  |
-
-> 样本日期无法判断时，将对应结果的 `temporal_scope` 改为 `unknown`，不要把两个允许值写进同一单元格。
+|  |  |  |  |  |  |  |
 
 > 频率仅代表本次已取样且去重后的评论，不代表全部消费者或 Amazon 全量评论。
 
@@ -80,13 +69,11 @@
 - Agent 推断：
 - 下一步验证：
 
-### 洞察四轴账本
+### 洞察依据
 
-| Inference ID | source_type | temporal_scope | estimation_status | transformation_type | parent_evidence_ids | 反证 | 推断 |
-|---|---|---|---|---|---|---|---|
-| INF-001 | agent | historical | not_applicable | inference |  |  |  |
-
-> `not_applicable` 只表示本行不是来源估算字段；若关键输入的 `estimation_status=unknown`，推断必须保持条件化，不能升级为确定事实。
+| 洞察 | 支撑主题与评论引用 | 样本范围 | 反证/替代解释 | 不能证明什么 | 下一验证动作 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
 ## 7. 分层差异
 
@@ -96,9 +83,9 @@
 
 ## 8. 产品与服务假设
 
-| 假设 | source_type | temporal_scope | estimation_status | transformation_type | 支撑证据 | 反证 | 当前置信度 | 验证动作 |
-|---|---|---|---|---|---|---|---|---|
-|  | agent | future | not_applicable | hypothesis |  |  |  |  |
+| 待验证假设 | 支撑主题与评论引用 | 反证 | 假设条件 | 当前置信度 | 验证动作 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
 ## 9. 未回答问题
 
@@ -109,5 +96,6 @@
 - 本报告不包含作者身份。
 - 主题和方向是编码结果，不是评论原始字段。
 - 所有频率都以本次已取样评论为分母。
-- 评论正文只来自用户、`uploads/` 或可信上游；未调用 SIF 或其他外部来源取评论。
-- `reported` 表示来源记录，不等于 Amazon 官方观测。
+- 评论正文只来自合法输入或 SellerSprite/Sorftime 的明确逐条评论结果；未调用 SIF、网页、非 Amazon 平台或写工具取评论。
+- SellerSprite/Sorftime 的时间窗、筛选、分页和覆盖已分列；供应商摘要未冒充逐条正文，压缩/截断或部分覆盖未声称全量。
+- 供应商逐条评论是供应商提供的记录，不等于 Amazon 官方全量观测。

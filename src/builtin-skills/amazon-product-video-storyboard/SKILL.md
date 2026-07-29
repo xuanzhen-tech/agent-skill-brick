@@ -40,30 +40,21 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 已有视频、音乐、字体、人物和场景必须分别记录来源与权利。能够访问素材不等于拥有剪辑、配音、肖像或商业发布许可。
 
-### 外部数据与 SIF 边界
+### 外部数据与三 MCP 边界
 
-- 本包不调用 `sif_mcp`；当前 SIF 没有视频素材、评论正文、脚本效果、人物/音乐权利、拍摄、配音、剪辑或上传工具；
-- SIF 的 ASIN、关键词、流量、销量和广告供应商观察不能证明产品动作、使用步骤、安全条件、客户原话或镜头效果；
+- 本包不直接调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；公开 Listing/A+/视频/评论 benchmark 必须先由研究/本地化 Skill 固化为可追溯上游。用户明确要求 TikTok 视频 benchmark 时，才允许上游使用 Sorftime TikTok 只读证据并与 Amazon 层分开；
+- 上游 MCP 证据须保留供应商与精确工具、原始结果位置、平台/站点/ASIN/变体/视频/期间、实际覆盖及压缩/截断限制；本包读取时保留上游文件与版本；
+- 供应商观察只能作为 brief/benchmark，不能证明产品动作、使用步骤、安全条件、客户原话、人物/音乐权利、合规或镜头效果；同类证据仅在口径可比时并列，不盲目平均或隐藏冲突；
 - 脚本事实、受众问题和制作素材只接受用户材料或带来源定位的可信上游；
-- 不使用网页、浏览器、Amazon 抓取、Bright Data、其他 MCP/API、外部视频生成或趋势服务，也不读取凭据、安装连接器或静默换源。
+- 不使用网页、浏览器、Amazon 抓取、其他 MCP/API、Gateway/HTTP/shell、外部视频生成或趋势服务，也不接触凭据。
 
 合法资料足够时继续；不足则只交付准备清单，不换源。
 
-### 双层谱系与四轴证据
+### 叙事、宣称与镜头依据
 
-正式交付同时记录 `input_evidence` 与正式派生对象。输入证据记录产品事实、VOC、批准文案、素材和权利的 `evidence_id`、`parent_evidence_id`、来源路径、版本和原始四轴；输入层枚举不得挪作 Agent 派生对象的默认值。
+每个叙事节拍说明要解决的受众问题、信息任务、时长和顺序依据；每条宣称回到产品事实、VOC、批准文案与适用条件；每个镜头回到相应节拍、宣称、素材权利和制作限制。
 
-每个正式派生对象在对象本体中直接记录以下字段，不能只在报告末尾账本中补写：
-
-| 派生对象 | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 对象载荷 |
-|---|---|---|---|---|---|---|---|
-| `narrative_decision` | `narrative_decision_id` | 支撑受众问题、信息任务和节拍顺序的 Evidence/Claim IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `inference \| hypothesis` | Beat、顺序、信息任务、时长、进入/退出条件和必须保留限制 |
-| `claim` | `claim_id` | 支撑目标表达、条件与限制的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `normalized \| inference \| hypothesis` | 原事实、脚本表达、条件、批准和复核责任 |
-| `shot` | `shot_id` | 支撑画面、动作、语言与限制的 Evidence/Claim/Narrative IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `inference \| hypothesis` | Beat、顺序、时长、画面、动作、连续性、权利、制作责任和验收 |
-
-输入证据的 `source_type` 允许 `user_input | upstream_output`，派生对象则只能是 `agent`。派生对象的四轴必须逐条赋值，不能从父证据继承，也不能用对象轴、时间轴、单位轴或口径轴替代。
-
-叙事、镜头和自然口播是 Agent 输出，必须引用父证据。戏剧化表达不得改变事实、条件、限制、单位或风险信息。
+输入材料保留来源路径、版本和原有限制。叙事、镜头与自然口播是 Agent 的创作决定，必须说明直接依据与取舍；戏剧化表达不得改变事实、条件、限制、单位或风险信息。
 
 ### 工作区
 
@@ -81,27 +72,21 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 1. `case_id`、Amazon 站点、目标语言和产品/变体；
 2. 视频类型、投放位置、目标、受众问题和期望时长；
-3. 足以支撑脚本的 Product Fact IDs 与禁用宣称；
+3. 足以支撑脚本的产品事实依据与禁用宣称；
 4. 品牌语气、必须包含与禁止内容；
 5. 已有图片、视频、Logo、音乐、字体、人物及权利状态；
 6. 真实使用步骤、安全警示和不可演示动作；
-7. 若来自 A+，上游 Module/Asset/Fact IDs。
+7. 若来自 A+，上游模块、资产和事实关联。
 
-平台资格、时长、尺寸、音频和提交规则若未由用户提供当前证据，标记 `policy_check_required`，不阻止概念策划，但阻止“可直接上传”结论。
+平台资格、时长、尺寸、音频和提交规则若未由用户提供当前证据，列为运营方待核验项；这不阻止概念策划，但阻止“可直接上传”结论。
 
-### 就绪与生产状态
+### 三个业务门
 
-- `ready_for_storyboard`：事实、目标和关键素材要求足以形成逐镜策划；
-- `limited_evidence`：只能策划已证片段；
-- `limited_assets`：可形成素材需求，但不能声称可直接生产；
-- `rights_unverified`：受影响素材、人物或音乐不能进入生产清单；
-- `safety_review_required`：动作、警示或演示需要用户/专业方核验；
-- `policy_check_required`：投放资格或当前规格待运营方核验；
-- `conflicted`：事实、文案、素材、权利或时长互相冲突；
-- `blocked`：无法识别产品、目标或核心事实；
-- `out_of_scope`：请求是生成、拍摄、剪辑、上传、监控或资格裁定。
+1. 事实门：产品、目标、使用步骤和宣称是否有依据；只策划已证片段，核心事实不足则停止。
+2. 权利与安全门：图片、人物、音乐、字体、Logo、场景和演示动作是否获准且安全；未确认的内容不能进入生产清单。
+3. 制作门：现有素材和责任方是否足以拍摄、配音、剪辑和上传。本 Skill 只交逐镜策划或素材需求，不得声称视频已经完成或上传。
 
-本 Skill 自身最多达到 `ready_for_storyboard`，不得写 `video_completed` 或 `uploaded`。
+事实、文案、素材、权利或时长冲突时分列影响并请求确认。生成、拍摄、剪辑、上传、监控或资格裁定不属于本 Skill。
 
 ## 输入与制作能力预检
 
@@ -111,9 +96,9 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 2. 冻结图片、视频、人物、音乐、字体、Logo、场景及其权利状态；
 3. 区分静态底图、实拍、口播、音频、剪辑和运营上传责任；
 4. 检查当前环境能否观察源素材，但不把可访问等同于可商用；
-5. 缺事实、权利、时长来源或制作能力时保留相应阻塞状态。
+5. 缺事实、权利、时长来源或制作能力时，写明当前能交付什么、缺什么和下一责任方。
 
-不得调用 SIF 补评论正文、视频内容、使用动作、用户一方指标或平台资格。
+不得直接调用三个 MCP 补评论正文、视频内容、使用动作、用户一方指标或平台资格。
 
 ## 执行流程
 
@@ -125,7 +110,7 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 - 单一主要目标与受众问题；
 - 目标时长及其来源；
 - 产品、变体、市场、语言和投放位置；
-- 上游 Module/Asset/Fact IDs；
+- 上游模块、资产和事实依据；
 - 当前政策、权利和安全待核验项。
 
 目标时长未知时，可以使用镜头相对顺序，不自行宣称固定平台时长。
@@ -134,8 +119,8 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 读取 `references/video-shot-evidence-and-handoff-contract.md`，分别登记：
 
-- Product Fact IDs、适用条件和不得外推含义；
-- Approved Claim IDs、原文、目标语言和批准状态；
+- 产品事实依据、适用条件和不得外推含义；
+- 已批准宣称的原文、目标语言和批准状态；
 - VOC 或受众问题及其证据；
 - 图片、视频、Logo、音乐、字体、人物、场景和权利；
 - 使用步骤、动作顺序、安全条件与专业复核要求。
@@ -144,7 +129,7 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 ### 第三步：设计叙事节拍
 
-每个 Beat ID 只承担一个叙事任务，例如：
+每个叙事节拍只承担一个任务，例如：
 
 - 识别产品和使用情境；
 - 展示问题或使用条件；
@@ -154,17 +139,16 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 节拍顺序是信息架构，不是转化公式。避免固定“痛点—夸张冲突—万能解决—促销”模板。
 
-每个节拍还必须以 `narrative_decision_id` 作为稳定派生 ID，并直接记录 `parent_evidence_ids`、`source_type=agent`、`temporal_scope=current | historical | future | mixed | not_applicable | unknown`、`estimation_status=reported | estimated | forecast | mixed | not_applicable | unknown` 和 `transformation_type=inference | hypothesis`。
+每个节拍记录受众问题、信息任务、直接依据、顺序取舍、必须保留的限制与待确认项。
 
 ### 第四步：写自然但事实不变的脚本
 
 为每段口播和字幕记录：
 
-- Claim ID 与 Parent Evidence IDs；
-- `source_type=agent`；
-- `temporal_scope`：`current | historical | future | mixed | not_applicable | unknown`；
-- `estimation_status`：`reported | estimated | forecast | mixed | not_applicable | unknown`；
-- `transformation_type`：`normalized | inference | hypothesis`；
+- 直接使用的事实与批准宣称依据；
+- 原事实与批准文案依据；
+- Agent 的口播转写与适用条件；
+- 禁止外推、复核责任和待确认项；
 - 原事实、目标语言表达和条件；
 - 语气、说话者和时长预算；
 - 屏幕文字与口播是否重复；
@@ -175,18 +159,16 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 ### 第五步：建立逐镜 storyboard
 
-每个 Shot ID 至少记录：
+每个镜头至少记录：
 
-- Beat ID、顺序、预计时长和镜头目的；
-- `parent_evidence_ids`；
-- `source_type=agent`；
-- `temporal_scope`：`current | historical | future | mixed | not_applicable | unknown`；
-- `estimation_status`：`reported | estimated | forecast | mixed | not_applicable | unknown`；
-- `transformation_type`：`inference | hypothesis`；
+- 对应节拍、顺序、预计时长和镜头目的；
+- 对应节拍、宣称和素材依据；
+- 画面、动作与连续性取舍；
+- 权利、制作责任、限制和验收条件；
 - 画面、主体、动作、场景、镜头与转场；
-- Product/Variant Identity IDs；
+- 产品与变体身份依据；
 - VO、字幕、声音或音乐需求；
-- Claim/Fact/Evidence IDs；
+- 宣称、事实与素材依据；
 - 所需源资产与权利状态；
 - 连续性、安全和禁止内容；
 - 制作责任方与验收。
@@ -225,16 +207,16 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 ## 失败与沟通
 
-- `missing_product_facts`：停止相关镜头与宣称，只列资料需求；
-- `missing_story_objective`：先明确受众问题，不写泛化品牌片；
-- `rights_unknown`：隔离受影响人物、视频、音乐、字体、Logo 或地点；
-- `safety_review_required`：保留准确动作和风险，不替专业方批准；
-- `duration_conflict`：列必须保留内容与取舍，不擅自删事实或警示；
-- `policy_check_required`：由运营方核验当前资格和提交规则；
-- `unsupported_external_context`：拒绝用 SIF、网页或其他外部观察补评论正文、产品动作、素材权利或制作能力；
-- `out_of_scope`：生成、拍摄、剪辑、配音、渲染、上传或持续监控。
+- 产品事实缺失：停止相关镜头与宣称，只列资料需求；
+- 叙事目标缺失：先明确受众问题，不写泛化品牌片；
+- 权利未知：隔离受影响人物、视频、音乐、字体、Logo 或地点；
+- 安全需复核：保留准确动作和风险，不替专业方批准；
+- 时长冲突：列必须保留内容与取舍，不擅自删事实或警示；
+- 平台规则待确认：由运营方核验当前资格和提交规则；
+- 外部背景不受支持：拒绝用 MCP、网页或其他外部观察补评论正文、产品动作、素材权利或制作能力；
+- 超出范围：生成、拍摄、剪辑、配音、渲染、上传或持续监控。
 
-失败不会触发 SIF、网页、其他 MCP 或外部视频服务回退。
+失败不会触发三个 MCP、网页、其他外部来源或视频服务回退。
 
 ## 正式交付
 
@@ -242,17 +224,17 @@ description: 基于已核实产品事实、品牌目标、素材权利和投放�
 
 1. `video-creative-brief.md`：目标、事实、叙事、脚本、素材需求和制作 handoff；
 2. `video-storyboard.csv`：一行一个镜头；
-3. `video-evidence-and-rights-ledger.md`：输入证据、Claim/Shot 决策、四轴、素材权利和批准。
+3. `video-evidence-and-rights-ledger.md`：输入证据、Claim/Shot 决策、直接依据、素材权利和批准。
 
 核心事实、目标或关键权利不足时只生成 `data-readiness.md`。最终回复只链接 `outputs/` 的策划文件，不声称视频成品已生成、剪辑或上传。
 
 ## 质量门
 
-- 每个口播、字幕、动作和可见证明都引用 Fact/Claim/Evidence IDs；
-- `input_evidence` 与 `agent_output` 双层谱系完整；
+- 每个口播、字幕、动作和可见证明都能回到产品事实、批准宣称或素材依据；
+- 输入材料、叙事、宣称和镜头之间可追溯；
 - 人物、音乐、字体、Logo、场景和源视频权利状态明确；
-- 每个 Shot 有目的、画面、声音、连续性、安全、责任方和验收；
-- A+ 上游 IDs 被保留，没有重排模块或擅改批准文案；
+- 每个镜头有目的、画面、声音、连续性、安全、责任方和验收；
+- A+ 上游模块、资产和事实关联被保留，没有重排模块或擅改批准文案；
 - 静态图片需求只交给内置 Skill，没有直接调用图片工具；
 - 没有生成、拍摄、剪辑、配音、上传、后台监控或完成承诺；
 - 没有固定平台规格、CTR/CVR、排名、销量或资格保证；

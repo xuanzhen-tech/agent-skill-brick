@@ -1,67 +1,59 @@
 <!--
-文件功能：提供账号健康快照、指标、阈值、趋势、问题、行动和证据谱系模板。
+文件功能：提供账号健康评估范围、指标、阈值、趋势、问题、行动和用户沟通模板。
 职责边界：模板不拉取账号数据或运行监控；占位阈值不得作为 Amazon 当前规则。
 重要关联：由 ../../SKILL.md 物化；字段和状态遵循 ../../references/account-health-evidence-contract.md。
 -->
 
 # Amazon 账号健康评估
 
-## A. 元数据
+## A. 评估范围
 
 | 字段 | 内容 |
 |---|---|
 | `case_id` | `<case-id>` |
 | `account_scope_id_masked/marketplace` | `<values>` |
 | `snapshot/metric period/timezone` | `<values>` |
-| `assessment_mode` | `one_time` |
-| `monitoring_status` | `not_running` |
-| `status` | `<ready/ready_without_threshold_judgment/not_computable/not_comparable/partial/blocked>` |
+| 评估截至时间 | `<as-of>` |
+| 本次限制 | `<missing data / scope limits>` |
 
 ## B. 快照
 
-| Snapshot ID | Source Path | Export Type | Reported At | Metric Period | Timezone | Completeness | Evidence IDs |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<path>` | `<user_uploaded_platform_export/screenshot/manual>` | `<time>` | `<period>` | `<tz>` | `<complete/partial>` | `<ids>` |
+| Snapshot ID | 文件/截图定位 | 材料类型 | 快照时间 | 指标期间 | 时区 | 覆盖说明 |
+|---|---|---|---|---|---|---|
+| `<id>` | `<path>` | `<完整导出/截图/人工摘录>` | `<time>` | `<period>` | `<tz>` | `<coverage>` |
 
 ## C. 指标
 
-| Metric ID | Name/Definition | Numerator | Denominator | Unit | Reported | Recalculated | Status | Period/Scope | Evidence IDs |
-|---|---|---:|---:|---|---:|---:|---|---|---|
-| `<id>` | `<value>` | `<value/missing>` | `<value/missing>` | `<unit>` | `<value>` | `<value/not_computable>` | `<reported/calculated/not_computable/conflicted>` | `<scope>` | `<ids>` |
+| 指标 | 定义 | 分子 | 分母 | 单位 | 平台值 | 重算值 | 直接依据 | 结论/缺口 |
+|---|---|---:|---:|---|---:|---:|---|---|
+| `<name>` | `<definition>` | `<value/missing>` | `<value/missing>` | `<unit>` | `<value>` | `<value/无法计算>` | `<path/row>` | `<bounded conclusion>` |
 
 ## D. 阈值依据
 
-| Threshold Evidence ID | Policy ID | Marketplace | Publication/Effective | Metric Definition | Value/Condition | Scope | Confirmed By | Limitations |
+| 阈值依据原文位置 | Policy ID | Marketplace | Publication/Effective | Metric Definition | Value/Condition | Scope | Confirmed By | Limitations |
 |---|---|---|---|---|---|---|---|---|
-| `<id>` | `<id>` | `<site>` | `<dates>` | `<definition>` | `<value>` | `<scope>` | `<owner>` | `<limits>` |
+| `<file/path/paragraph>` | `<id>` | `<site>` | `<dates>` | `<definition>` | `<value>` | `<scope>` | `<owner>` | `<limits>` |
 
 ## E. 趋势
 
-| Trend ID | Metric ID | Baseline/Comparison Snapshots | Comparability | Change | Interpretation | Evidence IDs |
-|---|---|---|---|---|---|---|
-| `<id>` | `<id>` | `<ids>` | `<comparable/not_comparable/baseline_only>` | `<value/not_computable>` | `<bounded note>` | `<ids>` |
+| 指标 | 基线/对比快照 | 是否可比及原因 | 变化 | 有限解释 | 下一次需要的证据 |
+|---|---|---|---|---|---|
+| `<name>` | `<snapshots>` | `<reason>` | `<value/不计算>` | `<bounded note>` | `<next evidence>` |
 
 ## F. 问题与行动
 
-| Issue ID | Observation | Threshold Status | Impact | Data Gap | Route | Action | Owner | Status | Evidence IDs |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<observation>` | `<within/exceeds/unknown>` | `<impact>` | `<gap>` | `<RCA/09/11/POA>` | `<action>` | `<owner>` | `<proposed/planned/user_claimed/verified_completed/blocked>` | `<ids>` |
+| 问题 | 直接观察与依据 | 阈值判断 | 影响范围 | 数据缺口 | 路由 | 建议行动 | Owner | 执行证据 |
+|---|---|---|---|---|---|---|---|---|
+| `<issue>` | `<observation + source>` | `<with basis/unknown>` | `<impact>` | `<gap>` | `<RCA/09/11/POA>` | `<action>` | `<owner>` | `<none/user stated/verified>` |
 
-## G. 证据谱系
+## G. 用户沟通
 
-| Record ID | Layer | Evidence Class | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Scope | Limitations |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<account_metric/policy_reference/etc>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<scope>` | `<limits>` |
+- 本次能回答：
+- 本次不能回答：
+- 需要用户补充：
+- 建议下一次复核时间与材料：
 
-## H. 来源可用性与业务状态
-
-| Snapshot/Metric/Field ID | `source_availability_status` | Business `result_status/calculation_status` | Evidence Scope | Interpretation |
-|---|---|---|---|---|
-| `<id>` | `<not_returned/not_queried/parse_failed/missing/conflicted/true_zero>` | `<health status>` | `<ids/period>` | `<bounded meaning>` |
-
-前五种来源状态不得写成 0、无指标、无违规或无风险。正例：完整快照明确指标分子为 0，记 `true_zero`；仍需合法分母才能计算。反例：分母未返回，记 `not_returned` 且业务状态为 `metric_not_computable`，不得补零。
-
-## I. 质量门
+## H. 质量门
 
 - [ ] 账号、站点、期间和快照明确
 - [ ] 指标定义、分子、分母和单位完整
@@ -72,5 +64,8 @@
 - [ ] 无 SP-API、登录、监控或告警
 - [ ] 行动未冒充执行
 - [ ] 敏感信息已掩码
-- [ ] 来源六态与业务状态分列，前五项未补零
+- [ ] 未返回、解析失败和真实零值没有混写
 - [ ] 正式文件位于 `outputs/`
+- [ ] 未调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`
+- [ ] 未用公共商品/市场观察证明账号健康、通知、阈值或整改状态
+- [ ] 所有重算、趋势判断和建议均说明直接依据，未伪装成平台原始事实

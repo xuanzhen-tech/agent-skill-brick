@@ -28,23 +28,21 @@
 | 单位经济 |  |  |  |  |  |
 | 供应与交期 |  |  |  |  |  |
 
-### 上游 `outputs/` 证据谱系
+### 上游决策依据
 
-| source_type | upstream_source_file | upstream_evidence_id | upstream_source_type | upstream_temporal_scope | upstream_estimation_status | upstream_transformation_type | upstream_limitations |
-|---|---|---|---|---|---|---|---|
-| upstream_output |  |  |  |  |  |  |  |
+| 上游文件与版本 | 证据编号 | 候选/站点/期间 | 原结论或原值 | 是报告、估算、预测还是 Agent 计算 | 原有限制 | 本计划如何使用 |
+|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |
 
-消费上游 `outputs/` 时必须逐条填写本表；不得把 `source_type=upstream_output` 改写成当前 Agent 或本次 SIF。缺少上游 Evidence ID、原四轴或限制时，对应闸门保持 `blocked`。
+不得把上游证据改写成当前 Agent 或本次 MCP 的新事实。缺少可定位证据、数值性质或限制时，对应闸门保持 `blocked`。
 
-### SIF 刷新证据（仅实际刷新时填写）
+### MCP 供应商刷新证据（仅实际刷新时填写）
 
-| evidence_id | source_type | source_provider | source_tool | agent_request_id | tool_call_id | provider_request_id | retrieved_at | marketplace | query_scope | temporal_scope | coverage_or_pagination | estimation_status | transformation_type | result_state | field_state | raw_result_locator | parent_input_evidence_ids | parent_evidence_ids |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | sif_mcp | sif |  | not_returned | not_returned | not_returned |  |  |  |  |  |  | reported |  |  |  |  |  |
+| 证据编号 | 供应商与精确工具 | 测试门槛 | 站点/对象/期间/筛选/分页 | 原值 | 关键参数依据 | 原始结果位置 | 覆盖、缺失与冲突 | 对门槛的影响 |
+|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |  |  |
 
-`agent_request_id` 与 `tool_call_id` 只填写当前 AgentTool 调用上下文暴露的对应真实值；仅当该上下文未暴露对应字段时写 `not_returned`。`provider_request_id` 只填写 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三类 ID 不得互代。任何传入的 `arguments.country` 都必须把其直接父 Evidence ID 写入 `parent_input_evidence_ids`。
-
-`result_state` 与 `field_state` 只允许 `not_returned`、`not_queried`、`parse_failed`、`missing`、`conflicted`、`true_zero`。前五态不得补成 0；只有响应明确返回且语义可确认的零才使用 `true_zero`。
+未查询、未返回、解析失败、资料缺失和来源冲突不得补成 0；只有响应明确返回且语义可确认的零才可作为零证据。每个门槛都要说明从哪些输入形成、如何转换、什么缺口会使测试继续 `blocked`。
 
 ## 3. 假设树
 

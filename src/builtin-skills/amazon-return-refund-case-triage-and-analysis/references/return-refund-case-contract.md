@@ -1,124 +1,80 @@
 <!--
-文件功能：定义单笔退货退款案件的证据、事件、理由、状态和跨专家交接字段。
-职责边界：只约束分析产物，不授权退款、换货、赔付、仓内处置或平台状态变更。
-重要关联：由 ../SKILL.md 在事件链重建前读取；正式字段落入 ../assets/templates/return-refund-case-template.md。
+文件功能：提供单笔退货退款案件的事件重建、状态判断、金额核对和原因分析方法。
+职责边界：不授权退款、换货、赔付、仓内处置或平台状态变更。
+重要关联：由 ../SKILL.md 在事件链重建前读取；正式交付结构见 ../assets/templates/return-refund-case-template.md。
 -->
 
-# 退货退款单案合同
+# 退货退款单案方法
 
-## 一、案件标识
+## 1. 不要把流程节点合并
 
-| 字段 | 要求 |
-|---|---|
-| `case_id` | 当前 Agent 任务稳定 ID |
-| `order_id_masked` | 掩码订单标识 |
-| `return_id_masked` / `refund_id_masked` | 仅材料明确提供时记录 |
-| `marketplace` | Amazon 站点 |
-| `currency` | ISO 币种；不同币种不得直接相加 |
-| `observation_cutoff` / `timezone` | 本次分析观察截止时间 |
-| `case_scope` | 必须是单订单单案件，例外需解释 |
-| `execution_status` | 恒为 `not_executed` |
+以下节点各自需要直接材料：
 
-## 二、事件字段
+- 买家提出请求；
+- 卖家或平台授权退货；
+- 买家交寄；
+- 承运商运输；
+- 退货仓签收；
+- 仓库检验；
+- 退款/换货/补偿申请；
+- 批准、发起与最终完成；
+- A-to-z 或拒付等独立案件。
 
-允许的 `event_type`：
+物流显示“已送达”不能证明仓库已检验；退款已批准也不能证明买家已到账。
 
-```text
-return_request
-return_authorization
-physical_return
-inspection
-refund
-replacement
-concession
-chargeback
-```
+## 2. 识别状态语义
 
-每个事件记录：
+保留来源原词，并用自然语言解释它在该系统中代表什么。特别警惕：
 
-| 字段 | 要求 |
-|---|---|
-| `event_id` | 稳定 ID |
-| `event_type` | 仅使用上表枚举 |
-| `source_status` | 原来源原样状态 |
-| `normalized_status` | 项目规范化状态，需保留映射规则 |
-| `occurred_at` / `timezone` | 未知不补 |
-| `actor` | buyer / seller / platform / carrier / warehouse / payment_provider / unknown |
-| `amount` / `currency` / `quantity` | 不适用时为空，缺失不填 0 |
-| `parent_evidence_ids` | 支撑事件的来源证据 |
-| `evidence_state` | observed / inferred / missing / conflicted / parse_failed |
-| `limitations` | 覆盖、延迟、解析或身份限制 |
+- pending 可能指待审批、待处理或银行处理中；
+- completed 可能只代表卖家侧发起完成；
+- returned 可能指标签生成、已交寄或已入库；
+- closed 可能指平台案件关闭，不等于所有财务动作结束。
 
-不同事件不得共用一个“已完成”状态掩盖真实流程。
+没有字段说明时，不自行统一成“已完成”。
 
-## 三、理由字段
+### 正例
 
-| 字段 | 要求 |
-|---|---|
-| `reason_id` | 稳定 ID |
-| `reason_layer` | source_reported_reason / evidence_supported_reason / agent_hypothesis |
-| `reason_code` / `description` | 可理解且不夸大 |
-| `parent_evidence_ids` | 直接支撑来源 |
-| `support_status` | supported / partially_supported / unsupported / conflicted |
-| `alternative_explanations` | 有竞争解释时列出 |
-| `next_validation_action` | 人工或相邻专家下一步 |
-| `external_statement_allowed` | yes / no / needs_review |
+退款记录显示卖家侧于 7 月 2 日发起，支付记录显示 7 月 5 日结算给买家。可以分别写两个事件。
 
-`agent_hypothesis` 不能填入 `evidence_supported_reason`，也不能直接写进买家回复。
+### 反例
 
-## 四、金额与分母
+买家消息写“我已经退货”，就把仓库检验和退款都标为完成。
 
-- 退款、补偿、替换价值和拒付金额分别记录；
-- 原币金额与换算金额分列，换算需来源、时间和规则；
-- `missing` 不得记为 0；
-- 本合同不定义总体退货率或退款率；
-- 没有有效 numerator 与 denominator 时，`metric_status=not_computable`。
+## 3. 金额核对
 
-## 五、顶层结果
+分别记录商品金额、税费、原始运费、退货运费、补偿、退款、换货价值和拒付金额。不同币种不能直接相加；换算必须说明汇率日期与用途。
 
-只允许：
+金额缺失不是零。若买家要求的金额与平台记录不同，应展示差额和各自含义，不擅自决定应付金额。
 
-```text
-case_ready_for_human_review
-blocked_missing_case_record
-blocked_missing_order_evidence
-blocked_missing_policy_evidence
-blocked_event_conflict
-blocked_sensitive_case
-out_of_scope
-```
+## 4. 原因可信度
 
-同时写：
+来源报告可以证明“某方这样描述”，证据支持则需要独立材料相互印证。例如：
 
-```text
-execution_status=not_executed
-refund_status=not_executed
-replacement_status=not_executed
-```
+- 买家称“商品损坏”是来源报告；
+- 买家照片、仓库检验和包装记录一致时，才更接近证据支持；
+- 运输损坏、出厂缺陷或使用不当仍可能是替代解释。
 
-## 六、四轴与谱系
+单案原因不等于跨案根因。系统性结论要交第10或第13专家。
 
-每条来源和 Agent 输出分别记录：
+## 5. 观察截止时间
 
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- `parent_evidence_ids`，仅 Agent 输出
+每次分析都写清截止时间。截止后发生的退款、入库或平台决定不能回填为当时已知事实。若用户提供新材料，应更新分析版本和结论。
 
-缺失枚举固定为：
+## 6. 人工处理顺序
 
-```text
-not_returned / not_queried / parse_failed / missing / conflicted / true_zero
-```
+通常按以下顺序组织，但不得补造缺失节点：
 
-## 七、职责路由
+1. 核实订单、站点和对象；
+2. 确认买家实际请求；
+3. 重建已发生事件；
+4. 解决标识、时间、金额或状态冲突；
+5. 核对当前政策与授权；
+6. 决定需要向买家澄清什么；
+7. 交授权人员执行并保留执行材料。
 
-| 问题 | 责任方 |
-|---|---|
-| 买家回复草案 | 本专家消息分诊 Skill |
-| 退回商品仓内检验与处置 | 第 08 专家 |
-| 当前政策、法规、资格与期限 | 第 09 专家 |
-| 跨案件根因、账号级 POA | 第 10 专家 |
-| A-to-z / payment chargeback | 本专家索赔 Skill |
-| 跨案退货退款 KPI | 第 13 专家 |
+## 7. 三 MCP 边界
+
+三个市场研究 MCP 不能提供订单、退货、退款、仓库、承运商或拒付单案证据。公开 Review/VOC 不进入本案事件链。
+
+事件重建与原因判断只基于合法单案材料，并在结论附近说明直接依据和限制。

@@ -1,108 +1,63 @@
 <!--
-文件功能：提供供应依赖、风险、情景、触发器、缓解方案、决策闸门和证据的正式交付模板。
-职责边界：模板不执行监控或行动，不提供固定概率、阈值和财务影响，不把情景占位当当前事实。
-重要关联：由 ../../SKILL.md 物化；字段和状态遵循 ../../references/supply-risk-scenario-contract.md。
+文件功能：提供供应依赖、风险情景、人工触发器、缓解方案和责任决策的业务交付模板。
+职责边界：不执行监控、告警或缓解动作，不自定概率、损失率和固定阈值。
+重要关联：由 ../../SKILL.md 物化，判断方法见 ../../references/supply-risk-scenario-contract.md。
 -->
 
 # 供应风险情景计划
 
-## A. 元数据与结论状态
+## 1. 范围
 
-| 字段 | 内容 |
-|---|---|
-| `case_id` | `<case-id>` |
-| `product/BOM version` | `<value>` |
-| `analysis_window` | `<start/end + timezone>` |
-| `evidence_status` | `<evidence_based/scenario_only/mixed/stale/conflicted/blocked>` |
-| `prepared_at` | `<timestamp + timezone>` |
-| `monitoring_status` | `not_running` |
+- 产品/BOM 版本：
+- 分析窗口与时区：
+- 需要准备的供应决策：
+- 当前材料日期与主要限制：
 
-## B. 供应依赖
+## 2. 供应依赖
 
-| Node ID | 类型 | 名称/范围 | 版本/地点 | 状态 | Evidence IDs | Valid As Of | Shared Dependencies |
-|---|---|---|---|---|---|---|---|
-| `<node-id>` | `<type>` | `<value>` | `<scope>` | `<approved/candidate/reported/unknown>` | `<ids>` | `<date>` | `<ids>` |
+| 节点 | 类型与版本 | 地点 | 当前可确认关系 | 共同依赖 | 直接依据 | 待核验 |
+|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |
 
-## C. 风险登记
+## 3. 风险事实与情景
 
-| Risk ID | 对象 | 观察或条件 | Basis | Evidence IDs | Potential Impact | Time Horizon | Uncertainty |
-|---|---|---|---|---|---|---|---|
-| `<risk-id>` | `<node-ids>` | `<observation-or-condition>` | `<current_issue/historical_pattern/forward_scenario/unknown_exposure>` | `<ids>` | `<impact>` | `<window>` | `<note>` |
+| 观察或条件 | 当前问题/历史模式/前瞻情景/未知暴露 | 直接依据或显式假设 | 潜在影响 | 时间范围 | 不确定性 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## D. 情景
+## 4. 触发器与人工检查
 
-| Scenario ID | 名称 | 起始条件 | Trigger IDs | 影响节点 | 数量/时间范围 | 直接影响 | 二阶影响 | Assumption IDs | Unknowns | Probability |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `<scenario-id>` | `<baseline/stress/custom>` | `<conditions>` | `<ids>` | `<ids>` | `<scope>` | `<impacts>` | `<impacts>` | `<ids>` | `<unknowns>` | `<provided/unknown>` |
+| 可观察条件 | 阈值依据 | 检查责任方 | 计划检查时间 | 触发后动作 | 仍未知时如何处理 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## E. 触发器与人工检查
+> 这是人工检查计划，不代表后台监控、Cron 或自动告警已经运行。
 
-| Trigger ID | Observable Condition | Evidence Source | Check Owner | Planned Time/Frequency | Threshold Evidence | If Met | If Unknown |
-|---|---|---|---|---|---|---|---|
-| `<trigger-id>` | `<condition>` | `<source>` | `<owner>` | `<plan>` | `<id/tbd>` | `<action>` | `<hold/escalate>` |
+## 5. 缓解选项
 
-> 上表是人工检查计划，不代表后台监控、Cron 或自动告警已经运行。
+| 目标风险 | 候选动作 | 前置测试/合同/批准 | 准备时间 | 可逆性 | 新增依赖 | 成本/库存/物流责任方 |
+|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |
 
-## F. 缓解方案
+## 6. 外部市场情景（如使用）
 
-| Option ID | Target Risks | Action | Prerequisites | Lead Time | Cost Input | Reversibility | New Dependencies | Owner | Approval |
-|---|---|---|---|---|---|---|---|---|---|
-| `<option-id>` | `<ids>` | `<action>` | `<requirements>` | `<value/unknown>` | `<provided/requires_expert14/unknown>` | `<value>` | `<ids>` | `<owner>` | `<proposed/approved/rejected>` |
+| 提供方与精确工具 | 对象、站点、范围和时间 | 原始值 | 可支持的情景 | 不能证明 | 原始结果位置 |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
 
-## G. 方案比较
+## 7. 建议与复核
 
-| Option ID | 缓解机制 | 适用触发 | 时间 | 质量/合规影响 | 成本/现金资料 | 新风险 | 失效条件 |
-|---|---|---|---|---|---|---|---|
-| `<option-id>` | `<mechanism>` | `<trigger-ids>` | `<evidence/unknown>` | `<impact>` | `<expert14/human input>` | `<risks>` | `<conditions>` |
+- 当前可准备的动作：
+- 只能带条件考虑的动作：
+- 暂缓事项与原因：
+- 需责任方明确接受的剩余暴露：
+- 下一次复核触发：
 
-## H. 决策闸门
+## 8. 质量检查
 
-| Decision ID | Decision | Scope | Conditions | Unresolved Risks | Approved By | Date | Review Trigger |
-|---|---|---|---|---|---|---|---|
-| `<decision-id>` | `<approve_preparation/approve_mitigation_with_conditions/hold_for_evidence/escalate_to_owner/accept_exposure_by_human_decision/not_assessable>` | `<scope>` | `<conditions>` | `<ids>` | `<human/pending>` | `<date>` | `<trigger>` |
-
-## I. 证据谱系
-
-| Record ID | Layer | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Limitations |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<limits>` |
-
-若来源为 `sif_mcp`，同一输入对象还须直接保存 `source_provider=sif`、`source_tool`、三类 request ID、`retrieved_at`、`marketplace`、`query_scope`、覆盖/分页和 `raw_result_locator`；ASIN 画像使用 `transformation_type=reported`，供应商阈值使用 `transformation_type=vendor_calculation`。
-
-### SIF 供应商计算对象
-
-只在实际调用 `market_estimate_profit_threshold` 时填写；此对象本体必须保留输入父证据，不得仅在风险情景总账补写。
-
-| Vendor Calculation ID | Source Tool | Call Arguments Snapshot | `parent_input_evidence_ids[]` | Dimension Group Status | Agent Request ID | Tool Call ID | Provider Request ID | Raw Result Locator | Transformation Type | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `<vendor-calculation-id>` | `market_estimate_profit_threshold` | `<exact arguments>` | `<all mapped input evidence ids>` | `<complete/omitted>` | `<id>` | `<id>` | `<id/not_returned>` | `<path/object locator>` | `vendor_calculation` | `<vendor rate/exchange/schema limits>` |
-
-| Formal Argument | Value | Parent Input Evidence ID | Validation |
-|---|---|---|---|
-| `price` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `category` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `weight_oz` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `freight_cost` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `target_margin` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `country` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `price_currency` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `tariff_rate` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `is_apparel` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `turnover_days` | `<value>` | `<evidence-id>` | `<verified/conflicted/missing>` |
-| `length_in` | `<value/omitted>` | `<evidence-id/not_applicable>` | `<verified/omitted_with_group>` |
-| `width_in` | `<value/omitted>` | `<evidence-id/not_applicable>` | `<verified/omitted_with_group>` |
-| `height_in` | `<value/omitted>` | `<evidence-id/not_applicable>` | `<verified/omitted_with_group>` |
-
-前十项任一项不是 `verified` 时不得调用。尺寸三项只能全部 `verified` 后成组传入，否则整组省略；任何参数都不得使用默认值。
-
-## J. 质量门
-
-- [ ] 当前问题、历史模式、未来情景和未知暴露分开
-- [ ] 每项风险有证据或显式假设
-- [ ] 单次快照未写成趋势
-- [ ] 无 Agent 自定概率、损失率或固定阈值
-- [ ] 缓解方案未冒充已执行
-- [ ] 检查计划未冒充后台监控
-- [ ] SIF ASIN 画像或探索性采购上限未被当成需求变化、供应商、报价、交期、物流或中断事实
-- [ ] 财务和库存影响转交责任方
-- [ ] `uploads/` 未修改，正式文件在 `outputs/`
+- [ ] 当前事实、历史模式、前瞻情景和未知暴露分开。
+- [ ] 单次快照未写成趋势。
+- [ ] 未自定概率、损失率或通用阈值。
+- [ ] 检查计划和缓解建议未冒充已执行。
+- [ ] 三 MCP 市场信号未被写成用户需求、供应商、交期、物流或中断事实。
+- [ ] 外部数据冲突未平均，缺失对结论的影响已说明。

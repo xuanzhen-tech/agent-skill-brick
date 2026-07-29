@@ -1,100 +1,60 @@
 <!--
-文件功能：定义知识产权对象、使用情境、权利链、既有商标检索/专业证据、风险信号和专业复核状态。
-职责边界：不提供侵权、有效性、可注册性、FTO 或诉讼结论，不执行外部检索和注册。
-重要关联：由 ../SKILL.md 在初筛时读取；正式字段映射到 ../assets/templates/ip-risk-triage-template.md。
+文件功能：说明如何盘点知识产权对象、使用情境、权利链和风险信号，并准备专业核验。
+职责边界：只做初筛，不判断侵权、有效性、可注册性、无冲突或胜诉概率。
+重要关联：由 ../SKILL.md 读取，正式交付见 ../assets/templates/ip-risk-triage-template.md。
 -->
 
-# 知识产权初筛合同
+# 知识产权风险初筛方法
 
-## 1. IP 对象
+## 1. 盘点具体 IP 对象
 
-- `ip_object_id`
-- `object_type`
-- `name_or_description`
-- `version`
-- `source_path`
-- `creator/provider`
-- `creation/acquisition date`
-- `product/market scope`
-- `parent_evidence_ids`
+逐项识别商品名称、品牌、Logo、口号、文案、图片、视频、包装、图案、外观设计、结构、技术特征、软件或说明书。每个对象记录版本、文件/页面位置、创作者或提供方陈述和计划市场。
 
-## 2. 使用情境
+不能把整个 Listing 只写成一个模糊“IP 对象”。
 
-| 字段 | 说明 |
-|---|---|
-| `use_context_id` | 稳定编号 |
-| `ip_object_id` | 对象 |
-| `marketplace/jurisdiction/language` | 范围 |
-| `goods_or_services` | 商品/服务 |
-| `placement` | 页面、广告、包装、产品等 |
-| `use_character` | brand/descriptive/comparative/compatibility/reference/decorative |
-| `temporal_scope` | 当前/计划/历史 |
-| `replaceability` | 可替换性 |
+## 2. 描述使用情境
 
-## 3. 权利链
+同一对象在商品、包装、Listing、广告、店铺、说明书或对比图中的使用风险不同。写明：
 
-记录：
+- 使用者与品牌；
+- 目标国家/地区和站点；
+- 商品/服务类别；
+- 展示方式、位置和时间；
+- 是否修改、组合、翻译或二次创作。
 
-- `rights_record_id`
-- `ip_object_id`
-- `creator/provider/rightsholder/licensee`
-- `agreement_type`
-- `territory/media/term`
-- `sublicense/modification rights`
-- `signature/status`
-- `evidence_ids`
-- `gap`
+## 3. 核对权利链
 
-付款或交付不自动等于权利转让。
+对每个对象询问：
 
-## 4. 商标检索与专业证据
+- 谁创作、委托、购买或许可；
+- 合同是否覆盖目标市场、媒介、期限、修改、转授权和商业用途；
+- 是否有员工/供应商/摄影师/模特/图库等第三方权利；
+- 许可、注册、转让或同意材料是否过期或范围不一致。
 
-| 字段 | 规则 |
-|---|---|
-| `trademark_evidence_id` | 稳定编号 |
-| `source_type` | `user_input` / `user_upload` / `trusted_upstream_output` |
-| `source_locator` | 文件、页/段/表/行或正式上游定位 |
-| `provided_by/qualified_owner` | 材料提供者与合格责任方；未知须明示 |
-| `database_or_material_type` | 材料声明的数据库、官方记录、检索报告或专业意见 |
-| `query_terms/figure_description` | 材料声明的检索词或图形描述 |
-| `jurisdiction/class/goods scope` | 材料明确覆盖的辖区、类别和商品/服务 |
-| `pagination/coverage` | 材料声明的分页、覆盖与截断情况 |
-| `returned_fields` | 材料实际提供字段 |
-| `evidence_class` | `official_record` / `qualified_opinion` / `trusted_upstream_summary` / `user_provided_material` |
-| `as_of/valid_as_of` | 检索或意见日期及有效时点 |
-| `limitations` | 不完备、范围、时效与非终局限制 |
+只有文件外观或供应商一句“可用”不能证明权利完整。
 
-本 Skill 不主动调用 `sif_mcp`、Web、浏览器或任何商标/IP 数据源。`zero_results` 只能描述材料声明范围内的结果数，不能映射成 `no_risk`。
+## 4. 商标线索与专业证据分开
 
-## 5. 风险信号
+用户明确要求时，可使用 SellerSprite `trademark_country_list`、`trademark_list`、`trademark_stats`、`trademark_detail` 获取供应商商标检索线索。
 
-每项记录：
+保留查询辖区、类别、查询词/品牌对象、分页/范围、精确工具、原始结果、时间、限制和原始结果位置。SellerSprite 是单一供应商线索：
 
-- `signal_id`
-- `ip_object/use_context IDs`
-- `observation`
-- `parent_evidence_ids`
-- `potential_impact`
-- `alternative_explanations`
-- `qualified_review_question`
-- `gate_status`
+- 未返回结果不等于无冲突或无风险；
+- 结果不等于官方注册簿全量、当前有效性或法律意见；
+- 调用失败只说明该单一来源不可用，不伪称多源检索；
+- SIF、Sorftime、Web 和浏览器不作为替代 IP 检索来源。
 
-## 6. 闸门
+正式商标、专利、外观设计和版权结论仍需官方记录或专业责任方。
 
-- `proceed_to_qualified_review`
-- `hold_use_pending_rights_evidence`
-- `hold_launch_pending_search`
-- `replace_asset_candidate`
-- `not_assessable`
+## 5. 风险信号与升级
 
-不使用 `infringing/non_infringing`。
+常见信号包括：
 
-## 7. 四轴与谱系
+- 权利主体、许可范围、期限或目标市场不清；
+- 商品名称、Logo 或图案与检索线索相近；
+- 商品外观或技术特征存在未核验的第三方权利；
+- 素材来源只写“网络找到”“供应商提供”；
+- 合同不覆盖修改、广告、跨境或转授权；
+- 投诉、警告或平台执法材料尚未交给第 10 专家处理。
 
-每条记录含 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path/source_locator` 或 `parent_evidence_ids`。
-
-## 8. 来源可用性与业务状态
-
-`source_availability_status` 与 IP `result_status/gate_status` 分列，只允许 `not_returned / not_queried / parse_failed / missing / conflicted / true_zero`。前五项不得写成 0、无权利、无相似记录或无风险；`true_zero` 只表示完整可验证覆盖下的真实零，不改变专业复核门禁。
-
-正例：用户提供的完整官方检索材料由合格责任方确认其范围内记录数为 0，可将记录数记 `true_zero`，仍不得写 `no_risk`。反例：未提供商标检索材料时记 `not_queried` 或 `missing`，不能生成“零近似商标”。
+信号不是侵权结论。最终说明可继续准备、需暂停某项使用、需补证或应升级律师/专业检索，并列出直接理由和问题清单。

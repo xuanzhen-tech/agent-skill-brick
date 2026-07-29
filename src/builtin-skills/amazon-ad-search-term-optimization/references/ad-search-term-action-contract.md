@@ -1,111 +1,64 @@
 <!--
-文件功能：定义广告 Search Term、Target、产品锚点、行动类型、迁移、否定和人工执行状态合同。
-职责边界：不定义平台私有枚举，不执行关键词/目标写入，也不替代第02专家的市场关键词研究。
-重要关联：由 ../SKILL.md 在行动判定时读取；正式字段映射到 ../assets/templates/ad-search-term-action-template.md。
+文件功能：说明如何从真实 Search Term 报表形成搜索词行动、否定与迁移建议。
+职责边界：不代替关键词研究，不执行 Ads API 写入，不以供应商关键词代替真实搜索词。
+重要关联：由 ../SKILL.md 在搜索词优化时读取；正式交付使用 ../assets/templates/ad-search-term-action-template.md。
 -->
 
-# 广告搜索词行动合同
+# 广告搜索词行动方法
 
-## 1. 顶层结果合同
+## 1. 真实报表是动作前提
 
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `NO_SEARCH_TERM_REPORT | REPORT_NOT_INGESTED | REPORT_IMMATURE | UNSTABLE_JOIN | PRODUCT_ANCHOR_MISSING | KEYWORD_CONTEXT_MISSING | LIMITED_HISTORY | PLATFORM_ENUM_CONFIRMATION_REQUIRED | OUT_OF_SCOPE_REQUEST`
+只有已验收的 Search Term 报表可以触发增加、观察、否定或迁移建议。必须确认账户/profile、站点、期间、归因窗口、Target/Ad Group/Campaign 稳定 ID 和商品锚点。
 
-每次运行只允许这一组顶层结果字段；不得并列 `readiness_status`。行动、人工复核与执行状态只描述局部对象。
+自然关键词、供应商 PPC 词或广告可见词只能提供语境，不能补造 Search Term 报表行。
 
-## 2. Search Term 观察
+## 2. 先判断数据是否成熟
 
-| 字段 | 规则 |
-|---|---|
-| `search_term_observation_id` | 稳定编号 |
-| `search_term_raw` | 保留原文 |
-| `target_id` | 一方稳定 ID |
-| `campaign_id/ad_group_id/ad_id/product_id` | 可追溯 |
-| `report_artifact_id` | 已验收报告 |
-| `period/attribution` | 必填 |
-| `platform_target_type_reported` | 只用来源真实值 |
-| `parent_evidence_ids` | 必填 |
+检查点击、花费、订单和销售的观察窗口是否足够覆盖归因成熟期。历史太短、分页截断、实体联接不稳或商品锚点缺失时，只能观察或请求补数。
 
-## 3. 产品锚点
+零订单不等于无价值；应同时看点击/花费规模、查询意图、商品相关性和归因成熟度。
 
-每个商品记录：
+## 3. 判断查询意图与商品匹配
 
-- `product_id`
-- `product_fact_ids`
-- `include_attributes`
-- `exclude_attributes`
-- `brand_scope`
-- `claim_restrictions`
-- `valid_as_of`
+逐搜索词回答：
 
-缺锚点时不得给相关性终局结论。
+- 用户意图是什么；
+- 与当前商品/变体是否真正相关；
+- 当前 Target 如何捕获它；
+- 是否存在品牌、竞品、类目或用途歧义；
+- 报表表现是否足以支持动作。
 
-## 4. 关键词上游
+引用第 02 专家或用户的关键词/意图证据，但不重复开展完整关键词研究。
 
-| 字段 | 说明 |
-|---|---|
-| `keyword_or_cluster_id` | 第02专家稳定 ID |
-| `mapping_status` | direct/manual_candidate/unmapped/conflicted |
-| `intent` | 上游值 |
-| `relevance_status` | 上游值或本案编码 |
-| `supplier_observation_date` | 保留日期 |
-| `include/exclude` | 不得丢失 |
-| `mapping_evidence_ids` | 必填 |
+## 4. 形成动作建议
 
-## 5. 行动类型
+可考虑：
 
-- `harvest_candidate`
-- `migration_candidate`
-- `negative_candidate`
-- `observe`
-- `retain`
-- `no_action_due_to_conflict`
-- `not_assessable`
+- 保持并继续观察；
+- 作为新 Target 候选；
+- 从探索结构迁移到更可控结构；
+- 作为否定候选；
+- 因冲突或证据不足暂不行动。
 
-每项记录 `reason`、`parent_evidence_ids`、`human_review_status` 和 `execution_status`。
+每项写明报表行、关键词语境、动作理由、可能误伤、适用层级和人工批准人。平台匹配类型或否定枚举未知时保留待确认，不猜值。
 
-## 6. 迁移
+## 5. 否定词的严格门槛
 
-| 字段 | 说明 |
-|---|---|
-| `migration_id` | 稳定编号 |
-| `source_entity_ids` | 原结构 |
-| `destination_plan_entity_id` | 目的结构或 tbd |
-| `search_term_observation_id` | 来源 |
-| `new_target_type_abstract` | 不猜平台枚举 |
-| `sequence` | 人工顺序 |
-| `coverage_risk` | 重复或中断 |
-| `rollback_rule` | 回滚 |
-| `approval_owner` | 人工批准 |
+否定前必须确认：
 
-## 7. 否定候选
+- 对象与商品明确不匹配，或已有足够成熟且不经济的表现；
+- 否定范围不会误伤仍有价值的查询；
+- include/exclude 没有冲突；
+- 适用的 Campaign/Ad Group 和平台枚举已由操作者确认。
 
-记录：
+同一词在不同商品或意图下可以有不同结论，不能全账户一刀切。
 
-- `negative_candidate_id`
-- `object_text_or_id`
-- `scope_level`
-- `source_target_ids`
-- `evidence_reason`
-- `collateral_risk`
-- `include_exclude_conflicts`
-- `platform_enum_status`
-- `approval_owner`
+## 6. 迁移与人工复核
 
-没有真实 Search Term 报表不得创建此记录。
+迁移不是复制后立即否定。先规划目标结构、预算/竞价边界、观察重叠期和回滚条件，再由人工分步实施并回填平台 ID。
 
-## 8. 局部行动状态
+## 7. 三源对照
 
-- `proposed`
-- `human_review_required`
-- `approved_for_manual_execution`
-- `human_applied_unverified`
-- `verified_applied`
-- `rejected`
-- `superseded`
+SIF 广告可见词、SellerSprite PPC/广告排名与 Sorftime 自然排名是不同观察。保留供应商、实际工具、查询范围、原始值、可复查位置和限制。
 
-Agent 只能生成前三种中的前两种；批准和执行状态需要人工证据。
-
-## 9. 四轴与谱系
-
-每条记录包含 `source_type`、`temporal_scope`、`estimation_status`、`transformation_type`、`source_path` 或 `parent_evidence_ids`。
+只有对象、站点、期间和定义一致时才比较，绝不平均。外部观察只能帮助解释相关性或渠道依赖，不能单独触发广告动作。

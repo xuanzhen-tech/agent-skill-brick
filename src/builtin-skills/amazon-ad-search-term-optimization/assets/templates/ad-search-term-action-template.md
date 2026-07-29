@@ -13,64 +13,59 @@
 | `case_id` | `<case-id>` |
 | `account/profile/marketplace` | `<values>` |
 | `period/timezone/attribution` | `<values>` |
-| `report_artifact_ids` | `<ids>` |
-| `result_status` | `<从下方允许值中选择一个>` |
-| `reason_codes[]` | `<从下方允许值中选择零个或多个>` |
-
-模板允许的字面合同：
-
-- `result_status`: `ready | ready_with_limitations | blocked | out_of_scope`
-- `reason_codes[]`: `NO_SEARCH_TERM_REPORT | REPORT_NOT_INGESTED | REPORT_IMMATURE | UNSTABLE_JOIN | PRODUCT_ANCHOR_MISSING | KEYWORD_CONTEXT_MISSING | LIMITED_HISTORY | PLATFORM_ENUM_CONFIRMATION_REQUIRED | OUT_OF_SCOPE_REQUEST`
+| 使用的 Search Term 报表 | `<report id/path/version>` |
+| 当前可行动范围 | `<可交人工复核/仅观察/阻塞>` |
+| 关键缺口与责任人 | `<缺口、受影响搜索词、下一责任人>` |
 
 ## B. 产品锚点
 
-| Product ID | Fact IDs | Include | Exclude | Brand Scope | Claim Restrictions | Valid As Of |
+| 商品/变体 | 纳入属性 | 排除属性 | 品牌范围 | 宣称限制 | 直接来源 | 有效日期 |
 |---|---|---|---|---|---|---|
-| `<id>` | `<ids>` | `<attributes>` | `<attributes>` | `<scope>` | `<rules>` | `<date>` |
+| `<product>` | `<attributes>` | `<attributes>` | `<scope>` | `<rules>` | `<source>` | `<date>` |
 
 ## C. Search Term 观察
 
-| Observation ID | Search Term | Target ID | Campaign/Ad Group/Ad/Product IDs | Report ID | Period | Platform Type | Evidence IDs |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<raw>` | `<id>` | `<ids>` | `<id>` | `<window>` | `<reported>` | `<ids>` |
+| Search Term 原文 | 报表中的 Target/广告实体 | 商品 | 报表及行定位 | 期间 | 平台类型 |
+|---|---|---|---|---|---|
+| `<raw>` | `<target/campaign/ad group/ad>` | `<product>` | `<report/row>` | `<window>` | `<reported>` |
 
 ## D. 关键词映射
 
-| Observation ID | Keyword/Cluster ID | Mapping Status | Intent | Relevance | Include/Exclude | Supplier Observation Date | Evidence IDs |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<id>` | `<direct/manual_candidate/unmapped/conflicted>` | `<value>` | `<value>` | `<rules>` | `<date>` | `<ids>` |
+| Search Term | 关键词/词簇依据 | 映射结论与理由 | 用户意图 | 商品相关性 | 纳入/排除规则 | 外部观察日期与来源 |
+|---|---|---|---|---|---|---|
+| `<term>` | `<keyword/cluster>` | `<direct/manual/unmapped/conflicted + why>` | `<value>` | `<value>` | `<rules>` | `<date/source>` |
 
 ## E. 广告证据
 
-| Observation ID | Impressions | Clicks | Spend | Orders | Sales | CTR | CPC | CVR | ACoS | Attribution Maturity | Data Status |
+| Search Term | Impressions | Clicks | Spend | Orders | Sales | CTR | CPC | CVR | ACoS | 归因成熟度 | 数据限制 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
 | `<id>` | `<value>` | `<value>` | `<value currency>` | `<value>` | `<value currency>` | `<value/not_computable>` | `<value>` | `<value>` | `<value>` | `<mature/immature/unknown>` | `<reported/missing>` |
 
 ## F. 行动账本
 
-| Action ID | Observation ID | Action Type | Reason | Evidence IDs | Conflict/Collateral Risk | Human Review | Execution Status |
-|---|---|---|---|---|---|---|---|
-| `<id>` | `<id>` | `<harvest_candidate/migration_candidate/negative_candidate/observe/retain/no_action_due_to_conflict/not_assessable>` | `<reason>` | `<ids>` | `<risk>` | `<required/status>` | `<proposed>` |
+| Search Term | 建议动作 | 直接理由 | 冲突/误伤风险 | 适用层级 | 人工复核人 | 执行回填 |
+|---|---|---|---|---|---|---|
+| `<term>` | `<harvest/migrate/negative/observe/retain/no action>` | `<basis>` | `<risk>` | `<campaign/ad group>` | `<owner>` | `<not executed/result>` |
 
 ## G. 迁移计划
 
-| Migration ID | Source IDs | Destination Plan ID | Observation ID | Abstract Target Type | Sequence | Coverage Risk | Rollback | Approval Owner | Status |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<ids>` | `<id/tbd>` | `<id>` | `<type>` | `<steps>` | `<risk>` | `<rule>` | `<owner>` | `<proposed/human_review_required>` |
+| 搜索词/来源 Target | 目标结构 | 抽象 Target 类型 | 人工顺序 | 覆盖风险 | 回滚条件 | 批准人 |
+|---|---|---|---|---|---|---|
+| `<term/source>` | `<destination/tbd>` | `<type>` | `<steps>` | `<risk>` | `<rule>` | `<owner>` |
 
 ## H. 否定复核
 
-| Negative ID | Object | Scope | Source Target IDs | Evidence Reason | Collateral Risk | Include/Exclude Conflict | Platform Enum | Approval Owner | Status |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<text/id>` | `<level>` | `<ids>` | `<reason>` | `<risk>` | `<conflict>` | `<known/tbd_platform_enum>` | `<owner>` | `<proposed/human_review_required>` |
+| 否定对象 | 适用层级 | 来源 Target | 直接理由 | 误伤风险 | 纳入/排除冲突 | 平台枚举确认 | 批准人 |
+|---|---|---|---|---|---|---|---|
+| `<text>` | `<level>` | `<targets>` | `<reason>` | `<risk>` | `<conflict>` | `<known/tbd>` | `<owner>` |
 
-## I. 证据谱系
+## I. 判断依据
 
-| Record ID | Layer | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Scope | Limitations |
-|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<scope>` | `<limits>` |
+| 搜索词与动作 | 来源/实际工具 | 账户、商品与期间 | 直接依据 | 动作理由 | 风险、冲突或缺口 | 原文定位 |
+|---|---|---|---|---|---|---|
+| `<search term/action>` | `<report/SIF/SellerSprite/Sorftime + tool>` | `<scope>` | `<raw basis>` | `<reason>` | `<limits>` | `<path/row/result locator>` |
 
-若来源为 `sif_mcp`，同一输入对象还须直接保存 `source_provider=sif`、`source_tool`、三类 request ID、`retrieved_at`、`marketplace`、`query_scope`、覆盖/分页、`raw_result_locator` 和 `transformation_type=reported`；Agent 输出另建对象并回指 `parent_evidence_ids`。
+自然词、供应商广告可见词与真实 Search Term 分列；只有对象和定义一致时才比较，绝不平均。缺一来源或独有单源失败时明确降低覆盖范围，不据此生成广告动作。
 
 ## J. 质量门
 

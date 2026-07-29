@@ -61,7 +61,7 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 2. `uploads/` 中明确关联本批次的只读材料。
 3. 可信 `outputs/` 中带版本、业务时点和谱系的正式产物。
 
-本 Skill 不调用 `sif_mcp` 或其他外部业务工具。SIF 销量信号不能证明退货实物状态、数量、所有权、位置、可逆性、价值、合规约束或批准；不得使用其他外部数据源回退。
+本 Skill 不调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp` 或其他外部业务工具。任何供应商市场/销量/商品信号都不能证明退货实物状态、数量、所有权、位置、可逆性、价值、合规约束或批准；不得使用外部数据源回退。
 
 仓库实物状态必须来自用户/仓库提供的带日期证据，不能由商品页面或历史销售状态推断。
 
@@ -167,16 +167,9 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 
 ### 7. 合规约束
 
-每个候选必须单独记录：
+每个候选必须说明合规约束是否适用、现有专业依据是否支持继续、有哪些约束或冲突，以及依据的日期、辖区范围、版本、责任方和限制。涉及跨境退运、HS、税费、清关或反倾销时引用专家 09 的正式产物；其他监管问题引用对应专业材料。
 
-- `compliance_constraint_status`: `not_applicable | verified_clear | constraints_present | unknown | conflicted | expired`
-- `compliance_expert09_output_id`：涉及跨境退运、HS、税费、清关或反倾销时引用专家09正式产物 ID
-- `professional_evidence_ids[]`：其他适用监管/专业证据 ID
-- `compliance_evidence_business_time` 与 `valid_as_of`
-- `jurisdiction_scope`
-- `limitations`
-
-专家09或专业证据必须带日期、范围、版本和责任方。`human_approval_status` 与合规证据分开记录；人工批准不能替代或覆盖合规约束。不可逆候选在适用约束为 `unknown | conflicted | expired` 时必须阻塞。
+人工批准与合规依据分开核对；人工批准不能替代或覆盖合规约束。不可逆候选在合规适用性未知、材料冲突或依据过期时必须阻塞。
 
 ### 8. 预期回收价值
 
@@ -189,7 +182,7 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 - 计算/估值责任人。
 - 输入和排除项。
 - 置信度或区间；若来源提供。
-- 证据 ID。
+- 原始估值材料的精确定位。
 
 价值只能来自用户明确提供或专家 14 的带版本正式输出。本 Skill 不重建利润、费用或运输经济模型。缺失时写 `unknown`，不得填零。
 
@@ -203,53 +196,22 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 - 附带条件。
 - 批准证据。
 
-审批状态：
+说明审批尚未请求、仍在等待、已批准、已拒绝、已过期或批准范围不匹配。只有批准有效且范围完全匹配时，才能写成“已批准的人工计划”；即便批准，本 Skill 也不执行。
 
-- `not_requested`
-- `pending`
-- `approved`
-- `rejected`
-- `expired`
-- `scope_mismatch`
+## 退货证据与处置判断
 
-只有 `approved` 且范围完全匹配时，才能标记为“已批准的人工计划”。即便批准，本 Skill 也不执行。
+为每个退货单位或同质批次保留：SKU、订单/RMA、仓库位置、数量、状态、货权、收货/检验日期、材料来源和精确定位。价值信息保留原币与毛净口径；无法对应到唯一单位或批次时必须隔离，不得拼接。
 
-## 双层谱系与四轴
+每个候选处置方向都要写清：
 
-### 第一层：原始证据 envelope
+| 要判断什么 | 直接依据 | 判断理由 | 限制或阻塞 | 下一责任人 |
+|---|---|---|---|---|
+| 身份、数量和位置是否可信 | 收货、检验、盘点或仓库材料 | 三者能否连接到同一单位/批次 | 数量冲突、位置不明、未检范围 | 仓库或库存责任人 |
+| 候选是否满足资格 | 状态、货权、候选规则和专业约束 | 满足与未满足条件逐项列出 | 合规、价值、范围或证据缺口 | 对应专业责任人 |
+| 候选是否可逆 | 流程节点、截止时间和可撤回条件 | 说明批准前后可否撤回 | 不可逆步骤或期限未知 | 审批人确认 |
+| 是否可交给人工批准 | 完整证据、阻塞清单和批准范围 | 说明为什么可以或不能批准 | 批准过期、范围不匹配、冲突未解 | 有权批准人 |
 
-记录：
-
-- `evidence_id`
-- `source_type`: `user_input | user_upload | trusted_upstream_output`
-- `source_locator`
-- `source_version`
-- `observed_at`
-- `business_time`
-- `temporal_scope`: `current | historical | future | mixed | unknown`
-- `estimation_status`: `reported | estimated | forecast | mixed | unknown`
-- `transformation_type`: `raw | provider_derived`
-- `raw_value` 与 `raw_unit_or_currency`
-- `provider_or_owner`
-- 退货身份/批次范围和 `limitations`
-
-### 第二层：派生 record
-
-候选与门控是两类独立的正式派生对象。每个对象本体直接保存五项血缘字段，不能只在报告末尾总账中补写：
-
-| 派生对象 | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 对象载荷 |
-|---|---|---|---|---|---|---|---|
-| `candidate` | `candidate_id` | 支撑候选资格、范围、可逆性和限制的原始 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| unknown` | `not_applicable \| estimated \| unknown` | `normalized \| planning` | 候选类型、覆盖身份/数量、资格规则、可逆性、合规/价值/审批状态和撤回点 |
-| `gate` | `gate_id` | 支撑门结果的 Evidence/Candidate IDs | 固定 `agent` | `current \| historical \| future \| mixed \| unknown` | `not_applicable \| estimated \| unknown` | `comparison \| decision` | 门类型、适用候选、规则、结果、阻塞原因、最小补充材料和下一责任人 |
-
-两类对象还分别记录 `output_id`、`rule_version`、`generated_at`、`uncertainty`、`result_status=ready | ready_with_limitations | blocked | out_of_scope` 与 `reason_codes[]`。`candidate_id` 和 `gate_id` 是领域对象 ID，不替代 `output_id`。派生对象的轴值必须逐条赋值，不能从父证据继承；原对象、时间、单位/币种和口径只作为附加比较维度，不能替代五项血缘字段。
-
-四轴：
-
-- **对象轴**：退货单位/批次、SKU、订单/RMA、仓库和库位。
-- **时间轴**：收货、检验、盘点、估值、审批和候选有效时间。
-- **单位/币种轴**：件/箱/托及价值原币。
-- **口径轴**：状态分类、数量范围、所有权、地点粒度、可逆性和价值毛净口径。
+缺失值不是零，冲突状态与数量不得平均或择一。材料过期、覆盖范围不足、专业约束未知或无法定位原文时，必须降级为等待或阻塞，不得用人工批准越过合规门。
 
 ## 候选类型
 
@@ -300,7 +262,7 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 
 ### 门 8：合规约束
 
-核对 `compliance_constraint_status`、专家09/专业证据 ID、证据日期、辖区范围和限制。不可逆候选在适用约束为 `unknown | conflicted | expired` 时必须停止；人工批准不能使其越过此门。
+核对合规约束、专家 09 或其他专业证据、证据日期、辖区范围和限制。不可逆候选在适用约束未知、互相冲突或已经过期时必须停止；人工批准不能使其越过此门。
 
 ### 门 9：价值与经济边界
 
@@ -308,13 +270,13 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 
 ### 门 10：人工审批
 
-未批准时全部候选状态为 `CANDIDATE_ONLY`。批准不等于执行。
+未批准时所有方向都只是候选。批准不等于执行。
 
 ## 标准工作流
 
 ### 第一步：登记证据
 
-为清单、盘点、检验、图片、所有权、地点、估值和批准分别建立 `evidence_id`。
+为清单、盘点、检验、图片、所有权、地点、估值和批准分别登记来源、日期、覆盖范围和精确位置。
 
 ### 第二步：建立身份与数量台账
 
@@ -334,7 +296,7 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 
 ### 第六步：核对合规约束
 
-对每个候选记录 `compliance_constraint_status`，挂接带日期的专家09输出或其他专业证据。不可逆候选无法证明约束已核对时停止，不进入批准交接。
+对每个候选说明合规约束及其带日期的专家 09 输出或其他专业依据。不可逆候选无法证明约束已核对时停止，不进入批准交接。
 
 ### 第七步：挂接预期回收价值
 
@@ -342,26 +304,15 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 
 ### 第八步：执行审批门
 
-先独立核对合规约束，再核对审批人权限、批准范围、时间和条件。未批准或范围不匹配时保持 `CANDIDATE_ONLY`；合规未知时即使人工已批准也保持阻塞。
+先独立核对合规约束，再核对审批人权限、批准范围、时间和条件。未批准或范围不匹配时保持候选；合规未知时即使人工已批准也保持阻塞。
 
 ### 第九步：生成正式计划
 
 使用 [处置计划模板](assets/templates/return-disposition-plan.md)，输出证据台账、候选矩阵、门控、批准和人工交接。
 
-## 状态
+## 结论表达
 
-单位/批次状态：
-
-- `EVIDENCE_INCOMPLETE`
-- `QUANTITY_CONFLICT`
-- `OWNERSHIP_BLOCKED`
-- `LOCATION_UNCONFIRMED`
-- `COMPLIANCE_BLOCKED`
-- `CANDIDATE_ONLY`
-- `APPROVED_FOR_MANUAL_HANDOFF`
-- `REJECTED`
-
-`APPROVED_FOR_MANUAL_HANDOFF` 只表示可以交给人工执行方再次复核，不表示任何动作已发生。
+逐单位或批次说明证据是否完整、数量是否冲突、货权和地点是否确认、合规门是否通过，以及当前只是候选、已经拒绝，还是可交给人工执行方再次复核。人工交接不表示任何处置动作已经发生。
 
 ## 封闭失败
 
@@ -374,7 +325,7 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 - 物理地点无法确认。
 - 预期回收价值被要求从缺失数据中估算。
 - 不可逆候选没有匹配范围的人工批准。
-- 不可逆候选的适用合规约束为 `unknown`、`conflicted` 或 `expired`，或缺少带日期的专家09/专业证据。
+- 不可逆候选的适用合规约束未知、互相冲突或已经过期，或缺少带日期的专家09/专业证据。
 - 需要未注入工具、ERP/WMS、Web 或其他数据源补齐关键事实。
 
 降级输出：
@@ -401,11 +352,11 @@ description: 基于用户提供的退货身份、检验与价值证据形成仓�
 - 状态证据带日期、覆盖范围和责任人。
 - 数量闭环或冲突显式可见。
 - 价值保留币种、时点、毛净口径和来源；未知不为零。
-- 未批准候选全部为 `CANDIDATE_ONLY`。
+- 未批准方向全部明确为候选。
 - HS/税率/清关/反倾销交专家 09；运输经济交专家 14。
 - 买家侧退货/退款案件、索赔和客户沟通交专家11。
 - 不可逆候选具有带日期的专家09/专业合规证据，且合规门与人工审批门分列。
-- 所有来源具有完整 raw evidence envelope，所有候选与门控具有完整 derived record。
+- 每个候选与门控判断均能回到直接材料，并写明理由、限制和下一责任人。
 - 未创建 WMS/ERP 任务、库存调整、消息、提醒或后台执行。
 
 更细门控见 [处置决策合同](references/return-disposition-decision-contract.md)。

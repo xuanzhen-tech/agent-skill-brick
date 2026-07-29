@@ -46,18 +46,17 @@ temp/product-selection/<case-id>/02-validation/scoring-workbook.md
 
 每条证据一行；同一条证据可以支持多个维度，但不得复制成多个看似独立的来源。
 
-| evidence_id | 候选 | 维度 | source_type | source_provider | source_tool | agent_request_id | tool_call_id | provider_request_id | retrieved_at | marketplace | query_scope | temporal_scope | coverage_or_pagination | estimation_status | transformation_type | parent_input_evidence_ids | parent_evidence_ids | raw_result_locator/限制 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  | `sif_mcp` / `user_input` / `upstream_output` / `agent` |  |  | `not_returned` | `not_returned` | `not_returned` |  |  |  |  |  |  |  |  |  |  |
+| 证据编号 | 候选 | 评分维度 | 来源；若为 MCP 写供应商与精确工具 | 站点/对象/期间/筛选/分页 | 原值或原文 | 关键参数或评分依据 | 原始位置 | 覆盖、冲突与限制 |
+|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |  |  |
 
 强制规则：
 
-- SIF 原始证据填写真实 `source_tool`、三类请求 ID、站点、时间和原始结果位置。
-- `agent_request_id` 与 `tool_call_id` 只填写当前 AgentTool 调用上下文暴露的对应真实值；仅当该上下文未暴露对应字段时写 `not_returned`。`provider_request_id` 只填写 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三类 ID 不得互代。
-- 任何传入的 `arguments.country` 都必须把其直接父 Evidence ID 写入 `parent_input_evidence_ids`；缺少该证据时不得调用。
+- MCP 原始证据填写真实供应商、精确工具、站点、对象、期间、筛选、分页、原值和原始结果位置。
+- `arguments.country` 等关键参数必须能回到用户输入或可信上游依据；缺少依据时不得调用。
 - `demand=ready` 至少需要明确时间范围和足够覆盖的当前或历史证据。
-- `unit_economics=ready` 必须引用内置利润包的正式输出或等价且已复核的用户成本对象；SIF 探索性利润门槛不能替代。
-- Agent 派生对象必须列出直接 `parent_evidence_ids`。
+- `unit_economics=ready` 必须引用内置利润包的正式输出或等价且已复核的用户成本对象；任一供应商估算或探索性利润门槛不能替代。
+- Agent 评分必须列出直接依据、换算方法、反证和限制。
 - 冲突证据保留在账本中，不通过删除反证或无声平均来消除。
 
 ## 3. 逐维换算
@@ -66,7 +65,7 @@ temp/product-selection/<case-id>/02-validation/scoring-workbook.md
 
 ### 候选：`<candidate-id>`
 
-| 维度 | evidence_id | 原始证据 | 方向/变换 | 低锚/高锚及依据 | 维度分 0–100 | 状态 | 原权重 | 加权项 = 分数 × 权重 |
+| 维度 | 来源与原始位置 | 原始证据 | 方向/变换 | 低锚/高锚及依据 | 维度分 0–100 | 输入是否就绪 | 原权重 | 加权项 = 分数 × 权重 |
 |---|---|---|---|---|---:|---|---:|---:|
 | `demand` |  |  |  |  |  | `ready/partial/missing` |  |  |
 | `competition` |  |  |  |  |  | `ready/partial/missing` |  |  |

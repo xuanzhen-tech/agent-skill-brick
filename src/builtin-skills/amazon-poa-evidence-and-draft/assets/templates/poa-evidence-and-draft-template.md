@@ -1,111 +1,103 @@
 <!--
-文件功能：提供 POA 证据准备、行动状态、陈述映射、附件索引、草案和人工审核模板。
-职责边界：模板不生成根因、不表示已提交或已恢复；所有占位内容都必须由证据替换。
-重要关联：由 ../../SKILL.md 物化；字段和状态遵循 ../../references/poa-evidence-and-draft-contract.md。
+文件功能：提供 POA 证据准备、草案、附件和人工审核的正式业务模板。
+职责边界：模板不生成根因、不表示已提交或已恢复；所有占位内容必须由证据替换。
+重要关联：由 ../../SKILL.md 物化；判断方法见 ../../references/poa-evidence-and-draft-contract.md。
 -->
 
 # Amazon POA 证据与草案
 
-## A. 元数据与状态
+> 状态：供人工审核，尚未由本 Skill 提交。
 
-| 字段 | 内容 |
-|---|---|
-| `poa_case_id` | `<case-id>` |
-| `account/marketplace/object scope` | `<masked values>` |
-| `notice evidence/date/deadline` | `<id + dates + timezone>` |
-| `root_cause_id/status` | `<id/status>` |
-| `as_of` | `<timestamp + timezone>` |
-| `workflow_status` | `<poa_ready_for_drafting/notice_missing/root_cause_missing/action_evidence_incomplete/attachment_gap/material_conflict/draft_for_human_review/blocked>` |
-| `submission_status` | `not_submitted_by_this_skill` |
-| `conclusion_limit` | `不保证 Amazon 接受或账号恢复` |
+## 1. 通知与申诉范围
 
-## B. Amazon 通知要求
+- 账号/站点/对象：`<掩码范围>`
+- 通知日期与截止时间：`<日期、时间和时区>`
+- Amazon 明示的问题：`<忠实摘要>`
+- Amazon 要求：`<解释、整改、文件或其他>`
+- 通知原文位置：`<文件和页码/段落>`
+- 完整性或翻译风险：`<内容>`
+- 结论上限：不保证 Amazon 接受或账号恢复。
 
-| Requirement ID | Amazon Reported Issue/Request | Original Evidence ID | Scope | Completeness | Interpretation Limit |
-|---|---|---|---|---|---|
-| `<id>` | `<verbatim-safe summary>` | `<id>` | `<scope>` | `<complete/partial>` | `<limit>` |
+## 2. 起草准备度
 
-## C. RCA 交接
+| 必要内容 | 当前情况 | 直接材料 | 缺口对草案的影响 | 下一步与负责人 |
+|---|---|---|---|---|
+| 通知原文 | `<情况>` | `<定位>` | `<影响>` | `<动作>` |
+| 经确认根因 | `<情况>` | `<RCA定位>` | `<影响>` | `<动作>` |
+| 行动执行材料 | `<情况>` | `<定位>` | `<影响>` | `<动作>` |
+| 附件 | `<情况>` | `<定位>` | `<影响>` | `<动作>` |
 
-| Root Cause ID | Enforcement Event IDs | Root Cause Statement | Causal Link IDs | Support | Unknowns/Limitations | Human Approval |
-|---|---|---|---|---|---|---|
-| `<id>` | `<ids>` | `<statement>` | `<ids>` | `<status>` | `<items>` | `<status>` |
+## 3. 根因交接
 
-## D. 行动状态
+- 适用事件和对象：`<范围>`
+- 经确认根因：`<根因；未确认则明确写无>`
+- 因果链与直接材料：`<摘要和定位>`
+- 未知与限制：`<内容>`
+- 人工确认：`<责任人和时间>`
+- 政策/IP判断：`<第09交接及限制>`
 
-| Action ID | Type | Action | Root Cause ID | Owner | Planned/Completed Date | Status | Completion Evidence IDs | Effectiveness Evidence/Requirement |
+## 4. 行动核验
+
+| 类型 | 行动 | 对应根因 | 负责人 | 计划/完成时间 | 当前真实进度 | 执行材料 | 有效性证据或未来验证 | 可用于草案的措辞 |
 |---|---|---|---|---|---|---|---|---|
-| `<id>` | `<containment/immediate_correction/corrective_action/preventive_control/effectiveness_verification>` | `<action>` | `<id>` | `<owner>` | `<date>` | `<verified_completed/user_claimed_unverified/planned/blocked>` | `<ids>` | `<ids/requirement>` |
+| `<遏制/即时纠正/纠正措施/预防控制>` | `<动作>` | `<内容>` | `<负责人>` | `<日期>` | `<已验证完成/用户称完成待核/计划/阻塞>` | `<定位>` | `<内容>` | `<完成式/计划式/暂不写入>` |
 
-## E. 陈述—证据映射
+## 5. 陈述与直接材料
 
-| Statement ID | Section | Statement | Claim Type | Parent Evidence IDs | Support Status | Limitations | Human Review |
+| 草案章节 | 拟写陈述 | 直接材料 | 支持情况与范围 | 冲突或限制 | 人工审核 |
+|---|---|---|---|---|---|
+| `<根因/纠正/预防/验证>` | `<陈述>` | `<文件、页码或记录定位>` | `<完整/部分/不支持/冲突>` | `<内容>` | `<待审/通过/退回>` |
+
+不支持或仍有冲突的陈述不得进入下面的草案。
+
+## 6. 附件
+
+| 安全显示名 | 证明的陈述或行动 | 日期、提供方和适用范围 | 版本或哈希 | 语言/翻译 | 遮蔽情况 | 完整性与冲突 | 人工确认 |
 |---|---|---|---|---|---|---|---|
-| `<id>` | `<root cause/correction/prevention/verification>` | `<statement>` | `<observed/inferred/action_completed/action_planned>` | `<ids>` | `<supported/partially_supported/unsupported/conflicted>` | `<limits>` | `<pending/approved/rejected>` |
+| `<名称>` | `<内容>` | `<内容>` | `<值>` | `<内容>` | `<内容>` | `<内容>` | `<待审/可用/不可用>` |
 
-## F. 附件索引
+## 7. POA 草案
 
-| Attachment ID | Safe Name | Source Path | Supports Statement/Action IDs | Date/Provider/Scope | Version/Hash | Language/Translation | Redaction | Completeness/Conflict | Human Review |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<name>` | `<path>` | `<ids>` | `<values>` | `<value>` | `<value>` | `<status>` | `<status>` | `<status>` |
-
-## G. POA 草案
-
-> 状态：`draft_for_human_review`
-
-### 1. 通知与范围
+### 7.1 通知与范围
 
 `<只写可证实的通知、账号、站点和对象范围。>`
 
-### 2. 已证实根因
+### 7.2 已证实根因
 
-`<只引用已批准 root_cause_id，不添加新根因。>`
+`<只使用经确认的 RCA 根因，不添加新根因。>`
 
-### 3. 立即纠正
+### 7.3 立即纠正
 
-`<只有 verified_completed 才使用完成时；其他状态明确标记。>`
+`<只有可验证完成的动作使用完成时；其余明确为计划或阻塞。>`
 
-### 4. 预防控制
+### 7.4 纠正与预防控制
 
-`<区分已完成控制、计划动作和阻塞。>`
+`<说明控制如何针对根因、覆盖哪些对象、由谁负责。>`
 
-### 5. 有效性验证
+### 7.5 有效性验证
 
-`<说明已存在的验证证据或未来验证方法，不把动作完成等同于有效。>`
+`<说明已有验证结果或未来的验证方法和时点。>`
 
-### 6. 附件
+### 7.6 附件说明
 
-`<使用 attachment_id 引用。>`
+`<逐项说明附件支持哪一句陈述。>`
 
-## H. 证据缺口
+## 8. 尚未解决的缺口
 
-| Gap ID | Missing/Conflicting Item | Blocks Which Statement/Action | Required Evidence | Owner | Due | Status |
-|---|---|---|---|---|---|---|
-| `<id>` | `<item>` | `<ids>` | `<requirement>` | `<owner>` | `<date>` | `<open/blocked/resolved>` |
+| 缺失或冲突 | 阻塞的陈述/行动 | 需要的材料 | 负责人 | 期限 | 暂时的表达方式 |
+|---|---|---|---|---|---|
+| `<内容>` | `<内容>` | `<内容>` | `<负责人>` | `<日期>` | `<删除/收窄/计划式>` |
 
-## I. 证据谱系
-
-| Record ID | Layer | Evidence Class | Source Path / Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Scope | Limitations |
-|---|---|---|---|---|---|---|---|---|---|
-| `<id>` | `<input_evidence/agent_output>` | `<class>` | `<value>` | `<axis>` | `<axis>` | `<axis>` | `<axis>` | `<scope>` | `<limits>` |
-
-## J. 来源可用性与业务状态
-
-| Notice/Root Cause/Action/Attachment Field ID | `source_availability_status` | Business `workflow/action/support status` | Evidence Scope | Interpretation |
-|---|---|---|---|---|
-| `<id>` | `<not_returned/not_queried/parse_failed/missing/conflicted/true_zero>` | `<POA status>` | `<ids/scope>` | `<bounded meaning>` |
-
-前五种来源状态不得写成 0、无问题、无附件需求或无风险。正例：完整映射确认未支持陈述数为 0，记 `true_zero`，草案仍为 `draft_for_human_review`。反例：附件不可解析，记 `parse_failed` 并保持 `attachment_gap`，不得写“无需附件”。
-
-## K. 人工审核清单
+## 9. 人工审核清单
 
 - [ ] 通知问题和范围与原文一致
-- [ ] `root_cause_id` 有充分支持且未被改写
-- [ ] 所有完成式动作均为 `verified_completed`
-- [ ] 每项陈述有证据映射
-- [ ] 附件完整、可读且已遮蔽不必要敏感信息
-- [ ] 政策、法律、IP和产品安全判断已由适格责任方复核
-- [ ] 草案未承诺接受或恢复
-- [ ] 最终提交由授权人员在当前 Seller Central 界面人工完成
-- [ ] 来源六态与业务状态分列，前五项未补零
+- [ ] 根因已有充分支持且未在写作中被改写
+- [ ] 所有完成式动作都有执行材料
+- [ ] 动作完成与效果验证分开
+- [ ] 每项重要陈述能回到直接材料
+- [ ] 附件完整、可读、范围匹配并已遮蔽不必要敏感信息
+- [ ] 政策、法律、IP和产品安全判断由适格责任方复核
+- [ ] 草案没有承诺接受或恢复
+- [ ] 最终提交由授权人员在当前 Seller Central 页面人工完成
+- [ ] 未调用三个公开市场 MCP 补造账号事实
 - [ ] 正式文件位于 `outputs/`

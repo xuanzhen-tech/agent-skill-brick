@@ -1,6 +1,6 @@
 <!--
 文件功能：提供单个 Amazon SKU 的单位经济输入账本、利润瀑布、保本反算、情景比较和独立复核模板。
-职责边界：模板不提供任何默认费率、成本或推荐阈值；所有项目数值必须来自用户事实、内置利润包输出或经用户确认的 SIF 预填。
+职责边界：模板不提供任何默认费率、成本或推荐阈值；所有项目数值必须来自用户事实、内置利润包输出或明确说明为“仅供预览”的 MCP 供应商观察。
 关联关系：由 ../../SKILL.md 的建模与复核阶段使用，公式和成本分类见 ../../references/unit-economics-model.md。
 -->
 
@@ -12,9 +12,9 @@
 temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook.md
 ```
 
-完成全部复核后，再把核准版移入同一 case 的 `outputs/`。多个 SKU 各用一份，不混用币种、站点或输入状态。
+完成全部复核后，再把核准版移入同一 case 的 `outputs/`。多个 SKU 各用一份，不混用币种、站点或输入确认情况。
 
-## 1. 模型身份与准备状态
+## 1. 模型身份与计算准备
 
 | 字段 | 本次值 |
 |---|---|
@@ -25,15 +25,15 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 | 售价是否不含销售税 | `是/否/待确认` |
 | 汇率及日期（如适用） |  |
 | 计算日期 |  |
-| `input_readiness` | `ready/preview/blocked` |
+| 关键输入确认情况 | 已全部确认 / 仅可预览 / 缺失且不能计算 |
 | 不能进入正式结论的原因 |  |
 
-状态汇总规则：
+计算准备规则：
 
-- 任一关键输入 `missing` → `blocked`，停止盈利计算；
-- 无 `missing` 但任一关键输入 `provisional` → `preview`；
-- 全部关键输入为 `ready` 或有理由的 `not_applicable` → `ready`；
-- SIF 预填在用户确认前只能是 `provisional`。
+- 任一关键输入缺失：停止盈利计算并列出缺口；
+- 没有缺失，但任一关键输入仅有供应商观察：只做情景预览；
+- 全部关键输入已确认，或有理由地确认不适用：可以形成正式计算；
+- 用户确认须形成带独立依据的新输入，不能覆盖原始 MCP 供应商记录。
 
 ## 2. 输入账本
 
@@ -41,7 +41,7 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 
 ### 售价与费率
 
-| field | value | unit | status | source_type | evidence_id | as_of | reason |
+| field | value | unit | 确认情况 | 来源 | 证据编号 | as_of | reason |
 |---|---:|---|---|---|---|---|---|
 | `selling_price` |  | currency/unit |  |  |  |  |  |
 | `discount_rate` |  | rate |  |  |  |  |  |
@@ -51,7 +51,7 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 
 ### 落地成本
 
-| field | value | unit | status | source_type | evidence_id | as_of | reason/是否已含其他项 |
+| field | value | unit | 确认情况 | 来源 | 证据编号 | as_of | reason/是否已含其他项 |
 |---|---:|---|---|---|---|---|---|
 | `product` |  | currency/unit |  |  |  |  |  |
 | `packaging` |  | currency/unit |  |  |  |  |  |
@@ -65,7 +65,7 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 
 ### 平台、履约与固定成本
 
-| field | value | unit | status | source_type | evidence_id | as_of | reason |
+| field | value | unit | 确认情况 | 来源 | 证据编号 | as_of | reason |
 |---|---:|---|---|---|---|---|---|
 | `fulfillment` |  | currency/unit |  |  |  |  |  |
 | `storage` |  | currency/unit |  |  |  |  |  |
@@ -75,20 +75,17 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 | `planned_lifetime_units` |  | units |  |  |  |  |  |
 | `target_margin_rate` |  | rate |  |  |  |  |  |
 
-允许状态：`ready`、`provisional`、`missing`、`not_applicable`。数值为 0 时必须是 `not_applicable` 且有非空理由；字段缺失不得改写成 0。SIF 的探索性利润门槛不得作为成本行或正式利润结论。
+确认情况直接写“已由用户/可信材料确认”“仅为供应商观察”“缺少数值或依据”或“已确认不适用”。数值为 0 时必须说明不适用理由；字段缺失不得改写成 0。任何供应商利润率、潜力指数或探索性利润门槛不得作为成本行或正式利润结论。
 
-## 3. SIF 探索性证据
+## 3. MCP 供应商探索性证据
 
-只在实际使用 SIF 预填或探索性利润门槛时填写；没有调用时写 `not_queried`。
+只在实际使用 MCP 预填或探索性利润门槛时填写；没有调用时说明“本次未查询”。
 
-| evidence_id | source_type | source_provider | source_tool | agent_request_id | tool_call_id | provider_request_id | retrieved_at | marketplace | query_scope | temporal_scope | coverage_or_pagination | estimation_status | transformation_type | result_state | field_state | raw_result_locator | parent_evidence_ids | parent_input_evidence_ids |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | sif_mcp | sif |  | not_returned | not_returned | not_returned |  |  |  |  |  |  | reported |  |  |  |  |  |
-|  | sif_mcp | sif | market_estimate_profit_threshold | not_returned | not_returned | not_returned |  |  |  |  |  |  | vendor_calculation |  |  |  |  |  |
+| 证据编号 | 供应商与精确工具 | SKU/ASIN 与站点 | 查询范围与期间 | 原值/单位 | 关键参数依据 | 原始结果位置 | 覆盖与限制 | 可用于哪个情景 |
+|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |  |  |
 
-`agent_request_id` 与 `tool_call_id` 只填写当前 AgentTool 调用上下文暴露的对应真实值；仅当该上下文未暴露对应字段时写 `not_returned`。`provider_request_id` 只填写 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三类 ID 不得互代。任何传入的 `arguments.country` 都必须把其直接父 Evidence ID 写入 `parent_input_evidence_ids`；利润门槛行还必须记录本次全部显式输入的 Evidence ID。
-
-`result_state` 与 `field_state` 只允许 `not_returned`、`not_queried`、`parse_failed`、`missing`、`conflicted`、`true_zero`。前五态不得补成 0；只有响应明确返回且语义可确认的零才使用 `true_zero`。
+未查询、未返回、解析失败、资料缺失和来源冲突不得补成 0，也不得进入公式；只有响应明确返回且字段语义可确认的零才可作为零证据。供应商利润率、潜力指数或探索性利润门槛只用于预览，不能替代正式成本输入或内置利润包结论。
 
 ## 4. 防双算检查
 
@@ -102,7 +99,7 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 | 广告使用 TACoS/销售额口径且未重复扣除 |  |  |
 | 售价税口径是否一致 |  |  |
 
-任一“无法确认”都要回到输入状态；不得继续标 `ready`。
+任一“无法确认”都要回到输入清单，写明缺口并停止依赖该项形成正式结论。
 
 ## 5. 基准情景计算
 
@@ -169,7 +166,7 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 
 未获用户确认的建议情景写入待确认问题，不填入本表。
 
-| 情景名 | `approved_by_user` | evidence_id | 只改变的输入 | 基准值 → 情景值 | 完全负担贡献 | 利润率 | 保本售价 | 结论变化 |
+| 情景名 | 用户是否确认及依据 | 来源与原始位置 | 只改变的输入 | 基准值 → 情景值 | 完全负担贡献 | 利润率 | 保本售价 | 结论变化 |
 |---|---|---|---|---|---:|---:|---:|---|
 |  | `true` |  |  |  |  |  |  |  |
 
@@ -190,4 +187,4 @@ temp/product-selection/<case-id>/03-unit-economics/<sku>-unit-economics-workbook
 | 保本售价代回后的完全负担贡献 |  | 0（舍入容差内） |  |  |
 | 每个情景只改变已声明输入 |  |  |  |  |
 
-若任一差异超过币种舍入容差，先检查单位、费率、重复计费和过早舍入。复核全部通过且 `input_readiness=ready` 后，才能向下游提供 `unit_economics=ready`。
+若任一差异超过币种舍入容差，先检查单位、费率、重复计费和过早舍入。复核全部通过且关键输入均已确认后，才能向下游提供正式单位经济结论。

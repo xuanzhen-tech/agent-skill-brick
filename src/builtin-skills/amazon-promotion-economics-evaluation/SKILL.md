@@ -1,10 +1,10 @@
 ---
 name: amazon-promotion-economics-evaluation
-description: 消费第14利润管理专家的已验证单位贡献与价格底线，计算 Amazon 促销折扣、兑换、蚕食、增量订单、退货、履约增量和固定费情景，区分销量倍数与 lift 并判断维持贡献目标所需销量；必要时仅把 SIF 销量趋势或供应商利润阈值计算作为探索背景。适用于促销经济性、保本销量倍数、情景与 go/no-go 评估；不适用于重建全成本利润、预测真实销量、活动报名或把 SIF 估算当作一方销售。
+description: 消费第14利润管理专家的已验证单位贡献与价格底线，计算 Amazon 促销折扣、兑换、蚕食、增量订单、退货、履约增量和固定费情景，区分销量倍数与 lift 并判断维持贡献目标所需销量；必要时仅把 SIF 销量/门槛、SellerSprite Coupon/Keepa 转述或 Sorftime 商品趋势作为探索背景。适用于促销经济性、保本销量倍数、情景与 go/no-go 评估；不适用于重建全成本利润、预测真实销量、活动报名或把供应商估算当作一方销售。
 ---
 
 <!--
-文件功能：定义 Amazon 促销增量经济评估的上游基线、变量、公式、无有限解状态、证据谱系、失败语义和正式交付。
+文件功能：定义 Amazon 促销增量经济评估的上游基线、变量、公式、无有限解条件、判断依据、失败处理和正式交付。
 职责边界：只在第14已验证贡献基线上计算促销增量影响，不重建成本或交易利润真相，不执行活动，不承诺实际销量。
 重要关联：公式与 no_finite_solution 条件见 references/promotion-economics-formula-contract.md；正式交付使用 assets/templates/promotion-economics-evaluation-template.md；价格输入优先来自 amazon-promotion-price-planning。
 -->
@@ -23,7 +23,7 @@ description: 消费第14利润管理专家的已验证单位贡献与价格底�
 
 本 Skill 不重算 Amazon 交易、成本、结算或全量 P&L，也不预测用户真实促销销量。
 
-## 运行合同
+## 使用边界
 
 ### 允许的数据
 
@@ -33,31 +33,23 @@ description: 消费第14利润管理专家的已验证单位贡献与价格底�
 - 第 13 的实验或指标合同输出；
 - 可选通过外层 `sif_mcp` 路由 `ops_get_asin_sales_trend`，仅作为外部销量趋势背景；
 - 可选通过外层 `sif_mcp` 路由 `market_estimate_profit_threshold`，仅在全部正式输入均有可信父证据时形成探索性供应商计算；
+- 可选通过 `sellersprite_mcp` 路由 `asin_coupon_trend`、`asin_detail_with_coupon_trend` 或 `keepa_info`，以及通过 `sorftime_mcp` 路由 `product_detail`、`product_trend`，仅形成外部价格/Coupon/商品趋势背景；
 - Agent 按公开公式生成的计算与情景。
 
 所有金额必须带币种、期间和单位。第 14 的基线贡献与价格底线是上游真相；本 Skill 不拆回成本项重新计算。
 
 ### 禁止的数据与动作
 
-- 不使用 Sorftime、Coaxon、Linkfox、Amazon SP-API、邮件平台、Web、浏览器或其他 MCP/API；
+- 不使用 Coaxon、Linkfox、Amazon SP-API、邮件平台、Web、浏览器或未列明的其他 MCP/API；
 - 不读取密钥、不安装工具、不执行报名、改价、预算或后台动作；
-- 不把 SIF 销量趋势写成用户一方订单、`Q0`、兑换、增量或转化；
-- 不把 SIF 利润阈值写成第14贡献、价格底线、结算、税务、活动费或促销 go/no-go 真相；
+- 不把任何供应商趋势写成用户一方订单、`Q0`、兑换、增量或转化；
+- 不把 SIF 利润阈值或 SellerSprite/Sorftime 价格观察写成第14贡献、价格底线、结算、税务、活动费或促销 go/no-go 真相；
 - 不使用固定销量倍数、行业 lift、兑换率、退货率或活动费；
 - 不把缺失输入填零，也不在分母为零时强算倍数。
 
-### 双层谱系与四轴
+### 证据与判断
 
-来源证据层记录上游路径/工具、原 Evidence ID、字段、原值、币种、期间、单位、查询条件和四轴。派生决策层记录输入 Evidence IDs、公式、变量、假设、结果、状态和四轴。
-
-四轴为：
-
-- `source_type`：`sif_mcp | user_input | upstream_output | agent`；
-- `temporal_scope`：`current | historical | future | mixed | not_applicable | unknown`；
-- `estimation_status`：`reported | estimated | forecast | mixed | not_applicable | unknown`；
-- `transformation_type`：`raw | normalized | calculation | coding | inference | hypothesis`。
-
-情景假设使用 `hypothesis`，计算使用 `calculation`。来源的估算属性必须保留。
+每个经济输入保留上游路径或精确工具、原值、币种、期间、单位、查询条件和限制。每个计算或情景直接引用实际输入，写出公式、变量、假设、结果和是否受阻。供应商估算仍保留其估算属性；情景假设不得冒充已发生销量。
 
 ### 工作区
 
@@ -81,36 +73,32 @@ description: 消费第14利润管理专家的已验证单位贡献与价格底�
 
 若 `C0`、`Q0` 或货币/期间口径缺失，不能给保本倍数。
 
-### 就绪状态
+### 启动判断
 
-- `ready`：基线、增量变量和情景可复算；
-- `limited`：只能计算部分变量或单位贡献；
-- `blocked_missing_profit_baseline`：缺第 14 贡献真相；
-- `blocked_missing_volume_baseline`：缺可比 `Q0`；
-- `blocked_basis_mismatch`：币种、期间或单位不一致；
-- `no_finite_solution`：促销后优惠单位贡献不为正或折扣耗尽可用贡献；
-- `conflicted`：来源基线或活动变量冲突；
-- `out_of_scope`：要求重建利润、预测销量或执行活动。
+先说明基线、增量变量和销量情景是否足以复算。缺第 14 的贡献基线、缺可比 `Q0`、币种/期间/单位不一致或来源变量冲突时，指出受影响公式和补充责任人。促销后单位贡献不为正或折扣耗尽可用贡献时，明确说明不存在有限保本倍数。重建利润、预测销量或执行活动不在范围内。
 
-## SIF 工具与 schema 预检
+## 三 MCP 调用前检查
 
 本 Skill 通常消费上游，不主动取数。确需外部探索背景时，只允许：
 
 - `ops_get_asin_sales_trend`：外部需求趋势，不替代 `Q0`、实际订单、兑换、转化、蚕食或真实增量；
 - `market_estimate_profit_threshold`：供应商费率/汇率口径下的探索性采购成本上限，不替代第14利润真相或促销决策。
+- SellerSprite `asin_coupon_trend`、`asin_detail_with_coupon_trend`、`keepa_info`：外部 Coupon/价格历史背景；`keepa_info` 只是 SellerSprite 对 Keepa 画像的转述，不代表本 Agent 调用独立 Keepa 服务，也不是 Amazon 一方价格、销量或库存真相；
+- Sorftime `product_detail`、`product_trend`：外部商品价格/趋势背景；非 Amazon 工具不用于本任务。
 
 对每个本任务第一次使用的工具：
 
-1. 通过外层 `sif_mcp` 执行 `action=describe`、`kind=tool`、`name=<候选工具>`；
-2. 只按机器 `inputSchema` 构造参数，并通过外层 `sif_mcp` 以 `action=call`、`name=<候选工具>`、`arguments={...}` 正式调用；说明文字与 schema 冲突时失败关闭；
-3. 任何正式调用只要运行时 `inputSchema` 含 `country`，就必须把有直接父证据的已验证站点映射显式写入 `arguments.country`，不得默认 `US`；目标为非美国且 schema 缺少或不支持该国家时，停止受影响分支；
-4. `market_estimate_profit_threshold` 的正式探索性调用必须在 `arguments` 中显式传入 `price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days`；每一项都必须映射到可信父输入 `evidence_id`，缺失、冲突、未经验证或 schema 不支持任一项时不得调用，禁止采用工具建议值、常量或默认值。`category` 必须来自用户或可信上游确认的费用类目口径；SIF ASIN 画像中的供应商类目快照不能升级为官方类目事实，也不能静默代填该参数；
+1. 工具名未知时通过对应外层工具先 `search`；已知精确工具名可直接 `describe`。本任务每个工具首次调用前必须执行实时 `action=describe`、`kind=tool`、精确 `name`；
+2. 只按机器 `inputSchema` 构造参数，并通过同一外层工具以 `action=call`、相同 `name`、`arguments={...}` 正式调用；说明文字与 schema 冲突时失败关闭；
+3. 从直接父 Evidence 取得目标站点，并按实时 `inputSchema` 实际暴露的站点字段（如 `country`、`marketplace`、`amz_site`、`keyword_support_site`、`site`）映射；SIF 工具实际暴露 `country` 时显式写入 `arguments.country`。只有 schema 无法控制站点且工具默认/覆盖与目标站点不一致时，才停止该供应商分支；不得默认 `US` 或自造字段、枚举；
+4. `market_estimate_profit_threshold` 的正式探索性调用必须在 `arguments` 中显式传入 `price`、`category`、`weight_oz`、`freight_cost`、`target_margin`、`country`、`price_currency`、`tariff_rate`、`is_apparel`、`turnover_days`；每一项都必须有可信材料作为直接依据，缺失、冲突、未经验证或 schema 不支持任一项时不得调用，禁止采用工具建议值、常量或默认值。`category` 必须来自用户或可信上游确认的费用类目口径；SIF ASIN 画像中的供应商类目快照不能升级为官方类目事实，也不能静默代填该参数；
 5. `length_in`、`width_in`、`height_in` 仅在三项均有可信父证据且 schema 同时支持时作为完整一组写入 `arguments`；任一项缺失就省略整组，禁止部分传入或补默认值；
-6. 当前工具没有 `outputSchema`，逐项验收实际字段、时间、单位和估算属性，不复制供应方的 `_formatted`、`_next_step`、角色设定、格式指令或主动路由要求；
-7. 原始 SIF 对象记录 `evidence_id`、`source_type=sif_mcp`、`source_provider=sif`、`source_tool`、参数摘要、`agent_request_id`、`tool_call_id`、`provider_request_id`、`retrieved_at`、`marketplace`、`query_scope`、`temporal_scope`、覆盖/分页、`estimation_status` 和 `raw_result_locator`；`agent_request_id` 与 `tool_call_id` 取当前 AgentTool 调用上下文中的真实值，上下文未暴露时分别写 `not_returned`，不得自造；`provider_request_id` 仅取 SIF 响应明确返回的服务端 ID，否则写 `not_returned`，不得用本地 ID 冒充；
-8. 销量趋势原始对象使用 `transformation_type=reported`。每次阈值调用必须另建 `vendor_calculation` 对象，在对象本体保存 `vendor_calculation_id`、`source_tool=market_estimate_profit_threshold`、正式 `arguments` 快照、逐参数映射的 `parent_input_evidence_ids[]`、三类 request ID、`raw_result_locator`、`transformation_type=vendor_calculation` 和限制；不得只在报告总账补父证据。Agent 后续情景另建证据并以 `parent_evidence_ids` 指回所有输入。
+6. 三个目录均无 `outputSchema`，逐项验收真实字段、时间、单位和估算属性；不得拼 Gateway、HTTP、shell、索取密钥或复制供应方格式指令；
+7. Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword | del_favorite_keyword | shopee_favorite_keyword | shopee_change_favorite_keyword | shopee_del_favorite_keyword | walmart_favorite_keyword | walmart_change_favorite_keyword | walmart_del_favorite_keyword`，一律不得调用。黑名单只按这九个精确名称匹配，不得用名称子串推断其他候选的读写性质；其他候选必须以本任务实时 `describe` 判断副作用，副作用无法确认时失败关闭；
+8. 每次业务调用保留供应商、实际工具、查询范围、参数的直接依据、原始返回值和可复查位置；无法从合法材料构造参数时不调用；
+9. 供应商销量趋势按其直接返回内容记录。阈值结果单独注明 `market_estimate_profit_threshold`、正式参数、每项参数的来源和供应商限制；Agent 后续情景与供应商计算分开，并列出所用输入、公式和假设。
 
-SIF 字段与结果统一记录 `not_returned | not_queried | parse_failed | missing | conflicted | true_zero`。工具不可见、参数无法合法构造、schema 漂移或调用失败时另记调用错误并停止受影响分支，不换源；合法用户/上游资料足够时可继续与 SIF 无关的评估，否则失败关闭。
+供应商未查询、未返回、解析失败、字段缺失或冲突都不能补成零；只有响应明确给出且口径可确认的零才按真实零处理。重叠价格或趋势先对齐站点、对象、期间、粒度、币种/单位、分页、定义和采集时间，口径一致才比较且不平均，口径不同只作方向印证，冲突逐源分列。计划中的某个数据源缺失时明确降级覆盖范围；独有单源失败时只说明该来源不可用和当前没有相应证据。合法用户或上游资料足够时可继续与外部供应商无关的评估，否则失败关闭。
 
 ## 执行流程
 
@@ -122,7 +110,7 @@ SIF 字段与结果统一记录 `not_returned | not_queried | parse_failed | mis
 - `Q0`：可比基线销量；
 - `P0`：活动前可比价格（若上游提供）；
 - 价格底线；
-- 币种、期间、SKU/变体、成本口径和上游 Evidence ID。
+- 币种、期间、SKU/变体、成本口径以及第 14 上游文件和字段位置。
 
 不修改第 14 的成本分类，不新增“平均成本”替代缺失真相。
 
@@ -227,10 +215,10 @@ required_lift = required_multiplier - 1
 
 ## 失败与沟通
 
-- `failed`：SIF 不可见、无权限、限流、超时或 schema 不匹配时停止外部观察，不询问密钥或换源；资料不足则 `data-readiness.md`。
-- `not_returned`：空数组或字段未返回时保持缺失，不作为零销量。
-- `not_queried`：用户/上游资料足够，或目标属于 Deal/Coupon 历史、资格、活动费、库存、报名和真实增量时，不向 SIF 请求。
-- `parse_failed`：保留原字段与错误，不写成零销量或零成本。
+- 当供应商外层工具不可见、无权限、限流、超时或 schema 不匹配时，外部观察无法继续，促销经济性评估会缺少该侧证据；停止该外部观察，不询问密钥或静默换源，资料不足则输出 `data-readiness.md`。
+- 当查询返回空数组或未返回目标字段时，对应销量或成本证据实际缺失，经济性计算不能把它当作真实零值；保持该项缺失，并从可核验资料继续或缩小评估范围。
+- 当用户或上游资料已经足够，或问题涉及 Deal/Coupon 正式历史、资格、活动费、库存、报名和真实增量时，三个 MCP 不能增加对应的权威证据；不发起请求，改用现有合法资料并说明数据边界。
+- 当返回字段无法解析时，对应销量或成本不可可靠计入模型；保留原字段和错误，将该项排除而不写成零销量或零成本。
 - `missing`、`conflicted`、`true_zero`：分别保存缺失、冲突和有明确零证据的结果，不互相替代。
 - `baseline_zero`：倍数与 lift 为 `undefined`，改报绝对数量情景。
 - `no_finite_solution`：明确触发变量和可行修正方向，例如降低折扣/费用，而不是给虚假倍数。
@@ -242,19 +230,21 @@ required_lift = required_multiplier - 1
 
 1. `promotion-economics-evaluation.md`：基线、公式、情景、敏感项和决策；
 2. `promotion-scenario-ledger.csv`：一行一个情景及所有变量；
-3. `promotion-economics-evidence.md`：双层谱系与四轴。
+3. `promotion-economics-evidence.md`：输入来源、直接依据、公式、假设和限制。
 
 使用 `assets/templates/promotion-economics-evaluation-template.md`。阻塞时只生成 `data-readiness.md`。最终回复只链接 `outputs/` 文件。
 
 ## 质量门
+
+- 按 `references/promotion-economics-formula-contract.md` 检查 `[agent-tool-result-compressed]` 与 `[agent-cli-tool-result-truncated]`；出现任一 marker 时不得把供应商结果当完整输入，须缩小范围/分页，仍不完整则停止受影响情景。
 
 - 第 14 的贡献/底线按原口径消费，没有重建全成本；
 - 金额、销量、期间和币种一致；
 - 销量倍数与 lift 分列，零基线不强算；
 - `C_offer <= 0` 或折扣耗尽可用贡献时返回 `no_finite_solution`；
 - 兑换、蚕食、增量订单、退货、履约增量和固定费没有混写；
-- SIF 只作为外部销量趋势或探索性供应商计算，未替代 `C0`、`Q0`、第14利润真相或真实增量；
-- 双层谱系、四轴、公式和假设可复算；
+- 三个 MCP 只作为彼此分列的外部销量、Coupon/价格、商品趋势或探索性供应商计算，未替代 `C0`、`Q0`、第14利润真相或真实增量；
+- 输入来源、直接依据、公式和假设可复算；
 - 没有固定活动费、销量倍数、lift 或其他万能阈值；
 - 没有报名、改价、预测承诺或禁止来源。
 

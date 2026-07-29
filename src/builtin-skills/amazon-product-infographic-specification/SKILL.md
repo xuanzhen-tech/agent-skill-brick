@@ -4,7 +4,7 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 ---
 
 <!--
-文件功能：定义 Amazon 商品信息图制作规格的事实原子、比较口径、版面结构、确定性生产门、证据谱系和正式交付。
+文件功能：定义 Amazon 商品信息图制作规格的事实原子、比较口径、版面结构、确定性生产门、可回到原始依据的记录方式和正式交付。
 职责边界：只输出可执行规格和生产 handoff，不生成底图、不排版长文本、不接管 A+ 模块或文案，也不宣称规格书是最终图片。
 重要关联：信息原子、比较与生产状态见 references/infographic-fact-and-production-contract.md；正式交付使用 assets/templates/infographic-specification-delivery-template.md；图片底图交给内置 amazon-product-image-generation，精确排版交给实际可用的确定性工具或人工。
 -->
@@ -26,8 +26,8 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 - 本 Skill 拥有信息任务、事实原子、比较口径、版面结构、callout 与制作规格；
 - Product 内置 `amazon-product-image-generation` 单一拥有底图生成、编辑、批量和版本链；
 - 专家 03 的 `amazon-aplus-content-planning` 单一拥有 A+ 模块、顺序、短文案和资产需求；
-- 本 Skill 可以消费 Module/Asset/Fact IDs，但不得替换模块结构、重写上游文案或直接调用图像工具；
-- 长文本、表格、精确数字、单位、对齐和品牌字体需要确定性排版能力；能力不可用时必须输出 `production_tool_required`。
+- 本 Skill 可以消费上游模块名称/顺序、资产路径/版本和事实来源，但不得替换模块结构、重写上游文案或直接调用图像工具；
+- 长文本、表格、精确数字、单位、对齐和品牌字体需要确定性排版能力；能力不可用时必须明确当前仅交规格，不能声称成品完成。
 
 ## 运行合同
 
@@ -39,29 +39,21 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 
 竞品可见声明不等于可比较事实。比较对象、字段、单位、条件、期间和来源必须同时明确。
 
-### 外部数据与 SIF 边界
+### 外部数据与三 MCP 边界
 
-- 本包不调用 `sif_mcp`；当前 SIF 没有权威产品尺寸、材质、包装清单、操作步骤、比较真实性、图片生产或确定性排版工具；
-- SIF 的 ASIN、关键词、流量、销量和广告供应商观察不能成为信息图中的产品事实、尺寸、功效、比较值或使用说明；
+- 本包不直接调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`；公开 Listing/A+/视频/评论或 TikTok benchmark 必须先由研究/本地化 Skill 固化为可追溯上游，TikTok 仅限用户明确任务；
+- 上游 MCP 证据须保留供应商与精确工具、原始结果位置、平台/站点/ASIN/变体/资产/期间、实际覆盖及压缩/截断限制；本包读取时保留上游文件与版本；
+- 供应商观察只能作为 brief/benchmark，不能成为信息图中的产品事实、尺寸、材质、功效、比较值、操作步骤、权利或合规证明；同类证据仅在口径可比时并列，不盲目平均；
 - 所有可见信息原子只接受用户材料或带来源定位的可信上游证据；
-- 不使用网页、浏览器、Amazon 抓取、Bright Data、其他 MCP/API、外部制图或设计服务，也不读取凭据、安装连接器或静默换源。
+- 不使用网页、浏览器、Amazon 抓取、其他 MCP/API、Gateway/HTTP/shell、外部制图或设计服务，也不接触凭据。
 
 合法输入足够则继续；不足时保留缺失并失败关闭，不换源补齐。
 
-### 双层谱系与四轴证据
+### 信息原子与布局依据
 
-正式交付同时记录 `input_evidence` 与正式派生对象。输入证据记录事实、尺寸、说明、图片、文案与比较证据的 `evidence_id`、`parent_evidence_id`、来源路径、定位、版本和原始四轴；输入层枚举不得挪作 Agent 派生对象的默认值。
+每个可见信息原子列出所依据的事实、尺寸、说明、图片、批准文案或比较证据，以及原值、单位、适用对象、条件、限制和批准状态。任何单位换算都保留原值、公式、精度和舍入规则。
 
-每个正式派生对象在对象本体中直接记录以下字段，不能只在报告末尾账本中补写：
-
-| 派生对象 | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 对象载荷 |
-|---|---|---|---|---|---|---|---|
-| `info_atom` | `info_atom_id` | 支撑显示文字、数值、条件与限制的输入 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `normalized \| calculation \| inference` | 显示内容、原值/单位、换算、对象范围、批准和禁止外推 |
-| `layout_decision` | `layout_decision_id` | 支撑信息任务、原子选择和版面约束的 Evidence/Info Atom IDs | 固定 `agent` | `current \| historical \| future \| mixed \| not_applicable \| unknown` | `reported \| estimated \| forecast \| mixed \| not_applicable \| unknown` | `inference \| hypothesis` | 区域、阅读顺序、信息任务、布局约束、移动端检查和验收 |
-
-输入证据的 `source_type` 允许 `user_input | upstream_output`，派生对象则只能是 `agent`。派生对象的四轴必须逐条赋值，不能从父证据继承，也不能用对象轴、时间轴、单位轴或口径轴替代。
-
-单位换算必须保留原值、公式、精度和舍入规则。版面顺序属于 Agent 推断，必须引用信息任务与事实原子，不能伪装成平台效果事实。
+每个布局决定说明它要解决的信息任务、使用了哪些信息原子、为什么采用当前阅读顺序和版面约束、移动端如何验收、还缺什么批准。版面顺序是 Agent 的设计判断，不能伪装成平台效果事实。
 
 ### 工作区
 
@@ -79,26 +71,21 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 
 1. `case_id`、Amazon 站点、目标语言、产品和变体；
 2. 信息图类型与单一信息任务；
-3. 要展示的 Fact IDs、原始值、单位、条件和来源；
+3. 要展示的事实、原始值、单位、条件和来源位置；
 4. 目标槽位、可用画布约束和用户提供的当前规则；
 5. 源图片、图标、Logo、字体及其权利状态；
 6. 已批准标签或文案；
-7. 若来自 A+，上游 Module/Asset/Fact IDs。
+7. 若来自 A+，上游模块名称/顺序、资产路径/版本和事实来源。
 
 比较图还必须明确比较对象、同口径字段、期间和证据。缺一项时不得形成优势结论。
 
-### 就绪与生产状态
+### 三个业务门
 
-- `ready_for_spec`：事实和信息任务足以交付制作规格；
-- `limited_evidence`：只能规划已证部分；
-- `rights_unverified`：可写规格，但受影响素材不可进入生产；
-- `conflicted`：数值、单位、对象、文案或权利冲突；
-- `production_tool_required`：规格完成，但当前没有确定性工具生产精确文字、数字或表格；
-- `policy_check_required`：当前平台尺寸、文字或槽位规则需运营方核验；
-- `blocked`：核心事实或信息任务不足；
-- `out_of_scope`：请求是生图、A+ 规划、上传、合规裁定或无证据比较。
+1. 事实门：每个数字、标签、步骤和比较是否有可定位事实；不足时只规划已证部分，核心事实不足则停止。
+2. 权利门：源图片、字体、Logo、图标和比较材料是否确认可用于本范围；未确认的素材可以进入资料清单，但不能进入生产。
+3. 生产门：当前只能交制作规格、可以生成底图，还是已经具备确定性排字能力。规格完成不等于成品完成；只有真实取得并观察成品后才能称为完成。
 
-`ready_for_spec` 不等于最终资产完成。只有下游真实生产、取得成品且由可观察审计确认后，才能使用 `final_asset_observed`；本 Skill 本身不授予该状态。
+平台尺寸、文字或槽位规则不确定时列给运营方核验。生图、A+ 规划、上传、合规裁定和无证据比较不属于本 Skill。
 
 ## 输入与生产能力预检
 
@@ -108,9 +95,9 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 2. 检查单位、条件、对象范围、换算公式、精度与舍入；
 3. 确认源图片、字体、Logo 和比较材料的权利；
 4. 判断当前环境只能交付规格、可交付底图，还是具备确定性排版能力；
-5. 事实冲突或生产能力不足时保留 `unknown` 或 `production_tool_required`。
+5. 事实冲突或生产能力不足时，写明冲突、当前只能交付什么，以及下一责任方。
 
-不得调用 SIF 补产品事实，也不得猜单位、比较真实性、视觉内容或排版完成状态。
+不得直接调用三个 MCP 补产品事实，也不得猜单位、比较真实性、视觉内容或排版完成状态。
 
 ## 执行流程
 
@@ -125,25 +112,23 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 - `whats_in_box`：展示已核实包装内容；
 - `mixed`：只有多个任务无法合理拆分时使用，并说明阅读优先级。
 
-记录 `asset_id`、目标槽位、语言、变体和上游 IDs。不要因为版面方便改变事实或合并不同子体。
+记录资产名称/版本、目标槽位、语言、变体和上游依据。不要因为版面方便改变事实或合并不同子体。
 
 ### 第二步：建立事实原子
 
-读取 `references/infographic-fact-and-production-contract.md`，每个 `info_atom_id` 记录：
+读取 `references/infographic-fact-and-production-contract.md`，为每个会出现在画面中的数字、标签、步骤或比较记录：
 
-- `parent_evidence_ids`；
-- `source_type=agent`；
-- `temporal_scope`：`current | historical | future | mixed | not_applicable | unknown`；
-- `estimation_status`：`reported | estimated | forecast | mixed | not_applicable | unknown`；
-- `transformation_type`：`normalized | calculation | inference`；
+- 直接事实依据与原值定位；
+- 需要的单位换算、公式与精度；
+- 适用对象、限制、批准与禁止外推；
 - 可见标签或短文案；
-- 原始事实、值、单位、条件和 Fact/Evidence IDs；
+- 原始事实、值、单位、条件和可定位依据；
 - 是否换算、如何舍入；
 - 适用对象、变体与市场；
 - 禁止外推的含义；
 - 权利和批准状态。
 
-缺失、未知、未测与真实零值必须分开。没有 Evidence ID 的数字、认证、评分、比较和性能宣称不得进入版面。
+缺失、未知、未测与真实零值必须分开。不能定位到原始依据的数字、认证、评分、比较和性能宣称不得进入版面。
 
 ### 第三步：校验比较口径
 
@@ -155,20 +140,17 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 4. 来源可靠性与估算状态是否可比较；
 5. 文案是否只陈述证据支持的差异。
 
-口径不一致时拆开展示或标记 `not_comparable`，不得补齐、归零或写“更好”。
+口径不一致时拆开展示并说明不可比较，不得补齐、归零或写“更好”。
 
 ### 第四步：设计阅读顺序
 
 为每个版面区域指定：
 
-- `layout_decision_id`、`region_id` 和阅读顺序；
-- `parent_evidence_ids`；
-- `source_type=agent`；
-- `temporal_scope`：`current | historical | future | mixed | not_applicable | unknown`；
-- `estimation_status`：`reported | estimated | forecast | mixed | not_applicable | unknown`；
-- `transformation_type`：`inference | hypothesis`；
+- 使用的信息原子与信息任务；
+- 阅读顺序和版面取舍；
+- 待确认资产、限制和验收条件；
 - 该区域回答的问题；
-- 使用的 Info Atom IDs；
+- 使用的事实依据；
 - 主体图、图标、引导线、尺寸线或步骤编号；
 - 文字层级、最大信息负担与移动端检查；
 - 必须保持的产品身份和留白；
@@ -181,10 +163,10 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 
 分别输出：
 
-- `base_visual_request`：无字或轻字的产品/场景底图需求，可交给内置图片生成 Skill；
-- `deterministic_overlay_spec`：精确文字、数字、单位、表格、尺寸线、Logo、图标和对齐；
-- `production_owner`：当前可用确定性工具、人工设计方或 `production_tool_required`；
-- `acceptance_checks`：逐字符、逐数值、逐单位和视觉层级验收。
+- 底图需求：无字或轻字的产品/场景底图，可交给内置图片生成 Skill；
+- 排字规格：精确文字、数字、单位、表格、尺寸线、Logo、图标和对齐；
+- 生产责任：当前可用确定性工具、人工设计方，或明确当前只能交规格；
+- 验收清单：逐字符、逐数值、逐单位和视觉层级验收。
 
 不要要求生成模型可靠渲染长文本、精确表格或大量数字。当前没有确定性排版能力时，只交付规格，不声称成品完成。
 
@@ -192,15 +174,15 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 
 交给内置图片 Skill 的内容只包含底图需求、身份锚点、源资产、权利、必须保持和验收；不直接调用图像工具。交给确定性生产责任方的内容包含画布、区域、文字、数字、单位、字体/品牌资产、对齐和导出要求。
 
-若资产服务 A+，保留原 Module/Asset/Fact IDs，不重排模块或重写文案。
+若资产服务 A+，保留原模块名称/顺序、资产路径/版本和事实来源，不重排模块或重写文案。
 
 ### 第七步：执行规格验收
 
 在交付前检查：
 
-- 所有可见信息能回溯到 Info Atom 与 Evidence IDs；
+- 所有可见信息能回溯到原始事实依据；
 - 文字、数字、单位和换算一致；
-- 比较口径一致或显式 `not_comparable`；
+- 比较口径一致，不可比较的内容已拆开并说明；
 - 产品身份、源资产和权利清楚；
 - 底图与排版职责没有混写；
 - 当前生产状态没有夸大。
@@ -211,16 +193,16 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 
 ## 失败与沟通
 
-- `missing_fact`：删除受影响信息原子或列为资料请求，不用常识补值；
-- `unit_conflict`：保留原值和冲突，停止换算与排版；
-- `not_comparable`：取消优势文案，只展示可独立陈述的事实；
-- `rights_unknown`：隔离受影响素材、Logo、图标或比较对象；
-- `production_tool_required`：交付完整规格和责任方要求，不冒充成品；
-- `policy_check_required`：列运营方需核验的当前规则；
-- `unsupported_external_fact`：拒绝用 SIF、网页或其他供应商观察填补产品事实、尺寸、比较或步骤；
-- `out_of_scope`：生图、A+ 规划、上传、合规审批或无证据优势。
+- 缺少事实：删除受影响内容或列为资料请求，不用常识补值；
+- 单位冲突：保留原值和冲突，停止换算与排版；
+- 不可比较：取消优势文案，只展示可独立陈述的事实；
+- 权利未知：隔离受影响素材、Logo、图标或比较对象；
+- 缺少确定性生产能力：交付完整规格和责任方要求，不冒充成品；
+- 平台规则待核验：列出运营方需确认的当前规则；
+- 外部事实不受支持：拒绝用 MCP、网页或其他供应商观察填补产品事实、尺寸、比较或步骤；
+- 超出范围：生图、A+ 规划、上传、合规审批或无证据优势。
 
-失败不会触发 SIF、网页、其他 MCP、外部制图或设计服务回退。
+失败不会触发三个 MCP、网页、其他外部来源、制图或设计服务回退。
 
 ## 正式交付
 
@@ -228,16 +210,16 @@ description: 把已核实的产品尺寸、功能、组成、差异和使用步�
 
 1. `infographic-production-spec.md`：信息任务、事实原子、版面、底图、排版和验收；
 2. `callout-and-data-ledger.csv`：一行一个可见信息原子；
-3. `infographic-evidence-ledger.md`：输入证据、Agent 布局决定、四轴、权利和批准。
+3. `infographic-evidence-ledger.md`：输入证据、信息原子、布局决定、直接依据、权利和批准。
 
-核心事实不足时只生成 `data-readiness.md`。确定性工具不足时仍可生成上述规格，但首页必须标记 `production_tool_required`。最终回复只链接 `outputs/` 文件。
+核心事实不足时只生成 `data-readiness.md`。确定性工具不足时仍可生成上述规格，但首页必须明确“当前仅交规格，成品待确定性排版或人工设计”。最终回复只链接 `outputs/` 文件。
 
 ## 质量门
 
-- 每个数字、单位、标签、步骤和比较均引用 Fact/Evidence IDs；
+- 每个数字、单位、标签、步骤和比较均能回到原始事实依据；
 - 原值、换算、精度、舍入和适用对象可追溯；
 - 比较对象、指标、单位、条件和期间一致；
-- `input_evidence` 与 `agent_output` 双层谱系完整；
+- 输入证据、信息原子与布局决定之间可追溯；
 - 权利状态和批准状态明确；
 - 版面区域有信息任务、阅读顺序和可复核验收；
 - 底图与确定性排版职责分离；

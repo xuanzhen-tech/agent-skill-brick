@@ -1,158 +1,76 @@
 <!--
-文件功能：提供实验测量协议、SIF 供应商背景、数据质量检查、效应估计、结论上限和证据谱系的正式交付模板。
-职责边界：模板只承载设计审查与结果分析；SIF 背景不得进入实验事实、效应或因果；不执行实验、分流、平台改动或自动停止。
-重要关联：字段与因果门由 references/experiment-analysis-contract.md 定义；由上级 SKILL.md 物化到 outputs。
+文件功能：提供实验协议、执行质量、效应、不确定性、外部背景和决策模板。
+职责边界：模板不表示实验由本 Skill 执行，也不把外部供应商观察当实验结果。
+重要关联：由 ../../SKILL.md 物化；判断方法见 ../../references/experiment-analysis-contract.md。
 -->
 
 # Amazon 实验测量与结果分析
 
-## 1. 实验控制
+## 1. 协议
 
-- Experiment ID / version：
-- Business question：
-- Domain owner：
-- Analysis unit：
-- Design type：
-- Marketplace / timezone / entity scope：
-- Protocol frozen at：
-- Reviewer：
-- Experiment execution status：`not_executed_by_agent`
+- 业务问题与决策：
+- 假设和机制：
+- 处理/对照：
+- 分配单位与方法：
+- Exposure 定义：
+- 资格、纳入和排除：
+- 主要指标/护栏：
+- 分子、分母、窗口与去重：
+- 最小有意义效应：
+- 样本量与时长依据：
+- 停止规则：
+- 预设分群：
+- 并发干预风险：
+- 协议版本/批准人：
 
-## 2. 测量协议
+## 2. 协议偏离
 
-- Protocol Output ID：
-- Parent Evidence IDs：
-- Source type：`agent`
-- Temporal scope：`current_rule`
-- Estimation status：`not_applicable`
-- Transformation type：`protocol_normalization`
+| 偏离 | 发生时间与原因 | 影响对象 | 对偏倚/解释的影响 | 处理与敏感性分析 |
+|---|---|---|---|---|
+| `<内容>` | `<内容>` | `<范围>` | `<影响>` | `<处理>` |
 
-| 合同项 | 定义 | Evidence/approval | 状态或限制 |
-|---|---|---|---|
-| Eligibility |  |  |  |
-| Assignment/randomization |  |  |  |
-| Treatment/control |  |  |  |
-| Exposure |  |  |  |
-| Primary metric |  |  |  |
-| Guardrail metrics |  |  |  |
-| Sample size basis / MDE |  |  |  |
-| Analysis/attribution window |  |  |  |
-| Stopping rule |  |  |  |
-| Multiple comparisons |  |  |  |
-| Contamination rule |  |  |  |
-| Missing-data rule |  |  |  |
+## 3. 执行质量
 
-本表只规范化登记由 domain owner / reviewer 提供并版本化的测量控制内容。批准事实仍属于父 Evidence；Agent 不得自行补齐缺失协议，也不得把规范化记录描述为 Agent 批准。
+| 检查 | 结果与数值 | 直接材料/方法 | 对结论的影响 | 下一步 |
+|---|---|---|---|---|
+| `<assignment/exposure/SRM/失衡/串组/缺失/流失/成熟度/并发干预/停止规则>` | `<结果>` | `<定位/公式>` | `<影响>` | `<动作>` |
 
-## 3. 数据就绪度
+## 4. 分析集
 
-| Record type | Source / version | Coverage | Evidence IDs | Missing/conflict status | 影响 |
-|---|---|---:|---|---|---|
-| Eligibility |  |  |  |  |  |
-| Assignment |  |  |  |  |  |
-| Exposure |  |  |  |  |  |
-| Outcome |  |  |  |  |  |
-| Exclusion |  |  |  |  |  |
+| 分析集 | 纳入规则 | 样本量 | 优点 | 偏倚风险 | 用途 |
+|---|---|---|---|---|---|
+| `<ITT/按曝光/符合协议>` | `<规则>` | `<n>` | `<内容>` | `<风险>` | `<主要/敏感性>` |
 
-### 3.1 SIF `public_market_context`（可选）
+## 5. 效应
 
-| Evidence ID | Record Type | Source Type | Provider | Tool | Agent Request ID | Tool Call ID | Provider Request ID | Retrieved At | Marketplace | Query Scope | Temporal Scope | Coverage / Pagination | Estimation Status | Transformation Type | Raw Result Locator | 与实验事实的隔离说明 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  | `public_market_context` | `sif_mcp` | `sif` |  |  |  |  |  |  |  |  |  |  | `reported` |  |  |
+| 指标/分群 | Treatment 分子/分母/值 | Control 分子/分母/值 | 绝对效应 | 相对效应 | 置信区间 | 多重比较 | 业务意义 |
+|---|---|---|---|---|---|---|---|
+| `<指标>` | `<内容>` | `<内容>` | `<值>` | `<值>` | `<区间>` | `<主要/校正/探索>` | `<判断>` |
 
-> `agent_request_id` 与 `tool_call_id` 只填写当前 AgentTool 调用上下文中的对应真实值；若上下文未暴露相应字段，则对应字段各写 `not_returned`，不得自造。`provider_request_id` 只填写 SIF 响应明确返回的服务端请求 ID，否则写 `not_returned`；三者不得互代。
+## 6. 外部背景
 
-## 4. 质量检查
+| 期间/对象 | SIF | SellerSprite | Sorftime | 可比性/冲突 | 对实验解释的作用 | 限制 |
+|---|---|---|---|---|---|---|
+| `<内容>` | `<观察>` | `<观察>` | `<观察>` | `<说明>` | `<背景/替代解释>` | `<不进入效应>` |
 
-| Quality Check ID | Check | Method/rule | Observed result | Status | Parent Evidence IDs | Source type | Temporal scope | Estimation status | Transformation type | Interpretation impact |
-|---|---|---|---|---|---|---|---|---|---|---|
-|  | Sample ratio mismatch |  |  |  |  | `agent` |  |  | `quality_check` |  |
-|  | Missingness |  |  |  |  | `agent` |  |  | `quality_check` |  |
-|  | Cross contamination |  |  |  |  | `agent` |  |  | `quality_check` |  |
-|  | Early stopping / repeated peeking |  |  |  |  | `agent` |  |  | `quality_check` |  |
-|  | Concurrent intervention |  |  |  |  | `agent` |  |  | `quality_check` |  |
-|  | Metric version drift |  |  |  |  | `agent` |  |  | `quality_check` |  |
-|  | Multiple comparisons |  |  |  |  | `agent` |  |  | `quality_check` |  |
-|  | Window mismatch |  |  |  |  | `agent` |  |  | `quality_check` |  |
+## 7. 结论
 
-## 5. 效应估计
+- 证据类型：`<因果较强/因果受限/观察性关联/不可判定>`
+- 主要效应与区间：
+- 是否达到最小有意义效应：
+- 护栏：
+- 关键偏离和限制：
+- 上线/不上线/继续实验的业务含义：
+- 下一轮实验：
 
-| Agent Output ID | Metric ID | Treatment n/value | Control n/value | Absolute effect | Relative effect | Uncertainty interval | Method | Parent Evidence IDs | Source type | Temporal scope | Estimation status | Transformation type |
-|---|---|---|---|---:|---:|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  | `agent` |  | `agent_estimated` | `effect_estimation` |
+## 8. 交付前检查
 
-对照基数为真实零：
-
-```text
-relative_effect=undefined
-```
-
-## 6. 护栏与取舍
-
-| Guardrail Assessment ID | Agent Output ID | Guardrail metric | Treatment | Control | Effect/uncertainty | Parent Evidence IDs | Source type | Temporal scope | Estimation status | Transformation type | 状态 | 决策限制 |
-|---|---|---|---:|---:|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  | `agent` | `period` | `agent_estimated` | `guardrail_assessment` |  |  |
-
-## 7. 结论上限
-
-- Conclusion Output ID：
-- Parent Evidence IDs：
-- Source type：`agent`
-- Temporal scope：`period`
-- Estimation status：`not_applicable`
-- Transformation type：`interpretation_classification`
-
-- 随机化是否有证据：
-- 实际曝光是否有证据：
-- 可允许的解释：
-- 不可允许的因果表述：
-- 样本、期间、对象与外推限制：
-- p 值不能证明的内容：
-- SIF 供应商背景与实验结果的分界：
-
-非随机时固定：
-
-```text
-analysis_status=result_limited_observational
-causal_status=causal_interpretation_not_permitted
-```
-
-## 8. 派生谱系
-
-| Agent Output ID | Output type | Metric/check | Parent Evidence IDs | Source type | Temporal scope | Estimation status | Transformation type | Rule version | Uncertainty |
-|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `agent` |  |  |  |  |  |
-
-## 9. 领域交接
-
-- 第 03 Listing 干预：
-- 第 04 视觉干预：
-- 第 05 广告干预：
-- 第 06 促销干预：
-- 第 08 履约/库存：
-- 第 09 政策：
-- 第 14/内置包利润与价格护栏：
-
-## 10. 人工复核
-
-- [ ] 协议已冻结或明确事后修改
-- [ ] Assignment、exposure、outcome 分开
-- [ ] SRM、缺失、污染、提前停止和多重比较已查
-- [ ] 同时报绝对/相对效应与不确定性
-- [ ] p 值未写成业务保证
-- [ ] SIF 未作为实验结果或进入效应分子/分母
-- [ ] 每个已调用 SIF 工具均在本任务首次 `call` 前完成 `describe`
-- [ ] 非随机结果未称因果
-- [ ] Agent 未执行分流、实验或领域动作
-
-## 11. 最终状态
-
-```text
-conclusion_output_id=
-analysis_status=
-causal_status=
-reason_codes=[]
-experiment_execution_status=not_executed_by_agent
-external_change_status=not_executed
-automation_status=not_created
-```
+- [ ] 协议与主要指标已冻结或标记事后
+- [ ] assignment、exposure、outcome 来自一方材料
+- [ ] SRM、串组、失衡、缺失、流失和并发干预已检查
+- [ ] 分析集和排除透明
+- [ ] 报告点估计、区间、样本量和业务意义
+- [ ] 多重比较与事后分群已标记
+- [ ] 三 MCP 只作外部背景
+- [ ] 非随机结果未写成因果
+- [ ] 正式文件位于 `outputs/`

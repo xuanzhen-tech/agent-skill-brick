@@ -29,9 +29,9 @@ description: 仅基于用户提供的跨境货运报价，按各报价原始计�
 2. `uploads/` 中用户上传的只读报价材料。
 3. 可信 `outputs/` 中明确标识为用户报价整理结果、带版本和证据定位的正式产物。
 
-不得主动从 Web、浏览器、SP-API、ERP、WMS、领星、17TRACK、货代网站或其他 API/MCP 获取、补齐或替换报价。17TRACK 是物流轨迹服务，不是运价来源。SIF 当前没有运价、报价条款或运输时效能力，其销量信号也不能替代用户报价。
+不得主动从 Web、浏览器、SP-API、ERP、WMS、领星、17TRACK、货代网站或其他 API/MCP 获取、补齐或替换报价，也不调用 `sif_mcp`、`sellersprite_mcp`、`sorftime_mcp`。17TRACK 是物流轨迹服务，不是运价来源。SIF、SellerSprite、Sorftime 都没有可替代用户正式运价、报价条款或运输时效的能力，其市场信号不能替代用户报价。
 
-本 Skill 的报价比较不调用 `sif_mcp` 或其他外部业务工具。用户另行要求市场需求背景时，应交给具有该职责的上游分析能力；本包不得把任何外部返回挂接到运价、报价条款或时效排名。
+本 Skill 的报价比较不调用三个 MCP 或其他外部业务工具。用户另行要求市场需求背景时，应交给上游分析能力；本包不得把任何外部返回挂接到运价、报价条款或时效排名。
 
 ## 不得使用的场景
 
@@ -87,45 +87,20 @@ description: 仅基于用户提供的跨境货运报价，按各报价原始计�
 
 无法确认同一货物基准或同一运输区间时，不得生成价格排名。
 
-## 双层谱系与四轴
+## 报价证据与比较判断
 
-### 第一层：原始证据 envelope
+每个报价事实保留报价方、报价 ID/版本、签发与有效期、货物及运输区间、服务范围、原值/单位/币种、文件页码或单元格定位，以及报价中的限制。外部市场或销量背景不能替代报价金额、报价条款或时效依据。
 
-每项报价事实记录：
+计算和比较必须让读者能复核：
 
-- `evidence_id`
-- `source_type`: `user_input | user_upload | trusted_upstream_output`
-- `source_locator`: 文件、页码、表格、单元格或图片区域
-- `source_version`
-- `observed_at`
-- `business_time`
-- `temporal_scope`: `current | historical | future | mixed | unknown`
-- `estimation_status`: `reported | estimated | forecast | mixed | unknown`
-- `transformation_type`: `raw | provider_derived`
-- `raw_value` 与 `raw_unit_or_currency`
-- `provider_or_owner`
-- `limitations`
-- `quote_id`、`quote_version`、运输区间、服务范围和用户确认状态
+| 判断 | 直接依据 | 为什么这样处理 | 限制或不可比原因 |
+|---|---|---|---|
+| 计费重、最低收费或附加费复核 | 报价原规则和参与计算的原值 | 展示带单位代入、进位和舍入 | 规则缺失、单位未知、条件未触发或无法确认 |
+| 两份报价是否可比 | 同一批次、区间、服务段和有效窗口 | 说明哪些条件已对齐 | 货物基准、服务范围、时效定义或费用边界不同 |
+| 允许比较的成本或时效差异 | 可比报价及复核结果 | 展示差异，不隐藏排除项 | 汇率、税费、条件性费用或时效事件未知 |
+| 最终建议边界 | 上述报价事实和比较结果 | 说明适用场景及理由 | 商业经济判断转交专家 14，执行由人工完成 |
 
-报价事实的 `source_type` 只允许上述三种。任何外部市场或销量背景都不能挂接报价金额、报价条款或时效排名。
-
-### 第二层：派生 record
-
-计算与比较是两类独立的正式派生对象。每个对象本体直接保存五项血缘字段，不能只在报告末尾总账中补写：
-
-| 派生对象 | 稳定 ID | `parent_evidence_ids` | `source_type` | `temporal_scope` | `estimation_status` | `transformation_type` | 对象载荷 |
-|---|---|---|---|---|---|---|---|
-| `calculation` | `calculation_id` | 支撑原规则、输入值与舍入的报价 Evidence IDs | 固定 `agent` | `current \| historical \| future \| mixed \| unknown` | `not_applicable \| estimated \| unknown` | 固定 `calculation` | Quote ID、原规则、带单位代入、舍入、结果/单位和状态 |
-| `comparison` | `comparison_id` | 支撑可比性与结论的 Evidence/Calculation IDs | 固定 `agent` | `current \| historical \| future \| mixed \| unknown` | `not_applicable \| estimated \| unknown` | `comparison \| decision` | 对象范围、可比性门、差异、允许比较、禁止排名和结论 |
-
-两类对象还分别记录 `output_id`、`rule_version`、`generated_at`、`uncertainty`、`result_status=ready | ready_with_limitations | blocked | out_of_scope` 与 `reason_codes[]`。`calculation_id`/`comparison_id` 是领域对象 ID，不替代 `output_id`。派生对象的轴值必须逐条赋值，不能从父证据继承；原对象、时间、单位/币种和口径只作为附加比较维度，不能替代五项血缘字段。
-
-四轴：
-
-- **对象轴**：报价版本、货物批次、箱/托、起运节点、目的节点、服务段。
-- **时间轴**：签发时间、有效期、计划出运期、时效起止事件。
-- **单位/币种轴**：kg、lb、cm、m³、计费吨及报价原币。
-- **口径轴**：实际重、体积重、计费重、W/M、最低收费、附加费和时效定义。
+缺失不是零；冲突值必须并列，不能平均或自行选择。任何价格或时效排序前，都要核对报价对象、有效时间、单位/币种、计费规则和服务口径。
 
 ## 报价事实卡
 
@@ -286,7 +261,7 @@ W/M 只按报价材料自己的定义使用。必须确认：
 
 ## 可比性门
 
-只有以下条件均满足，才能标为 `COMPARABLE`：
+只有以下条件均满足，才能直接比较：
 
 - 同一货物批次或有明确等价基准。
 - 实际重/尺寸输入范围一致。
@@ -297,20 +272,13 @@ W/M 只按报价材料自己的定义使用。必须确认：
 - 币种相同，或用户提供合规换算基准。
 - 时效的起止事件、日历口径和排除项可对齐。
 
-可比性状态：
-
-- `COMPARABLE`
-- `CONDITIONALLY_COMPARABLE`
-- `INCOMPARABLE`
-- `BLOCKED_MISSING_QUOTE_RULE`
-
-只要关键条件不可比，必须封闭失败，不得输出“最便宜/最快”排名。
+若只有补齐明确条件后才可比，列出条件、责任人和对结论的影响；若关键条件不可比或报价规则缺失，停止价格/时效排名，只并列展示事实与差异。
 
 ## 标准工作流
 
 ### 第一步：逐份登记报价原件
 
-每个版本建立完整原始证据 envelope，并独立分配 `quote_id` 和 `evidence_id`。修订报价不能覆盖旧版本。
+每个报价版本分别登记报价方、版本、日期和原件定位。修订报价不能覆盖旧版本。
 
 ### 第二步：建立货物与区间基准
 
@@ -373,6 +341,6 @@ W/M 只按报价材料自己的定义使用。必须确认：
 - 不可比时没有价格/时效排名。
 - 关税清关交给专家 09，运输经济交给专家 14。
 - 未询价、订舱、追踪、发送或创建后台任务。
-- 所有来源具有完整 raw evidence envelope，所有计算与比较具有完整 derived record。
+- 每项计算与比较均能回到报价原文，并写明公式、差异、限制和下一责任人。
 
 详细规则见 [报价比较合同](references/freight-quote-comparison-contract.md)。

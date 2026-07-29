@@ -1,132 +1,94 @@
 <!--
-文件功能：定义采购质量基线、CTQ、样品、检查、变更、偏差、CAPA 和交付闸门的数据合同。
-职责边界：不提供通用 AQL 或阈值，不执行验货、处置、催单和系统写入。
-重要关联：由 ../SKILL.md 在建立质量和交付计划时读取；正式字段映射到 ../assets/templates/procurement-quality-delivery-plan-template.md。
+文件功能：说明如何把规格、CTQ、样品、检查、变更、偏差、CAPA 与交付节点组织成可执行的采购质量计划。
+职责边界：不提供通用 AQL、抽样量或验收阈值，不执行验货、催单、处置和系统写入。
+重要关联：由 ../SKILL.md 在制定计划时读取，交付结构见 ../assets/templates/procurement-quality-delivery-plan-template.md。
 -->
 
-# 质量与交付控制合同
+# 质量与交付控制方法
 
-## 1. 基线
+## 1. 先冻结适用基线
 
-| 字段 | 规则 |
+质量计划开始前，先确认：
+
+- 产品、规格、BOM、包装和标签各自使用哪个版本；
+- 当前处于打样、小批、量产还是出货阶段；
+- 哪个样品是本阶段的批准参照，适用于哪些变体、批次和时间；
+- 谁有权批准基线、偏差和变更；
+- 是否存在尚未关闭、可能影响质量或交期的变更。
+
+不同版本不得混用。没有批准记录时只能说明“待责任方确认”，不能把最新文件自动视为批准版。
+
+## 2. 把要求写成可检查的 CTQ
+
+每项关键质量特性至少回答：
+
+| 问题 | 写法要求 |
 |---|---|
-| `baseline_id` | 产品和版本唯一 |
-| `product_id` / `spec_version` / `bom_version` | 不得跨版本复用结论 |
-| `packaging_version` | 单独记录 |
-| `approved_by` / `approved_at` | 未批准写 pending |
-| `golden_sample_id` | 只有责任方批准后填写 |
-| `scope` | 市场、变体、批次或日期 |
-| `open_change_request_ids` | 未决变更 |
+| 检查什么 | 明确部件、特征、性能或外观对象 |
+| 目标是什么 | 写出值、单位、公差或合格描述 |
+| 如何检查 | 测量、测试、目检、夹具或对样方法 |
+| 在何阶段检查 | 来料、首件、生产中、完工、装箱、出货前或到货 |
+| 谁确认 | 执行人与批准责任分开 |
+| 依据是什么 | 指向规格、图纸、测试要求或责任方批准 |
 
-## 2. CTQ
-
-每条 CTQ 包含：
-
-- `ctq_id`
-- `category`
-- `requirement_id`
-- `value`、`unit`、`tolerance`
-- `method`
-- `equipment_or_fixture`
-- `sample_stage`
-- `acceptance_source_evidence_id`
-- `qualified_owner`
-- `status`
-
-没有授权阈值时使用 `tbd_by_qualified_owner`，不能设默认。
+“品质良好”“符合标准”之类表述不能直接作为 CTQ。缺少授权阈值时，明确由合格质量责任方补充，不得套用默认 AQL 或行业常数。
 
 ## 3. 样品与金样
 
-允许状态：
+样品记录应包含版本、目的、观察到的偏差、测试结果、批准范围、保管责任和失效条件。只有责任方明确批准后才能称为金样。
 
-- `submitted`
-- `under_review`
-- `approved`
-- `approved_with_deviation`
-- `rejected`
-- `superseded`
-- `expired`
+以下变化通常要求重新确认样品适用性：
 
-金样记录必须含保管责任人、证据路径、批准范围和失效触发器。
+- 材料、配方、关键供应源或工艺变化；
+- 模具、设备、产线或工厂变化；
+- 规格、公差、包装、标签或法规要求变化；
+- 样品损坏、过期或无法追溯。
 
-## 4. 检查节点
+供应商说“样品没问题”不等于责任方已经批准。
 
-| 字段 | 说明 |
-|---|---|
-| `inspection_gate_id` | 稳定编号 |
-| `gate_type` | 物料、首件、生产中、完工、装箱、出货前、到货 |
-| `object_scope` | 产品/部件/批次 |
-| `planned_at` / `location` | 时间和地点 |
-| `ctq_ids` | 检查对象 |
-| `sampling_plan_evidence_id` | 缺失则 tbd |
-| `executor` / `approver` | 角色分离 |
-| `pass_rule` | 来自合格证据 |
-| `status` | `planned`、`in_progress`、`completed`、`failed`、`cancelled`、`unknown` |
-| `result_evidence_ids` | 只有执行后填写 |
+## 4. 设计检查节点
 
-计划存在不等于 `completed`。
+每个节点写清对象/批次、计划时间和地点、要检查的 CTQ、抽样依据、执行人、批准人、通过规则及需要留下的结果材料。
 
-## 5. 变更
+计划存在不等于检查已完成。没有结果材料时，只能描述计划和缺口，不能写“已通过”。
 
-变更状态按顺序：
+## 5. 变更控制
 
-`proposed → under_review → approved|rejected → implemented → verified`
+任何影响规格、CTQ、样品、成本或里程碑的变化都按以下顺序处理：
 
-只有存在执行和验证证据时才可进入 `implemented` 与 `verified`。记录受影响的 CTQ、样品、测试、成本、里程碑和再批准。
+1. 记录原基线、拟变更内容、原因和影响范围。
+2. 判断是否需要重新打样、测试、报价、排期或专业复核。
+3. 在批准前保持原基线有效，避免口头变更直接进入生产。
+4. 变更执行后，用结果材料验证，而不是仅凭供应商承诺关闭。
 
-## 6. 偏差与不合格
+## 6. 偏差、不合格与 CAPA
 
-| 字段 | 说明 |
-|---|---|
-| `nonconformance_id` | 稳定编号 |
-| `batch_or_object_id` | 影响范围 |
-| `observation` | 事实观察 |
-| `ctq_id` | 违反的标准 |
-| `quantity_scope` | 数量和单位 |
-| `containment_status` | 陈述与证据分开 |
-| `disposition_proposal` | 候选处置 |
-| `approved_disposition` | 人工批准后填写 |
-| `verification_evidence_ids` | 关闭证据 |
+偏差或不合格先记录可观察事实、违反的 CTQ、受影响数量和批次，再区分：
 
-## 7. CAPA
+- 临时遏制：防止继续流入下一环节；
+- 候选处置：返工、让步接收、重做、报废等，仅供责任方选择；
+- 根因：假设与经证据验证的原因分开；
+- 纠正措施：解决已发生问题；
+- 预防措施：降低同类问题再次发生；
+- 有效性检查：说明何时、以什么结果证明措施有效。
 
-CAPA 记录：
+供应商承诺、计划日期或“已整改”陈述不足以关闭问题。
 
-- `capa_id`
-- `containment_action`
-- `root_cause_status`: `hypothesis`、`validated`、`unknown`
-- `root_cause_evidence_ids`
-- `corrective_action`
-- `preventive_action`
-- `owner`
-- `due_date`
-- `effectiveness_check`
-- `closure_approved_by`
-- `status`
+## 7. 里程碑与上线闸门
 
-供应商承诺本身不足以关闭 CAPA。
+每个里程碑分开记录计划日期、供应商承诺日期和实际日期，并带时区、依赖、直接依据、责任方和升级触发条件。
 
-## 8. 里程碑与闸门
+阶段判断应直接说明：
 
-每个里程碑记录计划日期、供应商承诺日期、实际日期、时区、前置依赖、状态来源、证据、负责人和升级触发器。
+- 当前可继续、需满足条件后继续、暂缓，或资料不足无法判断；
+- 支持判断的具体事实；
+- 未决条件与最晚完成时间；
+- 谁拥有最终批准权。
 
-闸门结论：
+内部判断不代表供应商已经执行，也不代表平台或仓库已经接受。
 
-- `go`
-- `conditional_go`
-- `hold`
-- `not_assessable`
+## 8. 工具与来源边界
 
-必须记录条件、阻塞项和人工批准人。
+本方法不调用 SIF、SellerSprite、Sorftime。市场画像、销量趋势、1688 挂牌信息或探索性采购上限都不能证明规格、AQL、样品批准、质量结果、产能、交期或交付状态。
 
-## 9. 四轴与谱系
-
-所有输入和输出分别保存：
-
-- `source_type`
-- `temporal_scope`
-- `estimation_status`
-- `transformation_type`
-- `source_path` 或 `parent_evidence_ids`
-
-供应商生产计划通常是 `reported` + `future`；Agent 的延误风险通常是 `inference` 或 `hypothesis`。
+每项重要判断保留直接来源、适用对象/版本/时间、原值或观察、限制和下一步核验即可；不建立与业务无关的通用字段协议。

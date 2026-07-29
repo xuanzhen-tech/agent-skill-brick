@@ -1,166 +1,93 @@
 <!--
-文件功能：定义供应商候选身份、证据强度、陈述状态、冲突和阶段决策合同。
-职责边界：不提供外部核验结果，不把文件外观当真实性结论，不定义万能评分。
-重要关联：由 ../SKILL.md 在证据矩阵和身份核对时读取；输出字段映射到 ../assets/templates/supplier-evaluation-template.md。
+文件功能：说明如何分离供应商身份、判断资料能证明什么、核对采购要求并安排人工尽调。
+职责边界：不执行企业背调或外部 OSINT，不把文件外观、平台陈述或综合分数当作可信保证。
+重要关联：由 ../SKILL.md 在候选评估时读取，正式交付见 ../assets/templates/supplier-evaluation-template.md。
 -->
 
-# 供应商证据与核验合同
+# 供应商证据与核验方法
 
-## 1. 证据记录
+## 1. 先回答“我们在评估谁”
 
-| 字段 | 规则 |
-|---|---|
-| `evidence_id` | 案件内唯一 |
-| `source_path` | 对话定位、只读 uploads 或可信 outputs |
-| `provided_by` | 用户、供应商、第三方或责任方 |
-| `subject_id` | 证据声称适用的法定主体、工厂、产品或样品 |
-| `document_type` | 证照、认证、报告、报价、合同、样品记录、核验记录等 |
-| `document_date` / `expiry_date` | 不清楚写 `unknown` |
-| `source_version` | 文件或记录版本 |
-| `completeness` | `complete`、`partial`、`illegible`、`unknown` |
-| `limitations` | 缺页、过期、仅陈述、适用范围或未独立核验 |
-| 四轴 | `source_type`、`temporal_scope`、`estimation_status`、`transformation_type` |
+法定主体、工厂、贸易商、合同签约方、收款方、联系人、品牌方和平台店铺必须分开记录。只有名称、联系人或 Logo 相同，不能自动判定为同一主体。
 
-供应商提供的证照仍是 `reported`；合格责任方完成核验后，另增核验记录，不覆盖原证据。
+建立身份关系时，直接写：
 
-## 2. 身份节点
+- 两端分别是谁；
+- 来源如何陈述它们的关系；
+- 哪些材料相互支持或冲突；
+- 当前最多能得出什么结论；
+- 还需要谁用什么材料核验。
 
-每个身份单独建节点：
+涉及付款、签约、生产或证照适用性时，主体关系冲突必须先解决，不能被综合评分抵消。
 
-- `identity_id`
-- `identity_type`: `legal_entity`、`factory`、`trader`、`contract_party`、`payee`、`contact`、`brand`、`platform_account`
-- `name_reported`
-- `jurisdiction_or_location`
-- `identifier_reported`
-- `parent_evidence_ids`
-- `verification_status`
+## 2. 判断证据能证明什么
 
-关系只能标为：
+| 资料或观察 | 可以支持 | 不能自动支持 |
+|---|---|---|
+| 供应商提供的证照、认证或报告 | 供应商作出了该陈述，文件显示的主体、范围和日期 | 官方真伪、当前有效、适用于目标产品或工厂 |
+| 多份内部一致材料 | 陈述之间具有一致性 | 独立核验已经完成 |
+| 样品或测试记录 | 指定样品在指定条件下的观察结果 | 量产长期能力、全部批次一致 |
+| 合格责任方核验记录 | 其明确核验范围内的事实 | 范围外事实或永久有效 |
+| 平台挂牌信息 | 商品、店铺或供应商名称的待核验线索 | 法定主体、资质、产能、MOQ、报价、交期或履约 |
 
-- `reported_same`
-- `evidence_linked`
-- `verified_by_qualified_owner`
-- `conflicted`
-- `unknown`
+始终保留资料日期、有效期、适用主体/产品/工厂、版本、缺页或可读性问题。过期材料不删除，但必须降低当前结论上限。
 
-相似名称、相同联系人或相同 Logo 不足以自动使用 `evidence_linked`。
+## 3. 逐条核对采购要求
 
-每条身份关系必须形成正式 `identity_link` 对象：
+对每个硬约束或偏好，分别说明：
 
-| 字段 | 规则 |
-|---|---|
-| `identity_link_id` | 本层稳定唯一 |
-| `from_identity_id` / `to_identity_id` | 关系两端身份节点 |
-| `relation_status` | `reported_same` / `evidence_linked` / `verified_by_qualified_owner` / `conflicted` / `unknown` |
-| `parent_evidence_ids` | 支撑或冲突该关系的输入 Evidence IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `coding` / `inference` |
-| `verification_status` / `limitations` | 当前核验状态与结论上限 |
+- 供应商作出了什么陈述；
+- 哪项材料或样品观察直接支持；
+- 哪些范围只被部分支持；
+- 是否存在冲突或完全没有评估；
+- 最小补证或验证动作是什么。
 
-## 3. 陈述与核验状态
+任何 `must` 项不满足、冲突或未核验时，都要单独呈现，不能用总分或其它优点冲抵。
 
-| 状态 | 含义 |
-|---|---|
-| `supplier_reported` | 供应商或其材料陈述 |
-| `document_supported` | 多份内部一致材料支撑，但未做外部确认 |
-| `sample_observed` | 样品或测试记录实际观察 |
-| `verified_by_qualified_owner` | 指定责任方完成可追溯核验 |
-| `conflicted` | 证据互相冲突 |
-| `stale` | 已过期或不再代表当前 |
-| `not_assessed` | 本次证据不支持评估 |
+## 4. 风险信号不是定性结论
 
-禁止把 `document_supported` 改写成“官方已认证”。
+风险信号只描述证据支持的观察，例如：
 
-## 4. 要求匹配
+- 合同主体与收款主体不一致；
+- 证照主体、地址或适用产品与当前陈述不一致；
+- 关键能力只有宣传材料，没有样品、测试或责任方核验；
+- 文件过期、缺页、不可读或版本互相冲突；
+- 付款、模具、知识产权或分包责任不清。
 
-| 字段 | 说明 |
-|---|---|
-| `match_id` | 本层匹配记录稳定唯一 |
-| `requirement_id` | 上游硬约束或偏好 |
-| `candidate_id` | 候选供应商 |
-| `match_status` | `supported_by_evidence`、`supplier_reported`、`partially_supported`、`not_supported`、`conflicted`、`not_assessed` |
-| `parent_evidence_ids` | 支撑或冲突证据 |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `coding` / `inference` |
-| `verification_action_id` | 对应核验任务 |
+每个信号同时列出可能影响、至少一种合理替代解释、核验动作和会阻塞哪个决策。不得把信号写成欺诈、侵权或违法定性。
 
-不允许用总分抵消 `must` 项的 `not_supported` 或 `conflicted`。
+## 5. 设计可完成的核验动作
 
-每个尚缺项或冲突另建正式 `gap` 对象，不得只写在 match 的备注单元格：
+核验动作必须写清：
 
-| 字段 | 规则 |
-|---|---|
-| `gap_id` | 本层缺口稳定唯一 |
-| `match_id` / `requirement_id` / `candidate_id` | 缺口适用对象 |
-| `gap_description` / `affected_scope` | 缺失或冲突及其影响范围 |
-| `required_evidence` / `owner` / `status` | 最小补证、责任人及 `open` / `resolved` / `blocked` |
-| `parent_evidence_ids` | 支撑缺口判断的输入 Evidence IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `coding` / `inference` |
+- 要确认的一个具体事实；
+- 可以接受的材料、观察或第三方结果；
+- 合格责任方；
+- 完成标准和截止时间；
+- 缺失、拒绝或继续冲突时如何处理。
 
-## 5. 风险信号记录
+责任方主动接受风险与“已核验”是两回事；即使允许继续，也要保留被接受的风险和适用范围。
 
-每项包含：
+## 6. 阶段性采购判断
 
-| 字段 | 规则 |
-|---|---|
-| `signal_id` | 本层风险信号稳定唯一 |
-| `observation` | 只描述证据支持的观察 |
-| `parent_evidence_ids` | 支撑观察的输入 Evidence IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | `inference` / `hypothesis` |
-| `potential_impact` | 可能影响，不写成既成损失 |
-| `alternative_explanations` | 至少保留一种合理替代解释 |
-| `verification_needed` / `decision_gate` / `status` | 核验、闸门与当前状态 |
+最终不要给“绝对可信/不可信”结论，而是回答当前能否：
 
-风险信号不是欺诈定性，也不是法律结论。
+- 进入 RFQ；
+- 带条件进入打样；
+- 暂停并优先补证；
+- 基于当前证据不继续；
+- 因候选或要求不足而无法评估。
 
-## 6. 核验任务
+判断必须写出适用范围、直接依据、未决风险、继续条件、批准责任方和下一次复核触发点。
 
-| 字段 | 说明 |
-|---|---|
-| `verification_action_id` | 稳定编号 |
-| `question` | 要确认的具体事实 |
-| `required_evidence` | 合格材料或观察 |
-| `qualified_owner` | 用户指定的采购、法务、质量、审计或第三方 |
-| `completion_rule` | 可判定的完成标准 |
-| `due_date` | 日期或 `tbd` |
-| `failure_rule` | 缺失、拒绝或冲突时如何决策 |
-| `status` | `open`、`in_progress`、`completed`、`failed`、`waived_by_owner` |
+## 7. Sorftime 1688 线索边界
 
-`waived_by_owner` 必须记录批准人与被接受风险，不能等同于核验完成。
+只有用户明确要求补充 1688 候选线索时，才可使用正文列出的 Sorftime 1688 工具。保留提供方、精确工具、查询对象/条件、分页与时间、原始商品/店铺陈述、限制和原始结果位置。
 
-## 7. 阶段决策
+这是 Sorftime 的独有单源线索分支：
 
-每项阶段结论先形成正式 `decision` 对象：
-
-| 字段 | 规则 |
-|---|---|
-| `decision_id` | 本层阶段决策稳定唯一 |
-| `decision_scope` | 本次进入询价、打样或进一步核验的范围 |
-| `decision_status` | 使用下表允许状态 |
-| `parent_evidence_ids` | 支撑结论的 Evidence/Match/Gap/Risk IDs |
-| `source_type` | 固定为 `agent` |
-| `temporal_scope` | `current` / `historical` / `future` / `mixed` / `not_applicable` / `unknown` |
-| `estimation_status` | `reported` / `estimated` / `forecast` / `mixed` / `not_applicable` / `unknown` |
-| `transformation_type` | 固定为 `inference` |
-| `conditions` / `unresolved_risks` | 条件及未决风险 |
-| `approved_by` / `decision_date` / `next_review_trigger` | 人工批准与复核触发 |
-
-| 状态 | 适用条件 |
-|---|---|
-| `proceed_to_rfq` | 身份足以沟通，未决项不会导致不当披露 |
-| `proceed_to_sample_with_conditions` | 允许打样，但条件和付款闸门明确 |
-| `hold_for_verification` | 关键身份、能力或风险信号待核验 |
-| `do_not_proceed_on_current_evidence` | 当前证据出现不可接受冲突或硬约束不满足 |
-| `not_assessable` | 候选或采购要求不足 |
-
-所有结论必须记录 `decision_scope`、`conditions`、`approved_by`、`decision_date` 和 `next_review_trigger`。
+- 返回对象只能称为“待核验候选线索”；
+- 不能写成已寻源、已尽调或推荐供应商；
+- 不能证明法定身份、资质、产能、质量、MOQ、正式报价、交期或合同能力；
+- 调用失败时只说明该来源不可用或当前没有线索证据，不包装成多源覆盖不足；
+- 无候选且用户未要求 1688 线索时，应转回寻源准备，不自行搜索。

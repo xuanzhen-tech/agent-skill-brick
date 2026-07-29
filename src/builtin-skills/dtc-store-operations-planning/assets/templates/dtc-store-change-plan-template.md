@@ -1,87 +1,68 @@
 <!--
-文件功能：提供 DTC 店铺快照、对象身份、变更、依赖、审批、回滚与验证计划的正式输出模板。
-职责边界：模板仅表示待人工审批和执行的计划，不表示已读取实时店铺、已提交、已生效、已回滚或已验证。
-重要关联：字段语义见 references/dtc-change-plan-contract.md；生成前遵守上级 SKILL.md。
+文件功能：提供 DTC 店铺变更范围、前置条件、审批、执行顺序、回滚与验证模板。
+职责边界：模板不表示任何店铺变更已经执行。
+重要关联：由 ../../SKILL.md 物化；判断方法见 ../../references/dtc-change-plan-contract.md。
 -->
 
 # DTC 店铺运营变更计划
 
-## 1. 运行摘要
+> 本计划尚未连接或修改店铺，所有外部动作需由授权人员执行。
 
-| 字段 | 值 |
-|---|---|
-| Change Set ID / Version |  |
-| Store ID / Platform |  |
-| Environment / Site / Locale |  |
-| Snapshot ID / Version / Time |  |
-| Scope |  |
-| Owner / Reviewer |  |
-| Result Status | `change_plan_ready_for_review / blocked / out_of_scope` |
-| Reason Codes | `[none]` |
-| Execution Status | `not_executed` |
+## 1. Change set 范围
 
-## 2. 快照证据
+- 店铺/市场/环境：
+- 目标对象：
+- 业务目标：
+- 计划窗口：
+- 明确排除：
+- 失败的业务影响：
+- 执行/审批/验证责任人：
 
-| Evidence / Snapshot ID | Source Type | Source Locator | Object Types / Coverage | Observed At | Version | Valid Until | Temporal Scope | Estimation Status | Transformation Type | Limitations |
-|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  | `point_in_time` |  |  |  |
+## 2. 当前快照
 
-## 3. 对象身份
-
-| Agent Output ID | Object ID | Type | Platform ID Masked | SKU / Variant | Market / Locale | Snapshot | Current Value Locator | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Identity Confidence |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  | `agent` | `point_in_time` | `not_applicable` | `identity_mapping` | `confirmed / ambiguous / conflicted` |
-
-## 4. 变更登记
-
-| Change ID | Agent Output ID | Object ID | Requested Change | Request Source | Current Evidence | Target State | Preconditions | Domain Owner | Approval | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Execution |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `user / domain_owner` |  |  |  |  |  |  | `agent` | `point_in_time` | `not_applicable` | `normalized / excerpted` | `not_executed` |
-
-四轴与 `parent_evidence_ids` 属于每条正式变更派生记录，不得只在计划正文中说明。
-
-## 5. 领域依赖
-
-| Change ID | Domain | Upstream Object ID / Version | Evidence IDs | Applicable Scope | Owner | Status |
-|---|---|---|---|---|---|---|
-|  | Listing / Visual / Promotion / Procurement / Inventory / Policy / Customer / Measurement / Price |  |  |  |  |  |
-
-## 6. 回滚计划
-
-| Rollback ID | Agent Output ID | Change ID | Trigger | Restore Target / Evidence | Owner | Dependencies | Verification | Non-reversible Limits | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Execution |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  | `agent` | `point_in_time` | `not_applicable` | `normalized / excerpted` | `not_executed` |
-
-## 7. 验证计划
-
-| Verification ID | Agent Output ID | Change ID | Object / Field | Expected State | Evidence Capture | Window | Owner | Failure Route | Event / Measurement Handoff | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Execution |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  |  | `agent` | `point_in_time` | `not_applicable` | `normalized / excerpted` | `not_executed` |
-
-## 8. 当前性与失效
-
-| Input / Change ID | Verified At | Valid Until | Invalidation Trigger | Recheck Owner | Current Status |
+| 对象与字段 | 当前原值 | 快照时间与范围 | 直接材料 | 冲突/限制 | 应用前是否需重核 |
 |---|---|---|---|---|---|
-|  |  |  |  |  |  |
+| `<对象>` | `<值>` | `<时间/范围>` | `<定位>` | `<内容>` | `<是/否>` |
 
-## 9. 缺口与冲突
+## 3. 变更项
 
-| Gap ID | Agent Output ID | Affected Change / Object | Parent Evidence IDs | Source Type | Temporal Scope | Estimation Status | Transformation Type | Reason Code | Evidence State | Required Input / Decision | Owner | Effect |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | `agent` | `point_in_time` | `not_applicable` | `gap_classification` |  |  |  |  |  |
+| 执行顺序 | 对象与范围 | 当前值 → 目标值 | 业务理由 | 领域责任方 | 前置条件 | 审批人 | 执行人 |
+|---|---|---|---|---|---|---|---|
+| `<序号>` | `<对象>` | `<变化>` | `<理由>` | `<品牌/定价/库存/合规/开发等>` | `<条件>` | `<审批人>` | `<执行人>` |
 
-## 10. 人工门禁
+## 4. 依赖与影响面
 
-- [ ] 快照有来源、时间、版本和覆盖范围
-- [ ] 每个对象身份 confirmed
-- [ ] requested change 来自用户或领域 owner
-- [ ] Listing/视觉/促销/库存/政策/价格输入来自正确责任方
-- [ ] 每项 change 有明确前置、审批、回滚和验证
-- [ ] 回滚目标有 Evidence，不是泛称“恢复原值”
-- [ ] 未把 Shopify 文档或 SIF 当店铺事实，且本包未调用 SIF
-- [ ] 未调用 Web、shell 网络、CLI、API 或店铺平台
-- [ ] `execution_status=not_executed`
+| 变更项 | 上游依赖 | 受影响页面/市场/流程 | 客户或订单影响 | 是否需拆分 | 处理方式 |
+|---|---|---|---|---|---|
+| `<项>` | `<依赖>` | `<范围>` | `<影响>` | `<是/否>` | `<内容>` |
 
-## 11. 未执行声明
+## 5. 回滚
 
-本工作包没有登录或读取实时店铺，没有调用 Shopify CLI/API，没有创建、修改或删除商品、订单、客户、折扣、库存、主题或配置。所有 change、rollback 和 verification 都是静态人工计划。
+| 变更项 | 已保存前值 | 回滚触发 | 回滚步骤与顺序 | 不可逆后果 | 决策人 | 回滚后验证 |
+|---|---|---|---|---|---|---|
+| `<项>` | `<定位>` | `<条件>` | `<步骤>` | `<内容>` | `<责任人>` | `<观察>` |
+
+## 6. 验证
+
+| 层级 | 要验证的结果 | 方法/测试对象 | 成功标准 | 失败后的动作 | 负责人/时点 |
+|---|---|---|---|---|---|
+| `<字段/关系/前台/交易/运营>` | `<结果>` | `<方法>` | `<标准>` | `<回滚/修复/升级>` | `<责任人/时间>` |
+
+## 7. 阻塞与交接
+
+| 未决问题 | 对变更的影响 | 所需事实或批准 | 目标责任方 | 下一步 |
+|---|---|---|---|---|
+| `<问题>` | `<影响>` | `<内容>` | `<责任方>` | `<动作>` |
+
+## 8. 交付前检查
+
+- [ ] 店铺、市场、环境和对象清楚
+- [ ] 快照时点、覆盖和并发变化风险已说明
+- [ ] 每项有当前值、目标值、理由和负责人
+- [ ] 领域责任与审批没有越界
+- [ ] 依赖、影响面和顺序清楚
+- [ ] 回滚包含前值、触发、步骤和复核
+- [ ] 验证有可观察成功标准
+- [ ] 未把计划写成已执行
+- [ ] 未调用三个市场研究 MCP 或店铺工具
+- [ ] 正式文件位于 `outputs/`
