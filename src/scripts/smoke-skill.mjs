@@ -346,11 +346,10 @@ try {
   );
 
   await selectedBuiltinSkill.setSkillNames(["amazon-product-image-generation"]);
-  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.2.0");
+  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.3.0");
   assert.deepEqual(selectedBuiltinSkill.definitions[0].requiredTools, [
     "ecommerce_image_generate",
     "ecommerce_image_edit",
-    "ecommerce_image_batch",
     "ecommerce_image_list"
   ]);
   const imageSkillActivated = await selectedBuiltinSkill.activate("amazon-product-image-generation");
@@ -367,7 +366,8 @@ try {
     ]
   );
   assert.match(imageSkillActivated.loadedSkill.content, /ecommerce_image_generate/);
-  assert.match(imageSkillActivated.loadedSkill.content, /只使用四个 `ecommerce_image_\*` 工具/);
+  assert.match(imageSkillActivated.loadedSkill.content, /只使用三个模型可见的 `ecommerce_image_\*` 工具/);
+  assert.doesNotMatch(imageSkillActivated.loadedSkill.content, /ecommerce_image_batch/);
   assert.match(imageSkillActivated.loadedSkill.content, /不要擅自补足固定七张/);
   assert.doesNotMatch(imageSkillActivated.loadedSkill.content, /ARK|KIE/);
   const toolExamples = await selectedBuiltinSkill.readReference(
@@ -375,7 +375,8 @@ try {
     "references/tool-examples.md"
   );
   assert.match(toolExamples.loadedSkillReference.content, /"count": 1/);
-  assert.match(toolExamples.loadedSkillReference.content, /"action": "status"/);
+  assert.match(toolExamples.loadedSkillReference.content, /deliveryReady=true/);
+  assert.doesNotMatch(toolExamples.loadedSkillReference.content, /"action": "status"/);
   assert.match(toolExamples.loadedSkillReference.content, /"edits":/);
   assert.match(toolExamples.loadedSkillReference.content, /"assetId":/);
   const referenceAnalysis = await selectedBuiltinSkill.readReference(
@@ -397,7 +398,8 @@ try {
     "references/production-quality-gate.md"
   );
   assert.match(qualityGate.loadedSkillReference.content, /无法看图时只能确认 artifact/);
-  assert.match(qualityGate.loadedSkillReference.content, /结果未知时不自动重试/);
+  assert.match(qualityGate.loadedSkillReference.content, /模型不得自行重放生图调用/);
+  assert.match(qualityGate.loadedSkillReference.content, /operationStatus=partial/);
   assert.match(qualityGate.loadedSkillReference.content, /不得自动重新生成整套/);
   assert.match(qualityGate.loadedSkillReference.content, /明确指定生成数量、编辑目标和范围时，即视为本次操作已确认/);
   const promptPlaybook = await selectedBuiltinSkill.readReference(

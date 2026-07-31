@@ -24,7 +24,7 @@ description: 对 Amazon 主图、副图、场景图、生活方式图和 A+ 视�
 责任边界固定如下：
 
 - 本 Skill 拥有独立图片审计、问题账本、返工规格和修订验收；
-- Product 内置 `amazon-product-image-generation` 单一拥有实际生成、编辑、批量、轮询、资产版本和版本链；
+- Product 内置 `amazon-product-image-generation` 单一拥有实际生成、编辑、批量终态管理、资产版本和版本链；
 - 内置 Skill 的生成时质量门不替代本 Skill 对任意现有资产的独立审计；
 - 专家 03 拥有 A+ 模块、顺序和文案；本 Skill 只核对视觉资产是否忠实服务上游模块任务、资产要求和事实来源。
 

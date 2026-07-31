@@ -24,7 +24,7 @@ description: 基于已核实产品事实、品牌资产、权利状态和目标�
 责任边界固定如下：
 
 - 本 Skill 拥有视觉方向、场景语义、构图语言、本地化决策、权利盘点和生产 handoff；
-- Product 内置 `amazon-product-image-generation` 单一拥有图片生成、编辑、批量任务、轮询、资产版本与版本链；
+- Product 内置 `amazon-product-image-generation` 单一拥有图片生成、编辑、批量终态管理、资产版本与版本链；
 - 专家 03 的 `amazon-aplus-content-planning` 单一拥有 A+ 目标、模块角色、叙事顺序、短文案和资产需求；
 - 本 Skill 可以消费上游模块名称/顺序、资产路径/版本和事实来源，但不得重新规划 A+ 或直接调用图像工具。
 
@@ -167,7 +167,7 @@ description: 基于已核实产品事实、品牌资产、权利状态和目标�
 - 只交接有证据支持或用户已批准的决定；
 - 不指定外部模型、服务、密钥、重试次数或宿主路径。
 
-本 Skill 不调用 `ecommerce_image_generate`、`ecommerce_image_edit`、`ecommerce_image_batch` 或 `ecommerce_image_list`；这些工具的调用、状态和版本链由内置 Skill 负责。
+本 Skill 不调用 `ecommerce_image_generate`、`ecommerce_image_edit` 或 `ecommerce_image_list`；这些工具的调用、终态判断和版本链由内置 Skill 负责。
 
 ### 第七步：写入正式交付
 

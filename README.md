@@ -85,8 +85,9 @@ await agentSkill.setSkillNames([
 
 `amazon-product-image-generation` 依赖 AgentTool 的
 `ecommerce_image_generate`、`ecommerce_image_edit`、
-`ecommerce_image_batch` 和 `ecommerce_image_list` 四个隐藏工具。Skill
-只教授参数、提示词、轮询和版本化编辑，不持有 provider 配置或 API key。
+`ecommerce_image_list` 三个隐藏工具。Skill
+只教授参数、提示词、最终结果判断和版本化编辑，不持有 provider 配置或 API key，
+也不要求模型管理 batch 状态、取消或重试。
 它会按任务需要分别加载参考图分析、Amazon Listing 套图规划和生产质量门禁；
 默认不固定生成七张，也不会在未获授权时自动重跑整套图片。
 

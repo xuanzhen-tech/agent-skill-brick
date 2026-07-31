@@ -14,11 +14,11 @@
 
 ## 工具状态
 
-- `queued` 和 `running` 不是完成。
-- `completed` 才表示该项文件生成成功。
-- `partial` 必须分别报告成功和失败项。
-- `failed`、`cancelled`、`interrupted` 不得包装成成功。
-- 取消运行中批次时保留“上游仍可能继续生成并计费”的提示。
+- generate/edit 会在工具内部等待批次终态，模型不需要查询 queued 或 running。
+- `completed` 且 `deliveryReady=true` 才表示全部目标文件生成并验证成功。
+- 顶层 `failed` 且 `operationStatus=partial` 表示部分成功，必须分别报告成功和失败项。
+- `failed`、`cancelled`、`interrupted` 不得包装成全部成功。
+- 用户中断运行中工具时保留“上游仍可能继续生成并计费”的提示。
 
 ## 单图检查
 
@@ -51,7 +51,7 @@
 2. 提示词局部问题：基于明确 `assetId` 和 `versionId` 调用 edit。
 3. 构图方向错误：经用户确认后创建新的 generate 批次。
 4. 模型限制：保留当前 artifact，报告限制，不连续尝试相同提示。
-5. 工具或网络错误：遵循返回的 `retryable`；结果未知时不自动重试。
+5. 工具或网络错误：由工具在单次调用预算内处理安全重试；模型不得自行重放生图调用，结果未知时直接报告失败。
 
 不得自动重新生成整套。每次新增候选或付费返工都必须处于用户已确认的数量和范围内。
 

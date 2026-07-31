@@ -27,19 +27,7 @@
 }
 ```
 
-生成调用立即返回 `batchId`，不是图片结果。
-
-## 轮询批次
-
-```json
-{
-  "action": "status",
-  "batchId": "batch-...",
-  "waitMs": 30000
-}
-```
-
-状态为 `completed` 或 `partial` 时读取完成项的 `assetId`、`versionId` 和 artifact path。`failed`、`cancelled`、`interrupted` 需要向用户说明；只有用户明确要求时才调用 `retry`。
+生成调用会由工具阻塞到批次终态。只有 `deliveryReady=true` 且存在 artifact 时读取完成项的 `assetId`、`versionId` 和 path。顶层 `failed` 且 `operationStatus=partial` 时只能交付已验证项目，并明确说明其余项目失败；`failed` 或 `interrupted` 时不得自行重放调用。
 
 ## 基于 v1 创建 v2
 
@@ -88,4 +76,3 @@
 - `size.width` 和 `size.height` 必须是 16 的倍数，并满足工具 schema 的像素和长宽比限制。
 - PNG 不传 `compression`。JPEG/WebP 才可传 0 到 100 的压缩质量。
 - 参考图使用 workspace 相对路径，只支持 PNG、JPEG 和 WebP。
-
