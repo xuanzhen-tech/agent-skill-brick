@@ -346,7 +346,7 @@ try {
   );
 
   await selectedBuiltinSkill.setSkillNames(["amazon-product-image-generation"]);
-  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.3.0");
+  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.4.0");
   assert.deepEqual(selectedBuiltinSkill.definitions[0].requiredTools, [
     "ecommerce_image_generate",
     "ecommerce_image_edit",
@@ -374,7 +374,7 @@ try {
     "amazon-product-image-generation",
     "references/tool-examples.md"
   );
-  assert.match(toolExamples.loadedSkillReference.content, /"count": 1/);
+  assert.match(toolExamples.loadedSkillReference.content, /"requests": \[/);
   assert.match(toolExamples.loadedSkillReference.content, /deliveryReady=true/);
   assert.doesNotMatch(toolExamples.loadedSkillReference.content, /"action": "status"/);
   assert.match(toolExamples.loadedSkillReference.content, /"edits":/);
@@ -391,7 +391,7 @@ try {
     "references/amazon-listing-set.md"
   );
   assert.match(listingSet.loadedSkillReference.content, /不得固定补足到七张/);
-  assert.match(listingSet.loadedSkillReference.content, /不同职责必须分别调用/);
+  assert.match(listingSet.loadedSkillReference.content, /不同 request/);
   assert.match(listingSet.loadedSkillReference.content, /A\+ 精确尺寸.*不在本文件能力范围/);
   const qualityGate = await selectedBuiltinSkill.readReference(
     "amazon-product-image-generation",

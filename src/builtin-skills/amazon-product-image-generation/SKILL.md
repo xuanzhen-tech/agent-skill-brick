@@ -1,7 +1,7 @@
 ---
 name: amazon-product-image-generation
 displayChineseName: 亚马逊商品生图
-version: 0.3.0
+version: 0.4.0
 description: 为亚马逊商品创建白底主图、卖点图、场景图和可迭代版本；适用于用户要求生成、调整、对比或继续编辑 Amazon 商品图片的任务。
 requiredTools: [ecommerce_image_generate, ecommerce_image_edit, ecommerce_image_list]
 ---
@@ -23,9 +23,9 @@ requiredTools: [ecommerce_image_generate, ecommerce_image_edit, ecommerce_image_
    - 用户要求多张 Amazon Listing 套图：读取 `references/amazon-listing-set.md`。
    - 要实际生成、编辑或验收图片：读取 `references/production-quality-gate.md`。
    - 准备 Amazon US 图片：读取 `references/amazon-us-guidance.md`。
-4. 多张不同职责的图片先规划数量和每张职责，经用户要求或已确认数量后再分别生成。不要擅自补足固定七张。
-5. 初稿通常使用 `quality: "medium"`、`count: 1`。`count` 只用于同一需求的多个候选；不同职责分别调用 generate。定稿使用 `quality: "high"`。
-6. 调用 `ecommerce_image_generate`。工具会自行完成排队、重试、等待、落盘和验证；不要保存 batchId、轮询状态或主动调用取消/重试工具。
+4. 多张不同职责的图片先规划数量和每张职责。将共享的商品身份、Logo 和品牌约束写入 `basePrompt`，将白底图、场景图、特写图等职责分别写入同一次 generate 的 `requests`。不要擅自补足固定七张。
+5. 初稿通常使用 `quality: "medium"`、每个 request 的 `count: 1`。`count` 只用于同一职责的多个候选；不同职责使用不同 request。定稿使用 `quality: "high"`。
+6. 调用一次 `ecommerce_image_generate` 提交整套 requests。工具会公平并发并自行完成排队、重试、等待、落盘和验证；不要拆成多个串行 generate，也不要保存 batchId、轮询状态或主动调用取消/重试工具。
 7. 只有最终结果为 `deliveryReady=true` 且存在 artifact 时才向用户呈递完成项，并保留每张图的 `assetId`、`versionId` 和 path。部分成功必须明确报告未完成项；只有实际观察到图片时才执行视觉质量判断。
 8. 用户要求调整时调用 `ecommerce_image_edit`。明确传入来源 `assetId` 和 `versionId`，只描述要改和必须保持的内容。
 9. 需要查历史或从旧版本继续时调用 `ecommerce_image_list`。不要覆盖原图，也不要假造不存在的版本。

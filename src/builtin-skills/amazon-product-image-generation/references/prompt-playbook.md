@@ -103,10 +103,10 @@ Do not alter [protected details]. Do not add [forbidden elements].
 - 信息不足：先生成 1 张 medium 概念稿。
 - 方向已确定：生成 2 到 4 张同需求候选。
 - 用户选中方向：以明确版本编辑，并切换 high。
-- 多种用途：分别调用 generate，避免一个 prompt 同时要求主图、场景图和卖点图。
+- 多种用途：在一次 generate 中创建多个 request，避免一个 prompt 同时要求主图、场景图和卖点图。
 - 文字较多：优先生成无文字底图，提醒在确定性排版工具中添加文字。
 - 同一职责的多个视觉候选：使用一个 prompt 配合 `count`。
-- 不同职责的套图：每张使用独立 prompt 和独立 generate 调用。
+- 不同职责的套图：每个职责使用独立 request prompt，由工具在一个批次内公平并发。
 
 ## 声明安全
 
@@ -118,4 +118,3 @@ Do not alter [protected details]. Do not add [forbidden elements].
 - 不支持：价格、认证、医疗效果、性能指标、兼容性和比较结论等未提供事实。
 
 只使用前两类具体事实。类别用途不得改写成性能承诺；不支持声明必须删除或追问。
-

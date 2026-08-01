@@ -2,23 +2,39 @@
 
 这些示例只说明参数合同。根据商品事实改写 prompt 和参考图，不要照抄商品描述。
 
-## 生成一张白底主图初稿
+## 一次生成白底图和场景图
 
 ```json
 {
   "modelId": "gpt-image-2",
-  "prompt": "Create a realistic Amazon main product image of the exact insulated travel mug from image 1. Preserve its shape, matte black color, lid, proportions and all visible product details. Center one product on a seamless pure white background, front three-quarter view, soft natural contact shadow, evenly lit, sharp edges. No props, no added text, no added logo, no badge, no border, no watermark.",
-  "size": {
-    "width": 2048,
-    "height": 2048
-  },
-  "quality": "medium",
-  "count": 1,
+  "basePrompt": "Use the exact insulated travel mug from image 1. Preserve its shape, matte black color, lid, proportions, logo and all visible product details across every image.",
   "referenceImages": [
     {
       "path": "uploads/product.png",
       "role": "product",
       "preserve": "strict"
+    }
+  ],
+  "requests": [
+    {
+      "key": "white-background",
+      "prompt": "Create a realistic Amazon main product image. Center one product on a seamless pure white background, front three-quarter view, soft natural contact shadow, evenly lit, sharp edges. No props, added text, badge, border or watermark.",
+      "size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "quality": "medium",
+      "count": 1
+    },
+    {
+      "key": "lifestyle",
+      "prompt": "Show the product in a bright modern kitchen use scene with realistic scale and natural daylight. Do not add people, accessories or unsupported product features.",
+      "size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "quality": "medium",
+      "count": 1
     }
   ],
   "output": {
@@ -71,8 +87,9 @@
 
 ## 参数提醒
 
-- `count` 表示同一模型、同一 prompt 生成多少张独立候选，不是矩阵、拼图或模型分组。
-- 不同需求使用不同的 generate 调用。
+- `requests` 表示不同图片职责；每个 request 的 `count` 表示该职责的独立候选，不是矩阵、拼图或模型分组。
+- `basePrompt` 和顶层 `referenceImages` 约束整套图片的一致性，场景专属参考图放入对应 request 的 `additionalReferenceImages`。
+- 不同职责放在同一次 generate 的不同 requests，不要拆成串行工具调用。
 - `size.width` 和 `size.height` 必须是 16 的倍数，并满足工具 schema 的像素和长宽比限制。
 - PNG 不传 `compression`。JPEG/WebP 才可传 0 到 100 的压缩质量。
 - 参考图使用 workspace 相对路径，只支持 PNG、JPEG 和 WebP。
