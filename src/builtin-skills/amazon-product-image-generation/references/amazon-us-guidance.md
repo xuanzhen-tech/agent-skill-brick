@@ -34,10 +34,9 @@
 
 ## Skill 设计参考
 
-工具调用和提示词组织还参考了以下公开项目与 API易文档，但没有复制其实现：
+提示词组织参考了以下公开项目，但没有复制其实现：
 
 - ecommerce-visual-copywriting-skill (MIT)  
   https://github.com/feichanggege/ecommerce-visual-copywriting-skill
-- API易 GPT Image 2 Skill 文档  
-  https://docs.apiyi.com/api-capabilities/gpt-image-2/skills
 
+工具参数只以当前 AgentTool 公开 schema 为准，不把任何 provider 文档作为 Skill 调用合同。

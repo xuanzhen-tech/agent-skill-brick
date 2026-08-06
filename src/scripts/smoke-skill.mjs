@@ -346,7 +346,7 @@ try {
   );
 
   await selectedBuiltinSkill.setSkillNames(["amazon-product-image-generation"]);
-  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.4.0");
+  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.4.1");
   assert.deepEqual(selectedBuiltinSkill.definitions[0].requiredTools, [
     "ecommerce_image_generate",
     "ecommerce_image_edit",
@@ -369,6 +369,8 @@ try {
   assert.match(imageSkillActivated.loadedSkill.content, /只使用三个模型可见的 `ecommerce_image_\*` 工具/);
   assert.doesNotMatch(imageSkillActivated.loadedSkill.content, /ecommerce_image_batch/);
   assert.match(imageSkillActivated.loadedSkill.content, /不要擅自补足固定七张/);
+  assert.match(imageSkillActivated.loadedSkill.content, /生成和编辑统一使用 `quality: "high"`/);
+  assert.match(imageSkillActivated.loadedSkill.content, /Skill 不维护固定比例选项/);
   assert.doesNotMatch(imageSkillActivated.loadedSkill.content, /ARK|KIE/);
   const toolExamples = await selectedBuiltinSkill.readReference(
     "amazon-product-image-generation",
@@ -379,6 +381,10 @@ try {
   assert.doesNotMatch(toolExamples.loadedSkillReference.content, /"action": "status"/);
   assert.match(toolExamples.loadedSkillReference.content, /"edits":/);
   assert.match(toolExamples.loadedSkillReference.content, /"assetId":/);
+  assert.match(toolExamples.loadedSkillReference.content, /"size": "4:5"/);
+  assert.match(toolExamples.loadedSkillReference.content, /"resolution": "2K"/);
+  assert.match(toolExamples.loadedSkillReference.content, /"quality": "high"/);
+  assert.doesNotMatch(toolExamples.loadedSkillReference.content, /"width":|"height":|"quality": "medium"/);
   const referenceAnalysis = await selectedBuiltinSkill.readReference(
     "amazon-product-image-generation",
     "references/reference-analysis.md"
@@ -409,6 +415,13 @@ try {
   assert.match(promptPlaybook.loadedSkillReference.content, /Product identity lock/);
   assert.match(promptPlaybook.loadedSkillReference.content, /Style contract/);
   assert.match(promptPlaybook.loadedSkillReference.content, /编辑时待编辑版本是图片 1/);
+  assert.doesNotMatch(promptPlaybook.loadedSkillReference.content, /\bmedium\b/);
+  const amazonUsGuidance = await selectedBuiltinSkill.readReference(
+    "amazon-product-image-generation",
+    "references/amazon-us-guidance.md"
+  );
+  assert.match(amazonUsGuidance.loadedSkillReference.content, /AgentTool 公开 schema/);
+  assert.doesNotMatch(amazonUsGuidance.loadedSkillReference.content, /API易|apiyi/i);
 
   await selectedBuiltinSkill.setSkillNames(["amazon-inventory-ledger-summary"]);
   assert.deepEqual(selectedBuiltinSkill.definitions.map((skill) => skill.name), ["amazon-inventory-ledger-summary"]);

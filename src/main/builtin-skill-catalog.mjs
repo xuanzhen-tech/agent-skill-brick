@@ -43,7 +43,7 @@ const BUILTIN_SKILLS = Object.freeze([
   Object.freeze({
     id: "amazon-product-image-generation",
     name: "amazon-product-image-generation",
-    version: "0.4.0",
+    version: "0.4.1",
     description: "用于 Amazon 商品白底主图、卖点图、场景图生成和版本化迭代。"
   }),
   ...EXPERT_BUILTIN_SKILLS
