@@ -100,9 +100,9 @@ Do not alter [protected details]. Do not add [forbidden elements].
 
 ## 出图策略
 
-- 信息不足：先生成 1 张 medium 概念稿。
+- 信息不足：先生成 1 张 high 概念稿，控制数量而不是降低质量档位。
 - 方向已确定：生成 2 到 4 张同需求候选。
-- 用户选中方向：以明确版本编辑，并切换 high。
+- 用户选中方向：以明确版本继续编辑，质量保持 high。
 - 多种用途：在一次 generate 中创建多个 request，避免一个 prompt 同时要求主图、场景图和卖点图。
 - 文字较多：优先生成无文字底图，提醒在确定性排版工具中添加文字。
 - 同一职责的多个视觉候选：使用一个 prompt 配合 `count`。

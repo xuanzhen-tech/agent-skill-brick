@@ -1,7 +1,7 @@
 ---
 name: amazon-product-image-generation
 displayChineseName: 亚马逊商品生图
-version: 0.4.0
+version: 0.4.1
 description: 为亚马逊商品创建白底主图、卖点图、场景图和可迭代版本；适用于用户要求生成、调整、对比或继续编辑 Amazon 商品图片的任务。
 requiredTools: [ecommerce_image_generate, ecommerce_image_edit, ecommerce_image_list]
 ---
@@ -14,7 +14,7 @@ requiredTools: [ecommerce_image_generate, ecommerce_image_edit, ecommerce_image_
 
 ## 工作流
 
-1. 确认站点、图片用途、商品名称、真实外观、必须保留内容、禁止变化内容、尺寸、数量和参考图。
+1. 确认站点、图片用途、商品名称、真实外观、必须保留内容、禁止变化内容、画面比例、分辨率、数量和参考图。
 2. 若要生成可上架图片但没有真实商品参考图，先说明只能产出概念草稿；不要凭文字承诺商品结构、颜色、包装或 Logo 完全准确。
 3. 按任务最小化读取 reference，不要一次加载全部资料：
    - 需要工具 JSON：读取 `references/tool-examples.md`。
@@ -24,11 +24,12 @@ requiredTools: [ecommerce_image_generate, ecommerce_image_edit, ecommerce_image_
    - 要实际生成、编辑或验收图片：读取 `references/production-quality-gate.md`。
    - 准备 Amazon US 图片：读取 `references/amazon-us-guidance.md`。
 4. 多张不同职责的图片先规划数量和每张职责。将共享的商品身份、Logo 和品牌约束写入 `basePrompt`，将白底图、场景图、特写图等职责分别写入同一次 generate 的 `requests`。不要擅自补足固定七张。
-5. 初稿通常使用 `quality: "medium"`、每个 request 的 `count: 1`。`count` 只用于同一职责的多个候选；不同职责使用不同 request。定稿使用 `quality: "high"`。
-6. 调用一次 `ecommerce_image_generate` 提交整套 requests。工具会公平并发并自行完成排队、重试、等待、落盘和验证；不要拆成多个串行 generate，也不要保存 batchId、轮询状态或主动调用取消/重试工具。
-7. 只有最终结果为 `deliveryReady=true` 且存在 artifact 时才向用户呈递完成项，并保留每张图的 `assetId`、`versionId` 和 path。部分成功必须明确报告未完成项；只有实际观察到图片时才执行视觉质量判断。
-8. 用户要求调整时调用 `ecommerce_image_edit`。明确传入来源 `assetId` 和 `versionId`，只描述要改和必须保持的内容。
-9. 需要查历史或从旧版本继续时调用 `ecommerce_image_list`。不要覆盖原图，也不要假造不存在的版本。
+5. 每个 request 优先沿用 Product 或用户已经选择的 `size` 画面比例和 `resolution` 分辨率。Skill 不维护固定比例选项；缺少明确选择时按图片用途选择合理比例，不向用户解释 provider 参数或要求用户在技术模式之间选择。
+6. 生成和编辑统一使用 `quality: "high"`，不要向用户询问或展示 medium/high 模式。每个 request 的 `count` 默认 1；`count` 只用于同一职责的多个候选，不同职责使用不同 request。
+7. 调用一次 `ecommerce_image_generate` 提交整套 requests。工具会公平并发并自行完成排队、重试、等待、落盘和验证；不要拆成多个串行 generate，也不要保存 batchId、轮询状态或主动调用取消/重试工具。
+8. 只有最终结果为 `deliveryReady=true` 且存在 artifact 时才向用户呈递完成项，并保留每张图的 `assetId`、`versionId` 和 path。部分成功必须明确报告未完成项；只有实际观察到图片时才执行视觉质量判断。
+9. 用户要求调整时调用 `ecommerce_image_edit`。明确传入来源 `assetId` 和 `versionId`，只描述要改和必须保持的内容。
+10. 需要查历史或从旧版本继续时调用 `ecommerce_image_list`。不要覆盖原图，也不要假造不存在的版本。
 
 ## 图片类型
 

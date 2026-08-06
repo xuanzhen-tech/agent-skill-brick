@@ -19,21 +19,17 @@
     {
       "key": "white-background",
       "prompt": "Create a realistic Amazon main product image. Center one product on a seamless pure white background, front three-quarter view, soft natural contact shadow, evenly lit, sharp edges. No props, added text, badge, border or watermark.",
-      "size": {
-        "width": 2048,
-        "height": 2048
-      },
-      "quality": "medium",
+      "size": "1:1",
+      "resolution": "2K",
+      "quality": "high",
       "count": 1
     },
     {
       "key": "lifestyle",
       "prompt": "Show the product in a bright modern kitchen use scene with realistic scale and natural daylight. Do not add people, accessories or unsupported product features.",
-      "size": {
-        "width": 2048,
-        "height": 2048
-      },
-      "quality": "medium",
+      "size": "4:5",
+      "resolution": "2K",
+      "quality": "high",
       "count": 1
     }
   ],
@@ -55,10 +51,8 @@
       "assetId": "asset-...",
       "versionId": "v1",
       "prompt": "Change only the background to a bright modern kitchen counter. Keep the exact mug shape, matte black color, lid, proportions and visible product details unchanged. Do not add text, logos, accessories or people.",
-      "size": {
-        "width": 2048,
-        "height": 2048
-      },
+      "size": "1:1",
+      "resolution": "2K",
       "quality": "high",
       "additionalReferenceImages": [
         {
@@ -90,6 +84,8 @@
 - `requests` 表示不同图片职责；每个 request 的 `count` 表示该职责的独立候选，不是矩阵、拼图或模型分组。
 - `basePrompt` 和顶层 `referenceImages` 约束整套图片的一致性，场景专属参考图放入对应 request 的 `additionalReferenceImages`。
 - 不同职责放在同一次 generate 的不同 requests，不要拆成串行工具调用。
-- `size.width` 和 `size.height` 必须是 16 的倍数，并满足工具 schema 的像素和长宽比限制。
+- `size` 使用正整数宽高比字符串，优先原样采用 Product 或用户选择；`1:1`、`4:5`、`16:9`、`9:16` 仅为示例，不是 Skill 维护的固定选项。
+- `resolution` 使用 Product 或用户选择的 `1K`、`2K` 或 `4K`，不要根据比例擅自改档。
+- 生成和编辑统一使用 `quality: "high"`，不要向用户暴露或询问质量模式。
 - PNG 不传 `compression`。JPEG/WebP 才可传 0 到 100 的压缩质量。
 - 参考图使用 workspace 相对路径，只支持 PNG、JPEG 和 WebP。
