@@ -126,6 +126,7 @@ async function validateRuntimeArtifactIfPresent() {
     "src/main/diagnostics.mjs",
     "src/main/env.mjs",
     "src/main/installation-registry.mjs",
+    "src/main/asin-research-builtin-skill-catalog.mjs",
     "src/main/builtin-skill-catalog.mjs",
     "src/main/expert-builtin-skill-catalog.mjs",
     "src/main/launch-config.mjs",

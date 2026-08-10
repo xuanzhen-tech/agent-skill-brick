@@ -24,7 +24,7 @@ import {
 
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.8.3");
+assert.equal(brickDefinition.version, "0.8.4");
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);
@@ -33,7 +33,7 @@ assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skil
 assert.equal(brickDefinition.configSchema.properties.skills.type, "array");
 
 const builtinSkills = listBuiltinSkills();
-assert.equal(builtinSkills.length, 68);
+assert.equal(builtinSkills.length, 74);
 assert.deepEqual(builtinSkills.slice(0, 4).map((skill) => skill.name), [
   "amazon-sku-profit-summary",
   "amazon-inventory-ledger-summary",
@@ -44,6 +44,8 @@ assert.equal(new Set(builtinSkills.map((skill) => skill.name)).size, builtinSkil
 assert.equal(builtinSkills.some((skill) => skill.name === "amazon-opportunity-discovery"), true);
 assert.equal(builtinSkills.some((skill) => skill.name === "amazon-account-health-assessment"), true);
 assert.equal(builtinSkills.some((skill) => skill.name === "amazon-working-capital-action-control"), true);
+assert.equal(builtinSkills.some((skill) => skill.name === "amazon-sellersprite-asin-research-orchestrator"), true);
+assert.equal(builtinSkills.filter((skill) => skill.name.startsWith("amazon-sellersprite-")).length, 6);
 
 const launchConfig = createAgentSkillLaunchConfig({
   skillsPath: `${process.cwd()}\\skills`,

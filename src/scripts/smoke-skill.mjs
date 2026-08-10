@@ -26,6 +26,14 @@ import {
 } from "../index.mjs";
 
 const CRC32_TABLE = createCrc32Table();
+const ASIN_RESEARCH_SKILL_NAMES = [
+  "amazon-sellersprite-ad-visibility-gap-analysis",
+  "amazon-sellersprite-asin-research-orchestrator",
+  "amazon-sellersprite-competitive-landscape",
+  "amazon-sellersprite-event-anomaly-analysis",
+  "amazon-sellersprite-listing-competitor-audit",
+  "amazon-sellersprite-review-voc-anomaly-screening"
+];
 const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "agent-skill-smoke-"));
 
 try {
@@ -438,6 +446,60 @@ try {
   assert.deepEqual(selectedBuiltinSkill.definitions, []);
   assert.equal(await selectedBuiltinSkill.buildPrompt(), "");
 
+  // ASIN 研究集群的六个包必须能够独立安装，并在安装后通过受控资源 API
+  // 读取各自携带的共享合同，不能依赖 skillsPath 外的 ../_shared 目录。
+  const asinResearchCatalog = listBuiltinSkills()
+    .filter((skill) => ASIN_RESEARCH_SKILL_NAMES.includes(skill.name));
+  assert.equal(asinResearchCatalog.length, 6);
+  const asinResearchByName = new Map(asinResearchCatalog.map((skill) => [skill.name, skill]));
+  for (const skillName of ASIN_RESEARCH_SKILL_NAMES) {
+    const sourceSkillPath = path.resolve("src", "builtin-skills", skillName);
+    const validation = await validateSkillPackage(sourceSkillPath);
+    assert.equal(validation.valid, true, `${skillName}: ${validation.diagnostics.join("; ")}`);
+    assert.equal(validation.metadata.name, skillName);
+    assert.equal(validation.metadata.description, asinResearchByName.get(skillName).description);
+    await assertTextResourcesHaveNoControlCharacters(sourceSkillPath);
+  }
+
+  const asinResearchRoot = path.join(tempRoot, "asin-research-managed");
+  const selectedAsinResearchSkills = new AgentSkill({
+    skillsPath: asinResearchRoot,
+    skills: ASIN_RESEARCH_SKILL_NAMES
+  });
+  const asinResearchIndex = await selectedAsinResearchSkills.refresh();
+  assert.equal(asinResearchIndex.skills.length, 6);
+  for (const skillName of ASIN_RESEARCH_SKILL_NAMES) {
+    const activated = await selectedAsinResearchSkills.activate(skillName);
+    assert.equal(activated.loadedSkill.name, skillName);
+    assert.doesNotMatch(activated.loadedSkill.content, /\.\.\/_shared\//);
+    assert.equal(
+      activated.loadedSkill.resources.some(
+        (resource) => resource.path === "references/shared/sellersprite-mcp-contract.md"
+      ),
+      true
+    );
+    const sharedContract = await selectedAsinResearchSkills.readReference(
+      skillName,
+      "references/shared/sellersprite-mcp-contract.md"
+    );
+    assert.match(sharedContract.loadedSkillReference.content, /search.*describe.*call/s);
+    const referencedResources = [...activated.loadedSkill.content.matchAll(
+      /`((?:references|assets)\/[^`]+)`/g
+    )].map((match) => match[1]);
+    for (const resourcePath of referencedResources) {
+      assert.equal(
+        await exists(path.join(asinResearchRoot, skillName, ...resourcePath.split("/"))),
+        true,
+        `${skillName}: referenced resource is missing: ${resourcePath}`
+      );
+    }
+  }
+  const claimRegister = await selectedAsinResearchSkills.resolveAsset(
+    "amazon-sellersprite-asin-research-orchestrator",
+    "assets/claim-register.csv"
+  );
+  assert.equal(claimRegister.asset.path, "assets/claim-register.csv");
+
   // 14 位专家提供的 64 个预制包必须全部经过真实目录校验、受管安装和激活，
   // 避免 catalog 只登记名称但发布物缺文件，或单个 reference/asset 破坏整批安装。
   const legacyBuiltinNames = new Set([
@@ -447,7 +509,8 @@ try {
     "amazon-product-image-generation"
   ]);
   const expertBuiltinCatalog = listBuiltinSkills()
-    .filter((skill) => !legacyBuiltinNames.has(skill.name));
+    .filter((skill) => !legacyBuiltinNames.has(skill.name))
+    .filter((skill) => !ASIN_RESEARCH_SKILL_NAMES.includes(skill.name));
   const expertBuiltinNames = expertBuiltinCatalog.map((skill) => skill.name);
   const expertBuiltinByName = new Map(
     expertBuiltinCatalog.map((skill) => [skill.name, skill])
@@ -532,6 +595,24 @@ async function exists(filePath) {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function assertTextResourcesHaveNoControlCharacters(root) {
+  const entries = await fs.readdir(root, { withFileTypes: true });
+  for (const entry of entries) {
+    const entryPath = path.join(root, entry.name);
+    if (entry.isDirectory()) {
+      await assertTextResourcesHaveNoControlCharacters(entryPath);
+      continue;
+    }
+    if (!/\.(?:csv|json|md|txt|ya?ml)$/i.test(entry.name)) continue;
+    const content = await fs.readFile(entryPath, "utf8");
+    assert.doesNotMatch(
+      content,
+      /[\u0000-\u0009\u000b-\u001f\u007f]/,
+      `Unexpected control character in ${entryPath}`
+    );
   }
 }
 

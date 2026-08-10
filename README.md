@@ -107,8 +107,10 @@ import { listBuiltinSkills } from "@xuanzhen-tech/agent-skill-brick";
 console.log(listBuiltinSkills());
 ```
 
-从 `0.8.0` 起，预制目录包含 14 类跨境经营专家能力对应的 64 个独立 skill，
-加上既有经营分析、生图等能力共 68 个。新版专家 skill 可按任务渐进使用
+从 `0.8.4` 起，预制目录包含 14 类跨境经营专家能力对应的 64 个独立 skill、
+6 个 SellerSprite ASIN 深度研究 skill，以及既有经营分析、生图等能力，共 74 个。
+ASIN 研究总控和五个研究模块均可独立选择，每个包都携带完整共享研究合同，安装
+单个模块不会产生跨目录资源依赖。新版专家 skill 可按任务渐进使用
 SIF、SellerSprite 和 Sorftime MCP，但不保存连接配置或密钥。专家身份、提示词
 以及“专家对应哪些 skill”的映射仍由产品管理；本积木只按名称选择、安装和
 开放 skill，不在 SDK 内部创建专家角色或固定工作流。

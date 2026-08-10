@@ -12,6 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { normalizeSkillName } from "./skill-index.mjs";
+import { ASIN_RESEARCH_BUILTIN_SKILLS } from "./asin-research-builtin-skill-catalog.mjs";
 import { EXPERT_BUILTIN_SKILLS } from "./expert-builtin-skill-catalog.mjs";
 
 export const BUILTIN_SKILL_SOURCE_KIND = "agent-skill.builtin.v1";
@@ -46,6 +47,7 @@ const BUILTIN_SKILLS = Object.freeze([
     version: "0.4.1",
     description: "用于 Amazon 商品白底主图、卖点图、场景图生成和版本化迭代。"
   }),
+  ...ASIN_RESEARCH_BUILTIN_SKILLS,
   ...EXPERT_BUILTIN_SKILLS
 ]);
 
