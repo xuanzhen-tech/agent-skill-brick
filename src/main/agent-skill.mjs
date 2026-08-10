@@ -323,10 +323,21 @@ export class AgentSkill {
         .filter((name) => !this.skillNames.includes(name))
       : [];
 
+    const returnedNames = result.installed
+      .map((item) => normalizeOptionalSkillName(item.name))
+      .filter(Boolean);
+    const canonicalName = normalizeOptionalSkillName(result.name)
+      ?? (returnedNames.length === 1 ? returnedNames[0] : undefined);
+    const status = stringField(result.status)
+      ?? (returnedNames.length > 0 ? "installed" : "unchanged");
+
     return {
       action: "install",
+      status,
+      ...(canonicalName ? { name: canonicalName } : {}),
       skillRoot: this.config.skillsPath,
       installed: result.installed,
+      ...(result.installation ? { installation: result.installation } : {}),
       skills: installedSkills,
       count: installedSkills.length,
       diagnostics: [

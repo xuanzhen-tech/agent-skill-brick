@@ -23,6 +23,7 @@ import {
   isBuiltinSkillSource,
   resolveBuiltinSkillSource
 } from "./builtin-skill-catalog.mjs";
+import { createSkillError } from "./skill-error.mjs";
 import { normalizeSkillName } from "./skill-index.mjs";
 
 const MAX_TOTAL_BYTES = 25 * 1024 * 1024;
@@ -51,6 +52,41 @@ const BUNDLED_PACKAGE_POLICY = Object.freeze({
     "templates",
     "workflows",
     ".ppt-master-library"
+  ])
+});
+// 远端 Skill 生态中的正式包通常还携带 LICENSE、agent 定义、评测脚本和示例。
+// 这些文件不会被 AgentSkill 自动执行；安全边界仍由目录隔离、symlink 拒绝、
+// 文件数量和体积限制共同保证。普通本地安装继续使用更窄的默认白名单。
+const DISCOVERED_PACKAGE_POLICY = Object.freeze({
+  maxTotalBytes: MAX_TOTAL_BYTES,
+  maxFileCount: MAX_FILE_COUNT,
+  maxSingleFileBytes: MAX_SINGLE_FILE_BYTES,
+  allowedRootFiles: new Set([
+    "SKILL.md",
+    "LICENSE",
+    "LICENSE.md",
+    "LICENSE.txt",
+    "NOTICE",
+    "NOTICE.md",
+    "NOTICE.txt",
+    "README",
+    "README.md",
+    "CHANGELOG.md",
+    "requirements.txt",
+    "pyproject.toml",
+    "package.json"
+  ]),
+  allowedRootDirs: new Set([
+    "references",
+    "scripts",
+    "assets",
+    "templates",
+    "workflows",
+    "agents",
+    "evals",
+    "eval-viewer",
+    "examples",
+    "resources"
   ])
 });
 
@@ -105,6 +141,58 @@ export async function installSkillPackage({ source, managedRoot, conflict } = {}
   const root = path.resolve(managedRoot);
   await recoverManagedSkillTransactions(root);
   const resolvedSource = await resolveInstallSource(source);
+  return await installResolvedSkillPackage({ root, resolvedSource, conflict });
+}
+
+/**
+ * 安装 skill_find 已经下载到隔离暂存区并完成来源选择的单个 Skill。
+ *
+ * 远端发现器必须走与 install() 相同的替换事务和安装登记，不能直接复制到
+ * managed root，否则 Product 无法取得 canonical name，也无法在崩溃后恢复。
+ */
+export async function installDiscoveredSkillPackage({
+  sourceDirectory,
+  managedRoot,
+  providerId,
+  remoteId,
+  sourceRepository,
+  sourcePath,
+  revision,
+  conflict = "check"
+} = {}) {
+  const root = path.resolve(managedRoot);
+  await recoverManagedSkillTransactions(root);
+  const source = path.resolve(sourceDirectory);
+  const stat = await fs.stat(source);
+  if (!stat.isDirectory()) {
+    throw createSkillError("skill_install_invalid_source", "Discovered Skill source must be a directory.");
+  }
+  const normalizedProviderId = requiredString(providerId, "skill providerId");
+  const normalizedRemoteId = requiredString(remoteId, "skill remoteId");
+  return await installResolvedSkillPackage({
+    root,
+    conflict,
+    resolvedSource: {
+      kind: "discovered",
+      sourceKind: normalizedProviderId,
+      path: source,
+      packagePolicy: DISCOVERED_PACKAGE_POLICY,
+      provenance: {
+        type: "skill-find",
+        remoteId: normalizedRemoteId,
+        sourceRepository: optionalString(sourceRepository),
+        sourcePath: optionalString(sourcePath),
+        revision: optionalString(revision)
+      }
+    }
+  });
+}
+
+export function getDiscoveredSkillPackagePolicy() {
+  return DISCOVERED_PACKAGE_POLICY;
+}
+
+async function installResolvedSkillPackage({ root, resolvedSource, conflict }) {
   const conflictMode = normalizeConflictMode(conflict, resolvedSource);
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "agent-skill-install-"));
   try {
@@ -112,7 +200,10 @@ export async function installSkillPackage({ source, managedRoot, conflict } = {}
     const skillDir = await resolveSkillDirectory(stagedDir);
     const validation = await validateSkillPackage(skillDir, resolvedSource.packagePolicy);
     if (!validation.valid) {
-      throw new Error(`Invalid skill package: ${validation.diagnostics.join("; ")}`);
+      throw createSkillError(
+        "skill_package_invalid",
+        `Invalid skill package: ${validation.diagnostics.join("; ")}`
+      );
     }
 
     const skillName = normalizeSkillName(validation.metadata.name);
@@ -130,7 +221,7 @@ export async function installSkillPackage({ source, managedRoot, conflict } = {}
       version: validation.metadata.version ?? "0.1.0",
       contentHash,
       revision: resolvedSource.provenance?.revision ?? contentHash,
-      sourceKind: resolvedSource.kind,
+      sourceKind: resolvedSource.sourceKind ?? resolvedSource.kind,
       provenance: resolvedSource.provenance
     });
     const existingInstallation = await getManagedSkillInstallation({ managedRoot: root, skillName });
@@ -272,7 +363,12 @@ async function stageInstallSource(source, tempRoot) {
     await fs.writeFile(path.join(output, "SKILL.md"), source.content, "utf8");
     return output;
   }
-  if (source.kind === "directory" || source.kind === "builtin" || source.kind === "bundled") return source.path;
+  if (
+    source.kind === "directory"
+    || source.kind === "builtin"
+    || source.kind === "bundled"
+    || source.kind === "discovered"
+  ) return source.path;
   const zipPath = source.kind === "zip"
     ? source.path
     : await downloadFile(source.url, path.join(tempRoot, "download.zip"));
@@ -616,7 +712,7 @@ function isAllowedPackagePath(
 }
 
 function normalizePackagePolicy(policy) {
-  if (policy !== BUNDLED_PACKAGE_POLICY) {
+  if (policy !== BUNDLED_PACKAGE_POLICY && policy !== DISCOVERED_PACKAGE_POLICY) {
     return {
       maxTotalBytes: MAX_TOTAL_BYTES,
       maxFileCount: MAX_FILE_COUNT,
@@ -625,7 +721,7 @@ function normalizePackagePolicy(policy) {
       allowedRootDirs: ALLOWED_ROOT_DIRS
     };
   }
-  return BUNDLED_PACKAGE_POLICY;
+  return policy;
 }
 
 function isUnsafeArchiveEntryName(name) {
