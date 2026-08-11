@@ -1,29 +1,36 @@
-# 通道与搜索意图分类
+<!--
+文件功能：为供应商返回的通道、关键词和研究意图提供可追溯分类。
+职责边界：分类是分析标签，不代表竞品真实账户结构、投放意图或可直接执行的广告动作。
+重要关联：../SKILL.md、visibility-calculation-cookbook.md。
+-->
+
+# 通道与关键词分类
 
 ## 通道
+
 - `natural`：自然搜索可见；
-- `ads_sp`：SP或ads标签；
-- `ads_brand`：SB/品牌广告可见；
-- `ads_video`：视频广告可见；
-- `recommended`：AC/ER/四星/HR/关联等；
-- `unknown_channel`：来源字段不能可靠映射。
+- `ads_sp`：供应商明确标记 SP/PPC；
+- `ads_brand`：供应商明确标记品牌广告；
+- `ads_video`：供应商明确标记视频广告；
+- `recommended`：关联、推荐或其他明确返回来源；
+- `unknown_channel`：字段不能可靠映射。
+
+没有实际字段支持时不得从位置、样式或词义猜测通道。
 
 ## 词簇
-- `core_product`：品类核心词；
-- `attribute`：规格、接口、功率、尺寸、材质等；
-- `use_case`：旅行、办公、家庭等场景；
-- `problem_solution`：要解决的问题；
-- `audience`：人群；
-- `compatibility`：品牌/型号/设备兼容；
-- `brand_own | brand_competitor`；
-- `alternative | accessory | irrelevant`。
 
-## 运营机制标签
-- `discovery`：宽泛/上层主题，用于探索；
-- `harvest`：高相关、供应商标记优质/稳定、多个证据支持；
-- `defense`：自有品牌/核心品类防守候选；
-- `competitor_targeting`：竞品品牌/ASIN意图候选；
-- `listing_alignment`：与页面事实和核心需求一致，应交Listing验证；
-- `observe_only`：相关性或数据质量不足。
+`core_product | attribute | use_case | problem_solution | audience | compatibility | brand_own | brand_competitor | alternative | accessory | irrelevant | unclear`
 
-分类是Agent编码，必须保留原词、规则、置信度和反例；不能从词簇直接生成Campaign或否词动作。
+每个分类保留 `keyword_raw, normalization_rule, classification, confidence, evidence_id, counterexample_or_note`。原词永不覆盖；品牌、型号、容量、接口和电压等有业务意义 token 不删除。
+
+## 研究方向标签
+
+需要组织验证队列时可使用中性标签：
+
+- `coverage_observation`
+- `listing_alignment_candidate`
+- `brand_or_competitor_query_candidate`
+- `needs_first_party_validation`
+- `observe_only`
+
+不使用 `harvest`、`defense` 或其他容易被误解为已确认账户动作的标签。研究标签不能直接生成 Campaign、Target、否词、预算或竞价动作。

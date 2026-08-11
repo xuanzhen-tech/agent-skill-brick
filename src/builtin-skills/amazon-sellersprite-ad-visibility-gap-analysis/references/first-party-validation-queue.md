@@ -1,11 +1,17 @@
+<!--
+文件功能：把外部可见性假设转换为需要第一方材料才能验证的问题。
+职责边界：这是 temp 内部验证队列；最终 HTML 只呈现会改变判断的缺口，不把队列当账户行动建议。
+重要关联：../SKILL.md。
+-->
+
 # 一方广告验证队列
 
-| 外部假设 | 必需一方材料 | 验收后可交接 |
+| 外部假设 | 必需第一方材料 | 验收后可进入 |
 |---|---|---|
-| 某词是有效转化词 | Search Term + Target报表，同期稳定ID、曝光点击花费订单销售 | 搜索词优化 |
-| 某词簇广告依赖高 | Campaign/Ad Group/Target实体及绩效；Business Reports | 广告诊断 |
-| 需要结构重组 | 现有Portfolio/Campaign/Ad Group/Target状态、命名、预算与商品目标 | 架构规划 |
-| 可以增预算 | 已验证实际/目标/保本ACoS、TACoS、利润边界和预算节奏 | 预算ACoS规划 |
-| 自然覆盖不足 | Listing文本/关键词架构、同口径自然排名或索引证据 | Listing关键词/排名趋势 |
+| 某词可能有效转化 | Search Term 与 Target 报表，同期稳定实体、曝光、点击、花费、订单和销售 | 搜索词优化研究 |
+| 某词簇可能依赖广告 | Campaign/Ad Group/Target 实体与绩效、Business Reports | 广告绩效诊断 |
+| 需要结构调整 | 当前 Portfolio/Campaign/Ad Group/Target 状态、命名、预算和商品目标 | 账户结构规划 |
+| 可能增加预算 | 实际/目标/保本 ACoS、TACoS、利润边界和预算节奏 | 预算与 ACoS 规划 |
+| 自然覆盖可能不足 | Listing 文本、关键词架构、同口径自然排名或索引证据 | Listing/排名验证 |
 
-每条队列记录：对象、词/词簇、外部观察、未知链路、替代解释、所需字段、owner、可逆下一步。无一方数据时状态只能 `unverified|partially_supported`。
+每条内部记录只需：对象、词/词簇、外部观察、未知链路、替代解释、所需字段、owner、状态。没有第一方数据时状态只能 `unverified | partially_supported`，不得升级为广告绩效结论。

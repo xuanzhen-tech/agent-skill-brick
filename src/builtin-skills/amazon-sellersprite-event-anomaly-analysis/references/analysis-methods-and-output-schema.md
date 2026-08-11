@@ -1,118 +1,83 @@
-# 分析方法与输出 Schema
+<!--
+文件功能：定义事件趋势专家的最小规范化序列、图表数据、事件比较和异常质量规则。
+职责边界：只提供本 Skill 内可复算的详细方法，不依赖外部共享合同，也不要求专家生成独立报告。
+重要关联：../SKILL.md。
+-->
 
-本参考文件供 `amazon-sellersprite-event-anomaly-analysis` 使用。它定义可复算字段、公式和最小交付结构；不替代 `research-contract.md`、`sellersprite-mcp-contract.md` 或 `evidence-claims-contract.md`。
+# 趋势、事件与图表数据方法
 
-## 1. 长表与质量账本
+## 规范化序列
 
-### `field-comparability.csv`
-
-```text
-field_id,metric,source_field,metric_definition,unit,currency,rank_direction,grain,scope_definition,object_level,comparable_requirements,comparability,status,known_limitations
-```
-
-### `data-quality-register.csv`
+使用一个长表保存实际需要的字段：
 
 ```text
-issue_id,object_id,metric,period,issue_type,severity,affected_rows,affected_window,detected_rule,impact,on_main_conclusion,blocking_flag,remediation_request,status
+case_id,dataset_version,marketplace,object_id,object_level,parent_asin,variant_key,metric,metric_family,value_raw,value_numeric,unit,currency,rank_direction,category,observation_date,period_start,period_end,grain,source_field,source_tool,data_nature,extraction_time,field_status,coverage_status,comparability,segment_id,break_reason,evidence_id,notes
 ```
 
-`issue_type` 可为：`missingness, consecutive_gap, duplicate, date_parse, granularity_mismatch, unit_currency_mismatch, unfinished_period, truncation, mapping_change, definition_change, outlier, timezone_unknown, coverage_change`。
+`metric_family` 至少区分 `price_promotion | sales_estimate | bsr | rating_review`。原值永不覆盖；只有实际返回且语义明确时填 `value_numeric`。
 
-### `normalized-trend-series.csv`
+## 质量问题
+
+按需记录：
 
 ```text
-case_id,dataset_version,marketplace,object_id,object_level,parent_asin,variant_key,metric,metric_family,value_raw,value_numeric,unit,currency,rank_direction,observation_date,period_start,period_end,grain,scope_definition,source_field,source_tool,data_nature,extraction_time,coverage_status,comparability,mapping_segment_id,break_id,notes
+issue_id,object_id,metric,period,issue_type,impact,blocking,status,evidence_id,remediation
 ```
 
-## 2. 计算字段
+`issue_type` 可为 `missingness | consecutive_gap | duplicate | unfinished_period | truncation | mapping_change | category_change | definition_change | unit_currency_mismatch | timezone_unknown | coverage_change | outlier | count_reversal_or_revision`。
 
-### `trend-and-change-ledger.csv`
+质量状态影响分析时必须在 visual 的 `status_reason` 和 `limitations` 中暴露，不能只留在 temp。
+
+## 四类 visual 数据
+
+### `price_promotion_trend`
+
+`date, object_id, price_type, price_value, currency, coupon_value_or_state, promotion_type, event_flag, field_status, evidence_id`
+
+价格线和促销事件分层；缺失日期保留空值。不同币种或价格类型默认不合并。
+
+### `sales_estimate_trend`
+
+`period_start, period_end, object_id, metric, value, unit, grain, estimate_or_prediction, unfinished_period, field_status, evidence_id`
+
+标题或图例必须出现“供应商估算/预测”。
+
+### `bsr_trend`
+
+`date, object_id, category_level, category_name, rank_value, rank_direction, segment_id, break_reason, field_status, evidence_id`
+
+父级和子级序列分开；类目变化后开始新 segment。
+
+### `rating_review_trend`
+
+`date_or_period, object_id, rating_value, review_count_cumulative, review_increment, increment_nature, increment_formula, anomaly_status, field_status, evidence_id`
+
+星级和评论数可使用双轴；负增量必须显示异常状态，不能当作正常业务值解释。
+
+## 变化与事件计算
+
+事件记录最少包含：
 
 ```text
-analysis_id,object_id,metric,segment_id,analysis_date,window_days,pre_start,pre_end,post_start,post_end,pre_valid_n,post_valid_n,pre_missing_rate,post_missing_rate,pre_mean,post_mean,pre_median,post_median,absolute_change,relative_change,relative_change_status,sd_pre,mad_pre,z_score,robust_z_score,rank_improvement,persistence_rate,trend_slope_pre,trend_slope_post,candidate_change_date,trigger_rules,comparability,interpretation_limitations
+event_id,t0,t0_source,t0_type,object_id,metric,pre_window,post_window,pre_valid_n,post_valid_n,missingness,comparability,pre_summary,post_summary,absolute_change,relative_change,relative_change_status,overlap_flag,break_flag,evidence_ids,allowed_wording,limitations
 ```
 
-规则：
-- `absolute_change = post_mean - pre_mean`。
-- `relative_change = absolute_change / pre_mean`；`pre_mean=0`、缺失或语义不明时写 `not_defined`。
-- `rank_improvement = pre_mean - post_mean`，仅 `rank_direction=lower_is_better` 且排名口径相同。
-- `persistence_rate` 为后窗中位于前窗中位数同一改善/恶化方向的有效日比例。
-- 斜率建议用 Theil–Sen；若用线性斜率，登记方法与敏感性结果。
+- `absolute_change = post_summary - pre_summary`，summary 使用均值或中位数必须预先声明。
+- `relative_change = absolute_change / pre_summary`；基线为零、缺失或语义不明时为 `not_defined`。
+- BSR 改善可计算 `pre_rank - post_rank`，前提是类目和排名定义一致。
+- 用户要求的前后 14 天是首选业务窗口，不是默认统计真理；有效观察不足、粒度不符或窗口重叠时停止比较。
+- 算法候选 t0 与结果变量共同生成时，只能写探索性候选，不能写事件效果。
 
-### `event-study.csv`
+## 异常与候选机制
 
-```text
-event_id,t0_source,t0_type,object_id,metric,window_days,pre_window,post_window,t0_included,pre_valid_n,post_valid_n,pre_missing_rate,post_missing_rate,pre_mean,post_mean,pre_median,post_median,pre_min,pre_max,post_min,post_max,absolute_change,relative_change,relative_change_status,anomaly_days_pre,anomaly_days_post,overlap_flag,break_flag,comparability,level,allowed_wording,limitations
-```
+不提供默认阈值。当前任务如采用 z-score、MAD、Theil–Sen、变化点算法或业务阈值，必须记录规则、参数、基线、选择时间、全部候选和敏感性限制。
 
-`t0_type` 为 `user_or_upstream_event | algorithmic_candidate`。算法候选 t0 不得表述为已知业务事件。
+候选机制最少记录：`mechanism, observation, calculation, temporal_order, scope_match, alternatives, disconfirming_condition, verification_data_needed, evidence_ids, level, status`。排序分数若存在只用于验证优先级，不能转化为概率或证据等级。
 
-### `candidate-drivers-and-falsification.csv`
+## 图表显示
 
-```text
-candidate_id,mechanism,affected_object,affected_metric,result_window,signal_window,temporal_order_score,scope_match_score,multidimensional_score,baseline_deviation_score,confounding_score,falsifiability_score,mechanism_score,evidence_ids,observation,calculation,interpretation,alternative_1,alternative_2,disconfirming_prediction,verification_data_needed,level,allowed_wording,prohibited_wording,status
-```
-
-`mechanism_score` 是六个 0–2 分维度之和，范围 0–12；只用于验证优先级排序。
-
-## 3. 报告核心表
-
-`event-analysis-report.md` 至少包含以下 Markdown 表：
-
-### 核心结果
-
-| 对象/变体 | 指标 | 窗口 | 基线 | 后窗 | 绝对变化 | 相对变化 | 有效日 | 可比性 | 结论等级 |
-|---|---|---:|---:|---:|---:|---:|---:|---|---|
-
-### 候选机制与反证
-
-| 候选机制 | 时间顺序 | 机制分数/12 | 支持观察 | 替代解释 | 可证伪条件 | 当前等级 | 最小补数 |
-|---|---|---:|---|---|---|---|---|
-
-## 4. 最小 Handoff YAML
-
-```yaml
-case_id: required
-dataset_version: required
-scope:
-  marketplace: required
-  object_ids: []
-  object_level: required
-  analysis_window: required
-  primary_metric: required
-data_quality:
-  comparability: fully_comparable | partially_comparable | not_comparable
-  blocking_issues: []
-  coverage_limitations: []
-methods:
-  baseline: required
-  windows: [7, 14, 28]
-  anomaly_rules: []
-  change_point_rules: []
-results:
-  observed_changes: []
-  candidate_change_points: []
-  event_studies: []
-  candidate_mechanisms: []
-claims:
-  max_level: L0 | L1 | L2 | L3
-  prohibited_inferences: []
-next_steps:
-  data_requests: []
-  falsification_checks: []
-artifacts: []
-```
-
-## 5. 实例化计算（示例，不是阈值承诺）
-
-假设某 child ASIN 的日粒度 `estimated_sales` 是同一字段、同一变体、同一连续段的供应商估算值。候选日为 2025-06-15：
-
-- 前 14 日 `[-14,-1]` 有效 13/14 天，均值 100，中位数 98，MAD 8；
-- 后 14 日 `[+1,+14]` 有效 14/14 天，均值 130，中位数 128；
-- 则 `absolute_change = 30`，`relative_change = 30%`。
-
-它可被登记为“供应商估算销量在该后窗较前窗高 30（30%）的可见变化”，但不能写为真实订单增加 30%。若 candidate day 的值 135，则使用前窗中位数计算：
-
-`robust_z = 0.6745 × (135 - 98) / 8 = 3.12`
-
-该值未达到默认单点筛查 3.5，不应仅凭该单点标为异常；应继续检查 7/14/28 窗口、持续性、缺失、映射断点与多信号。若同日 Coupon 状态变化且固定关键词集合的自然名次改善，但类目对照同样改善，则“Coupon 机制”仍需与类目需求等替代解释并列，不能确认归因。
+- 时间轴显示实际覆盖，数据量允许时提供缩放或范围选择。
+- Tooltip 显示原值、单位、数据性质、类目、字段状态和事件来源。
+- 缺失不连线；未结束期使用视觉区分；断点两侧不自动连接。
+- 多 ASIN 使用稳定颜色；同一 ASIN 的不同数据性质使用线型或就近标签区分。
+- 每张图附 evidence、计算口径和不超过 L2 的解释。

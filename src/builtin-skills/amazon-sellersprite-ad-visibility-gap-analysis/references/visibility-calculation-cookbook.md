@@ -1,28 +1,39 @@
-# 广告可见性计算手册
+<!--
+文件功能：定义外部可见性覆盖、集合代理和时间线/气泡图的可复算方法。
+职责边界：计算只描述冻结的供应商可见集合，不代表市场份额、广告表现或账户结构。
+重要关联：../SKILL.md、channel-intent-taxonomy.md。
+-->
 
-## 1. 关键词规范化
-保留 `keyword_raw`。`keyword_normalized` 仅做匹配：Unicode规范化、转小写、首尾空格、连续空格合并、站点语言允许的基础标点清理。品牌、型号、容量、接口、电压等有业务意义的 token 不删除。词义不确定时 `normalization_confidence=low`，不得自动合并。
+# 外部可见性计算与图表
 
-## 2. 覆盖指标
-- `coverage_count(asn,channel)=distinct normalized keywords`；
-- `coverage_rate(asn,channel)=目标词集中被该通道观察到的词数 / 目标词集可查询词数`；
-- `shared_coverage(A,B)=|K_A∩K_B|/|K_A∪K_B|`；分母为0不计算；
-- `own_gap_vs_competitors=被至少m个竞品观察到而自有未观察到的词`。m须明示，不默认。
+## 关键词规范化
 
-未观察到仅表示本次冻结范围未返回，不等于未索引/未投放。
+保留 `keyword_raw`。规范化只用于匹配：Unicode 规范化、转小写、首尾/连续空格和站点语言允许的基础标点清理。业务 token 不删除；词义不确定时保持独立并标低置信度。
 
-## 3. 位置层级
-仅在排名定义可验收时编码：`1–10, 11–20, 21–50, 51–100, >100, not_returned`。自然排名与广告排名分列；排名越小通常更好，但先验收工具语义。
+## 覆盖与集合
 
-## 4. 可见份额代理
-若同一词的 `trafficPercentage` 有明确、同口径分母，可计算：
-`provider_visible_share_proxy = asin_value / sum(values among frozen returned ASIN set)`。
-它是冻结集合内代理，不是市场份额。若值可能重叠、总和非共同分母或分页不完整，不计算。
+- `coverage_count(asn, channel) = distinct normalized keywords`
+- `coverage_rate(asn, channel) = visible eligible keywords / eligible queried keywords`
+- `shared_coverage(A,B) = |K_A ∩ K_B| / |K_A ∪ K_B|`，分母为零不计算
+- `gap_set = eligible_set - visible_set`，同时列不可观测集合
 
-`HHI_proxy=sum(proxy_share_i^2)` 只描述冻结集合集中程度；不得与官方HHI或全市场集中度混称。
+未观察到只表示冻结范围未返回，不等于未索引、未投放或无流量。
 
-## 5. 缺口优先级
-不用黑箱总分。按四维分层：需求证据、竞品覆盖、目标相关性、验证可行性；每维写 high/medium/low及原值。任何“高优先级”必须同时有替代解释和一方验证字段。
+排名只有在定义可验收时分层；自然排名和 Ads 标记排名分列。若供应商值具有共同且完整分母，可计算冻结集合内 `provider_visible_share_proxy` 或 `HHI_proxy`，但不得称市场份额、SOV、曝光份额、点击份额或官方 HHI。
 
-## 6. 示例
-目标词集100词，自有自然可见30、广告可见10；竞品A自然50、竞品B自然45。自有自然覆盖率为30/100。若20词被A/B同时观察而自有未返回，写“20个双竞品可见缺口候选”，不写“自有未索引20词”。
+## 时间线数据
+
+`ad_visibility_timeline.data` 最小字段：
+
+`period_or_time, marketplace, object_id, keyword_raw, keyword_normalized, channel, provider_entity_type, provider_entity_label, observed_value, value_unit, event_count, bubble_value, bubble_value_definition, source_tool, source_field, field_status, evidence_id, comparability`
+
+- 无实际时间字段时不生成历史时间线。
+- 无供应商实体字段时只使用 ASIN、关键词或通道，不发明 Campaign/Ad Group。
+- `bubble_value` 必须来自实际数值或明确的唯一记录计数；不合格时为空，渲染等大点。
+- 同一 evidence 或确定性业务键的重复记录去重，规则和删除数可复核。
+
+## 显示和联动
+
+时间线横轴显示实际期间；纵轴显示对象、原词、通道或实际实体。Tooltip 显示原始语义和状态。价格、Coupon、BSR 可以作为上下文轨道，但需分别标明来源和数据性质，不能解释为广告原因。
+
+缺口优先级不用黑箱总分。按需求证据、竞品覆盖、目标相关性和验证可行性写 high/medium/low 与原值；它只用于研究排序，必须附替代解释和第一方验证字段。
