@@ -1,5 +1,5 @@
 <!--
-文件功能：定义不可变 Listing 快照、文本/变体/媒体差异和与合格 VOC 证据对齐的方法。
+文件功能：定义不可变 Listing 快照、第 7 部分文本/变体/媒体差异和与合格 VOC 证据对齐的方法。
 职责边界：只描述可见快照之间的变化，不确认真实修改时间、修改主体、视觉质量或业务效果。
 重要关联：../SKILL.md、field-readiness-matrix.md、listing-encoding-taxonomy.md。
 -->
@@ -24,20 +24,20 @@
 4. 每条 diff 链接两侧 evidence；
 5. 两时点只称相对基线差异，不确定真实修改日、次数和中间版本。
 
-最小可视数据：`field, before, after, diff_type, before_captured_at, after_captured_at, change_detected_at, before_evidence, after_evidence, limitations`。
+最小事件数据：`field, before, after, diff_type, before_captured_at, after_captured_at, change_detected_at, before_evidence, after_evidence, limitations`。总控将其规范化为 `REPORT_DATA.events`，前后内容仅在图中事件 Tooltip 显示，不再独立输出前后对比表。
 
 ## 变体和媒体 diff
 
 变体比较父子关系、属性和值，分类 added/removed/changed/reordered；当前未返回的变体先检查分页、映射和字段状态。
 
-媒体按返回顺序保存 `url_or_asset_id, stable_hash, position, media_access`，分类：
+媒体按返回顺序保存 `semantic_slot, url_or_asset_id, stable_hash, position, media_access`，分类：
 
 - `added`：新版本出现且旧版本无匹配；
 - `removed`：旧版本存在且新版本无匹配，前提是两期集合完整；
 - `replaced`：同一位置的稳定资产不同；
 - `moved`：同一稳定资产位置改变。
 
-无法取得稳定资产或完整列表时降级为元数据并列，不能生成确定性换图结论。
+无法取得稳定资产或完整列表时降级为元数据事件，不能生成确定性换图结论。没有可比旧快照时返回 `baseline_only`，第 7 部分显示“已建立基线”，不填模板演示前后值。
 
 ## VOC 对齐
 

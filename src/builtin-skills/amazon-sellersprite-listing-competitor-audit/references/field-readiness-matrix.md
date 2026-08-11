@@ -1,5 +1,5 @@
 <!--
-文件功能：定义 Listing 文本、变体和媒体字段能否进入当前审计、版本 diff 与 HTML 展示。
+文件功能：定义 Listing 文本、变体和媒体字段能否进入报告概览、第 7 部分版本 diff 与 HTML 展示。
 职责边界：只判断字段就绪和允许分析，不替代具体编码或差异算法。
 重要关联：../SKILL.md、snapshot-diff-and-voc-alignment.md。
 -->
@@ -25,4 +25,4 @@
 
 `media_access = embedded | remote_reference | metadata_only | unavailable`
 
-以及 `url_or_asset_id_present, stable_hash_possible, order_present, historical_source`。仅有 URL/数量/顺序时不能做图像语义、质量、合规或转化判断。
+以及 `semantic_slot, url_or_asset_id_present, stable_hash_possible, order_present, historical_source`。`semantic_slot` 使用 `main_image | dimension_image | feature_image | usage_scene | comparison_image | package_contents | other_<position>` 等有业务语义名称，不使用 `asset1/asset2`。仅有 URL/数量/顺序时不能做图像语义、质量、合规或转化判断。

@@ -1,11 +1,11 @@
 ---
 name: amazon-sellersprite-review-voc-anomaly-screening
-description: 使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语料，开展可审计的正负面 VOC 父子主题、提及数/提及率、主题时间趋势和描述性异常筛查，并向总控返回评论主题表与趋势图数据。适用于明确站点、ASIN/变体、时间、分页和语料分母的评论研究；不适用于全量消费者外推、真实订单留评率、评论真实性、刷评操纵、买家身份、平台违规或因果判定，也不生成最终用户报告。
+description: 使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语料，派生可审计的正负面 VOC 主题、命中数/合格分母、提及率、摘要、可比较趋势、匿名评论证据、留评比例代理和异常筛查，并向总控返回第 6 与第 7 部分所需数据。适用于明确站点、ASIN/变体、时间、分页和语料分母的评论研究；不适用于全量消费者外推、真实订单留评率、评论真实性、刷评操纵、买家身份、平台违规或因果判定，也不生成或编辑最终用户报告。
 ---
 
 <!--
-文件功能：定义 VOC 专家对评论语料资格、主题编码、主题表、主题趋势和有边界异常筛查的责任。
-职责边界：只分析合格的 SellerSprite 返回语料并返回 Module Result；不认定评论真实性或生成最终 HTML。
+文件功能：定义 VOC 专家对评论语料资格、主题编码、主题明细、可比较趋势和有边界异常筛查的责任。
+职责边界：只分析合格的 SellerSprite 返回语料并返回第 6 部分 Module Result；不认定评论真实性，不生成或编辑最终 HTML。
 重要关联：references/corpus-acceptance-and-pagination.md、references/review-coding-and-schema.md、references/anomaly-matrix-decision-aid.md。
 -->
 
@@ -18,7 +18,7 @@ description: 使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语�
 - `review_topic_table`
 - `review_topic_trend`
 
-你不创建最终用户 Report、CSV、YAML、台账或草稿。只返回一个简洁 Module Result；原始评论、查询日志、分页覆盖、匿名化、去重、codebook、计算和图表数据只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
+这些结果支持固定报告的 `reviews`。你不创建或编辑最终用户 Report、CSV、YAML、台账或草稿。只返回一个简洁 Module Result；原始评论、查询日志、分页覆盖、匿名化、去重、codebook、计算和图表数据只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
 
 本 Skill 可独立注册。按实际分支读取本 Skill 的三个 reference；不得依赖 `_shared`、`reviews/`、同级 Skill 或集群外合同。
 
@@ -34,7 +34,7 @@ description: 使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语�
 
 冻结 marketplace、ASIN/父子体/变体、目标期、语言、筛选、排序、分页计划、时间分桶、分层和 codebook 规则。父体、子体或指定变体集合不可混作同一语料；范围、字段、排序、分页、去重或 codebook 改变时分段，不把断点解释为评论变化。
 
-按 `references/corpus-acceptance-and-pagination.md` 验收语料。没有可定位正文、ASIN 映射、评论日期和可审计分页时，不能计算主题提及率或趋势；供应商摘要和高频词只能形成候选词表，不能替代逐条编码。
+按 `references/corpus-acceptance-and-pagination.md` 验收语料。MCP 直接证据是逐条评论及其实际返回字段；主题、方向、命中数、分母、提及率、摘要和趋势均是本专家基于合格语料的分析派生，不能标记为 SellerSprite 直接返回字段。没有可定位正文、ASIN 映射、评论日期和可审计分页时，不能计算主题提及率或趋势；供应商摘要和高频词只能形成候选词表，不能替代逐条编码。
 
 ## 匿名化、去重和编码
 
@@ -46,7 +46,7 @@ description: 使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语�
 
 ## 评论主题表
 
-`review_topic_table` 逐父主题/子主题/方向返回：主题名、正面/负面/混合/中性、提及评论数、合格语料分母、提及率、可选匿名摘录、对象范围、codebook、分页覆盖、evidence 和限制。
+`review_topic_table` 逐父主题/子主题/方向返回：主题名、正面/负面/混合/中性、提及评论数、合格语料分母、提及率、可选匿名摘录、对象范围、codebook、分页覆盖、evidence 和限制。正式展示始终把比例与 `命中数/合格分母` 一起呈现；摘要必须来自本次匿名证据，不复制模板文字。
 
 支持正面/负面切换和父子层级，但不能用星级替代文本情感。父主题汇总必须说明子主题是否可重叠，不能把重叠子主题简单相加当唯一评论数。
 
@@ -54,13 +54,17 @@ description: 使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语�
 
 `review_topic_trend` 按合格时间桶返回：对象层级、主题、方向、提及评论数、合格评论数、提及率、codebook、覆盖和 evidence。只有跨期对象、分页计划、筛选、去重、codebook 和关键字段稳定时才连成趋势。
 
-ASIN、父体和类目是不同语料总体；只有各自分母和来源清楚且可比较时才在同图展示。缺失时间桶不补零，范围断点不连线。主题选择器和正负面切换是显示方式，不改变底层分母。
+ASIN、父体和类目样本是不同语料总体；只有各自分母、来源和覆盖清楚且可比较时才在同图展示。类目线必须命名为“类目样本”，不能暗示类目全量。父体或类目没有合格覆盖时不生成对应曲线，不用零线占位。缺失时间桶不补零，范围断点不连线。主题选择器和正负面切换是显示方式，不改变底层分母。
 
-## 留评比例和异常筛查
+## 留评比例代理、匿名证据和异常筛查
 
 真实留评率需要同 ASIN、站点、变体和期间的合格购买/送达订单分母，SellerSprite 估算销量不能替代 Amazon 第一方订单。若业务问题要求使用评论增量/供应商销量估算，只能命名为“供应商估算分母下的评论比例代理”，标记 `derived + estimated_denominator`。
 
 用户提供的 2%–3% 仅作为本次业务筛查参考线，必须标为 `user_supplied_heuristic`，不能写成已验证行业真值。超过参考线只触发替代解释和补证，不构成刷评或人为干预结论。
+
+向总控返回第 6 部分的 `review_evidence`：匿名 `evidence_id`、对象、日期、星级、最小充分摘录、实际返回字段和来源定位。不得输出作者昵称、主页、账号注册时间、历史评论画像、购买身份或其他个人信息，也不得声称 SellerSprite 提供了实际未返回的后台快照ID。
+
+同时向第 7 部分返回 `review_rate_proxy` 和 `anomaly_screening`。前者必须包含同对象同期间的新增评论分子、供应商订单估算分母、公式和限制；后者包含可复算信号、至少一个实质替代解释、反向检查、证据引用、谨慎结论和下一验证窗口。命名始终保持“比例代理”“异常筛查”，不写“真实留评率”或“人为干预判断”。
 
 按 `references/anomaly-matrix-decision-aid.md` 检查至少两个不同描述性信号、可比基线、分页覆盖、一个实质替代解释和一个反向检查。负评论增量先检查累计数修订、评论删除、父子体聚合变化、工具刷新和范围变化，不自动进入人为干预候选。
 
@@ -70,7 +74,7 @@ ASIN、父体和类目是不同语料总体；只有各自分母和来源清楚�
 
 语料合格时返回 `ready`；只有当前合格语料但无跨期可比性时，主题表可 `ready`、趋势为 `baseline_only`；正文、分页或分母不合格时返回 `unavailable`、`not_comparable` 或 `blocked`，不得用摘要、星级或模板数据填充。
 
-Module Result 包含实际范围、语料覆盖、codebook、主题表、主题趋势、描述性异常、事实/计算/解释/假设、evidence、限制、反证和最小补数请求。专家不生成用户报告。
+Module Result 包含 `report_sections: [reviews, changes]`、实际范围、语料覆盖、codebook、主题表、主题趋势、`review_evidence`、`review_rate_proxy`、`anomaly_screening`、事实/计算/解释/假设、evidence、限制、反证和最小补数请求。专家不生成或编辑用户报告。
 
 ## 提交前检查
 
@@ -80,4 +84,5 @@ Module Result 包含实际范围、语料覆盖、codebook、主题表、主题�
 - ASIN、父体、类目和跨期语料未被错误合并。
 - 缺失、截断、负评论增量和估算销量未被写成真实零值或真实订单。
 - 两个核心 visual 有真实结果或明确状态。
+- 匿名评论 evidence ID 可定位，未包含评论者身份画像；评论比例代理和异常筛查的口径、替代解释与结论上限清楚。
 - 未认定真实性、刷评、操纵、买家身份、违规、责任或因果。
