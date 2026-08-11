@@ -1,1 +1,1 @@
-query_id,dataset_version,provider,action,exact_tool,described_at,called_at,purpose,parent_evidence,marketplace,entity_scope,period,page,size,arguments_summary,success,returned_count,field_coverage,truncation,raw_result_locator,error_layer,retry_of,notes
+query_id,dataset_version,exact_tool,called_at,purpose,marketplace,entity_scope,period,arguments_summary,status,returned_count,coverage,truncation,raw_locator,notes
