@@ -6,6 +6,7 @@
  */
 
 import assert from "node:assert/strict";
+import fs from "node:fs";
 
 import { validateBrickDefinition } from "@xuanzhen-tech/agent-release-foundation";
 
@@ -22,9 +23,11 @@ import {
   validateAgentSkillLaunchConfig
 } from "../index.mjs";
 
+const packageJson = JSON.parse(fs.readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+
 assert.equal(brickDefinition.id, "agent-skill");
 assert.equal(brickDefinition.kind, "config");
-assert.equal(brickDefinition.version, "0.8.4");
+assert.equal(brickDefinition.version, packageJson.version);
 assert.equal(validateBrickDefinition(brickDefinition).ok, true);
 assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "node-runtime" && item.required === true), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);

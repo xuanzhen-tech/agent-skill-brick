@@ -32,10 +32,12 @@
     "publish:artifact": "node src/scripts/publish-artifact.mjs",
     "publish:artifact:placeholder": "node src/scripts/publish-artifact-placeholder.mjs",
     "publish:npm": "npm publish",
-    "release:local": "npm run smoke:cli && npm run smoke:contract && npm run smoke:skill && npm run build:artifact && npm run create:descriptor && npm run publish:artifact:placeholder && npm run verify && npm run pack:dry-run",
+    "release:local": "npm run smoke:cli && npm run smoke:contract && npm run smoke:skill && npm run validate:self-service-skills && npm run build:artifact && npm run create:descriptor && npm run publish:artifact:placeholder && npm run verify && npm run pack:dry-run",
     "smoke:cli": "node src/cli.mjs version && node src/cli.mjs diagnostics --json && node src/cli.mjs roots --json && node src/cli.mjs manifest --json",
     "smoke:contract": "node src/scripts/smoke-contract.mjs",
     "smoke:skill": "node src/scripts/smoke-skill.mjs",
+    "validate:self-service-skills": "node src/scripts/validate-self-service-skills.mjs",
+    "validate:self-service-release": "node src/scripts/validate-self-service-release.mjs",
     "verify": "node src/scripts/verify.mjs"
   },
   "keywords": [],

@@ -7,6 +7,7 @@
  */
 
 import crypto from "node:crypto";
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,10 +20,11 @@ export const BUILTIN_SKILL_SOURCE_KIND = "agent-skill.builtin.v1";
 
 const MODULE_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 const BUILTIN_SKILL_ROOT = path.resolve(MODULE_DIRECTORY, "../builtin-skills");
+const SELF_SERVICE_CATALOG_PATH = path.resolve(MODULE_DIRECTORY, "self-service-builtin-skill-catalog.json");
 
 // 这里是积木随版本发布的预制目录清单。描述只用于产品选择和诊断，完整说明
 // 仍以安装后的 SKILL.md 为准。
-const BUILTIN_SKILLS = Object.freeze([
+const BASE_BUILTIN_SKILLS = [
   Object.freeze({
     id: "amazon-sku-profit-summary",
     name: "amazon-sku-profit-summary",
@@ -49,7 +51,15 @@ const BUILTIN_SKILLS = Object.freeze([
   }),
   ...ASIN_RESEARCH_BUILTIN_SKILLS,
   ...EXPERT_BUILTIN_SKILLS
-]);
+];
+
+// 自助上传只维护独立 JSON 数据文件，不需要解析或改写本模块源码。相同名称的
+// 自助条目覆盖历史静态条目，因此既能新增 skill，也能升级早期内置 skill。
+const SELF_SERVICE_BUILTIN_SKILLS = readSelfServiceCatalog();
+const BUILTIN_SKILLS = Object.freeze(Array.from(new Map([
+  ...BASE_BUILTIN_SKILLS,
+  ...SELF_SERVICE_BUILTIN_SKILLS
+].map((skill) => [skill.name, Object.freeze(normalizeCatalogEntry(skill))])).values()));
 
 const BUILTIN_SKILL_BY_NAME = new Map(BUILTIN_SKILLS.map((skill) => [skill.name, skill]));
 
@@ -169,4 +179,26 @@ async function listFiles(directory) {
 function isInsideOrEqual(childPath, parentPath) {
   const relative = path.relative(parentPath, childPath);
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function readSelfServiceCatalog() {
+  const parsed = JSON.parse(fsSync.readFileSync(SELF_SERVICE_CATALOG_PATH, "utf8"));
+  if (!Array.isArray(parsed)) {
+    throw new Error("self-service builtin skill catalog must be an array");
+  }
+  return parsed;
+}
+
+function normalizeCatalogEntry(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("builtin skill catalog entry must be an object");
+  }
+  const name = normalizeSkillName(input.name ?? input.id);
+  const version = String(input.version ?? "").trim();
+  const description = String(input.description ?? "").trim();
+  if (!/^\d+\.\d+\.\d+$/.test(version)) {
+    throw new Error(`Builtin skill ${name} version must use x.y.z.`);
+  }
+  if (!description) throw new Error(`Builtin skill ${name} description is required.`);
+  return { id: name, name, version, description };
 }
