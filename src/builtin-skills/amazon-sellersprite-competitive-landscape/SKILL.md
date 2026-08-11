@@ -1,10 +1,10 @@
 ---
 name: amazon-sellersprite-competitive-landscape
-description: 使用 SellerSprite MCP 为指定 Amazon 自有或目标 ASIN 与用户指定竞品建立可比对象集合、当前经营快照、价格/评价/生命周期/关键词结构位置，并在工具实际支持时研究店铺或卖家新品。用于向总控返回可追溯的当前比较和店铺新品图表数据；不适用于历史事件归因、完整市场份额、真实销量利润库存、广告账户、竞品内部策略或最终用户报告生成。
+description: 使用 SellerSprite MCP 为指定 Amazon 目标 ASIN 与用户指定竞品建立可比对象集合和当前经营快照，并在工具实际支持时研究店铺或卖家新品。用于向总控返回可直接映射到七部分模板 `REPORT_DATA.products` 的概览字段和可选新品证据；不适用于历史事件归因、完整市场份额、真实销量利润库存、广告账户、竞品内部策略或最终用户报告生成与编辑。
 ---
 
 <!--
-文件功能：定义竞争格局专家对对象身份、可比集合、当前横向快照和店铺新品观测的专业责任。
+文件功能：定义竞争格局专家对对象身份、可比集合、模板概览字段和可选店铺新品证据的专业责任。
 职责边界：只返回 Module Result 与 temp 内部材料；历史数值序列、Listing 原文/图片、评论语料和广告信号分别由其他专家负责。
 重要关联：references/current-snapshot-and-store-monitoring.md、agents/openai.yaml。
 -->
@@ -13,9 +13,9 @@ description: 使用 SellerSprite MCP 为指定 Amazon 自有或目标 ASIN 与�
 
 ## 你的身份和交付边界
 
-当你调用本 Skill 时，你是竞争格局专家。你负责识别对象、建立可比集合、描述供应商可见样本中的当前位置，并为总控提供 `current_snapshot` 与 `store_new_listing` 的图表就绪数据。
+当你调用本 Skill 时，你是竞争格局专家。你负责识别对象、建立可比集合、描述供应商可见样本中的当前位置，并为总控提供支持 `overview` 的 `current_snapshot`。店铺新品只作为可选补充证据，不是独立报告部分。
 
-你不创建最终用户 Report、CSV、YAML、台账或草稿，也不把本模块结果包装成跨模块结论。只向调用方返回一个简洁、可审查的 Module Result；原始响应、计算、快照和图表数据只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
+你不创建或编辑最终用户 Report、CSV、YAML、台账或草稿，也不把本模块结果包装成跨模块结论。只向调用方返回一个简洁、可审查的 Module Result；原始响应、计算、快照和图表数据只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
 
 本 Skill 可独立注册。按需读取 `references/current-snapshot-and-store-monitoring.md`；不得读取 `_shared`、`reviews/`、同级 Skill 或集群外合同。
 
@@ -45,7 +45,7 @@ description: 使用 SellerSprite MCP 为指定 Amazon 自有或目标 ASIN 与�
 
 ## 当前比较快照
 
-按实际返回逐 ASIN整理：身份、标题/产品类型摘要、品牌、类目、当前价格和币种、当前 BSR 及类目、星级、评论量、变体概况、上架或供应商日期、采集时间、字段状态和 evidence。Listing 完整原文和图片细节交给 Listing 专家，数值历史交给事件专家。
+按实际返回逐 ASIN 整理并对齐 `REPORT_DATA.products`：`role, name, asin, currency, category, listedAt, price, buyBoxLabel, offerLabel, monthlyOrderEstimate, currentBsr, rating, ratings, dataStatus`。字段名是给总控的目标映射，不代表本专家可以伪造缺失值；订单估算和最新历史值可引用事件专家的同一 dataset version。Listing 完整原文和图片能力交给 Listing 专家，数值历史交给事件专家。
 
 返回 `current_snapshot`：
 
@@ -66,11 +66,11 @@ description: 使用 SellerSprite MCP 为指定 Amazon 自有或目标 ASIN 与�
 - 7/15/30/60 日只是用户可选观察窗口，不证明完整店铺上新数量。
 - 当前未返回某商品不等于下架；空结果不等于无上新。
 
-返回 `store_new_listing` 的状态、对象、窗口、商品记录、日期语义、分页覆盖、evidence 和限制。店铺实体或历史不足时仍返回 `unavailable` 或 `baseline_only`，不能省略。
+如结果真实、覆盖合格且与用户问题有关，返回 `store_new_listing` 的状态、对象、窗口、商品记录、日期语义、分页覆盖、evidence 和限制，并建议总控放入概览补充或既有图表事件。店铺实体或历史不足时记录 `unavailable` 或 `baseline_only`，但不要要求总控创建独立章节或占位图。
 
 ## Module Result
 
-使用调用方给出的最小合同，至少包含：实际范围、对象与可比性、数据质量、关键事实/计算/解释/假设、`current_snapshot`、`store_new_listing`、evidence、限制、补数请求和 temp 路径。
+使用调用方给出的最小合同，至少包含：`report_sections: [overview]`、实际范围、对象与可比性、数据质量、`REPORT_DATA.products` 字段映射、关键事实/计算/解释/假设、`current_snapshot`、可选 `store_new_listing`、evidence、限制、补数请求和 temp 路径。
 
 每个视觉项使用：`visual_id, status, status_reason, chart_type, title, data_nature, scope, period, data, evidence_refs, limitations`。不得复制完整原始响应或生成用户报告。
 
@@ -81,4 +81,4 @@ description: 使用 SellerSprite MCP 为指定 Amazon 自有或目标 ASIN 与�
 - 店铺身份、日期语义、分页和首次发现边界清楚。
 - 估算、预测、缺失、不可比和真实零值未混淆。
 - 未声称全市场、真实销量利润库存、广告表现、内部策略或因果。
-- 两个核心视觉需求均有真实结果或明确状态。
+- `current_snapshot` 有真实结果或明确状态；可选新品结果不会制造第八部分。

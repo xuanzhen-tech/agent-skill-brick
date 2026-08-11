@@ -1,11 +1,11 @@
 ---
 name: amazon-sellersprite-listing-competitor-audit
-description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、Bullet Points、父子体/变体和媒体字段，并通过供应商历史或本地重复快照生成可追溯的文本、图片与变体差异数据。适用于当前 Listing 基线、字段结构、前后版本和 VOC 对齐；不适用于网页抓取、无数据的历史重建、图片视觉质量或合规判断、关键词市场研究、广告/转化归因、无事实文案及最终用户报告生成。
+description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、Bullet Points、父子体/变体和媒体字段，并通过供应商历史或本地重复快照生成可追溯的文本、图片与变体差异数据。用于向总控提供报告概览的当前 Listing 字段和第 7 部分变动监控数据；不适用于网页抓取、无数据的历史重建、图片视觉质量或合规判断、广告/转化归因、无事实文案及最终用户报告生成或编辑。
 ---
 
 <!--
-文件功能：定义 Listing 专家对当前文本/变体/媒体快照、可比版本差异和图表就绪数据的责任。
-职责边界：只返回专业 Module Result；不评价未取得的页面或图片语义，不生成最终 HTML，也不把差异写成业务效果。
+文件功能：定义 Listing 专家对概览当前字段、文本/变体/媒体快照和第 7 部分可比差异数据的责任。
+职责边界：只返回 `overview | changes` 可消费的 Module Result；不评价未取得的页面或图片语义，不生成或编辑最终 HTML，也不把差异写成业务效果。
 重要关联：references/field-readiness-matrix.md、references/listing-encoding-taxonomy.md、references/snapshot-diff-and-voc-alignment.md。
 -->
 
@@ -15,11 +15,11 @@ description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、
 
 当你调用本 Skill 时，你是 Listing 审计专家。你负责当前 Listing 字段就绪、表达结构、父子体/变体、媒体快照和可比较版本差异，并向总控返回：
 
-- `listing_text_diff`
-- `listing_media_diff`
+- `listing_text_events`
+- `listing_media_events`
 - 当前 Listing 快照中需要合并进 `current_snapshot` 的字段
 
-你不创建最终用户 Report、CSV、YAML、台账、建议书或草稿。只返回一个简洁 Module Result；原始响应、字段摘录、规范化、快照、hash、diff、编码和图表数据只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
+这些结果支持固定报告的 `overview | changes`。你不创建或编辑最终用户 Report、CSV、YAML、台账、建议书或草稿。只返回一个简洁 Module Result；原始响应、字段摘录、规范化、快照、hash、diff、编码和图表数据只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
 
 本 Skill 可独立注册。按分支读取本 Skill 的三个 reference；不得依赖 `_shared`、`reviews/`、同级 Skill 或集群外合同。
 
@@ -59,13 +59,13 @@ description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、
 
 ## 文本与媒体可视化
 
-### `listing_text_diff`
+### `listing_text_events`
 
 `ready` 时返回字段页签、前后完整值或最小充分片段、差异类型、token/span 定位、两侧 evidence、采集/发现时间和限制。第一次运行返回 `baseline_only`。字段不完整或版本不可比时返回 `unavailable` 或 `not_comparable`。
 
-### `listing_media_diff`
+### `listing_media_events`
 
-逐位置返回前后图片 URL/资产标识/hash、顺序和 added/removed/replaced/moved。图片能力使用：
+逐位置返回前后图片 URL/资产标识/hash、顺序、语义槽位和 added/removed/replaced/moved。槽位优先采用来源或可验证用途，例如 `main_image | dimension_image | feature_image | usage_scene | comparison_image | package_contents | other`；无法确定时使用 `other_<position>`，不得写 `asset1/asset2`。图片能力使用：
 
 - `embedded`：运行时实际取得可内嵌内容；
 - `remote_reference`：只有供应商返回 URL，最终 HTML 依赖网络；
@@ -76,7 +76,7 @@ description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、
 
 ## Module Result
 
-返回实际范围、字段就绪、当前快照字段、文本/媒体差异、编码/计算规则、`listing_text_diff`、`listing_media_diff`、evidence、限制、VOC 对齐、可迁移机制、假设和补数请求。
+返回 `report_sections: [overview, changes]`、实际范围、字段就绪、当前快照字段、文本/媒体差异、编码/计算规则、`listing_text_events`、`listing_media_events`、evidence、限制、VOC 对齐、可迁移机制、假设和补数请求。每个事件使用 `date, object_key, event_type=listing, chart=listing, label, before, after, change, source, evidence_id, confidence, direct_factors, indirect_factors, impact, comparison, recommendations, alternative_explanations`，供总控与数值/VOC证据综合后写入富事件 Tooltip；直接因素只写可观察字段变化，间接因素和策略动机保持候选解释，影响判断与目标/竞品对比必须同窗同口径，建议带验证指标和停止条件。专家不要求独立前后对比表。无可比旧快照时必须返回 `baseline_only` 和“已建立基线”，不能生成演示差异。
 
 每个 visual 使用：`visual_id, status, status_reason, chart_type, title, data_nature, scope, period, data, evidence_refs, limitations`。专家不生成用户报告。
 
@@ -87,4 +87,4 @@ description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、
 - 首次发现、采集、供应商日期和真实修改时间没有混写。
 - 图片能力状态真实，未越权获取、伪造或解释图片内容。
 - 竞品文本、自有产品事实、VOC、关键词、广告和业务效果保持分离。
-- 两个核心 visual 都有真实结果或明确状态。
+- 标题、Bullet、媒体对应第 7 部分的交互事件或状态均明确；没有历史时为 `baseline_only`，不生成独立 diff 表。
