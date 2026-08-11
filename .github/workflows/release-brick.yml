@@ -1,6 +1,11 @@
 name: Release Brick
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".skill-releases/*.json"
   workflow_dispatch:
     inputs:
       artifact_mode:
@@ -65,6 +70,8 @@ jobs:
           node --check src/scripts/publish-artifact-placeholder.mjs
           node --check src/scripts/smoke-contract.mjs
           node --check src/scripts/smoke-skill.mjs
+          node --check src/scripts/validate-self-service-skills.mjs
+          node --check src/scripts/validate-self-service-release.mjs
           node --check src/scripts/verify.mjs
 
       - name: Smoke tests
@@ -72,13 +79,18 @@ jobs:
           npm run smoke:cli
           npm run smoke:contract
           npm run smoke:skill
+          npm run validate:self-service-skills
+
+      - name: Validate automatic self-service release
+        if: ${{ github.event_name == 'push' }}
+        run: npm run validate:self-service-release
 
       - name: Build runtime artifact
-        if: ${{ inputs.artifact_mode != 'skip' }}
+        if: ${{ github.event_name == 'push' || inputs.artifact_mode != 'skip' }}
         run: npm run build:artifact
 
       - name: Create local descriptor
-        if: ${{ inputs.artifact_mode != 'skip' }}
+        if: ${{ github.event_name == 'push' || inputs.artifact_mode != 'skip' }}
         run: npm run create:descriptor
 
       - name: Create OSS descriptor placeholder
@@ -86,7 +98,7 @@ jobs:
         run: npm run publish:artifact:placeholder
 
       - name: Publish runtime artifact to OSS
-        if: ${{ inputs.artifact_mode == 'oss' }}
+        if: ${{ github.event_name == 'push' || inputs.artifact_mode == 'oss' }}
         run: npm run publish:artifact
         env:
           OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
@@ -105,7 +117,7 @@ jobs:
         run: npm run pack:dry-run
 
       - name: Upload descriptor for host launcher consumption
-        if: ${{ inputs.artifact_mode != 'skip' }}
+        if: ${{ github.event_name == 'push' || inputs.artifact_mode != 'skip' }}
         uses: actions/upload-artifact@v4
         with:
           name: brick-descriptor
@@ -117,7 +129,7 @@ jobs:
             dist/oss-objects.json
 
       - name: Publish npm SDK package
-        if: ${{ inputs.publish_npm == 'true' }}
+        if: ${{ github.event_name == 'push' || inputs.publish_npm == 'true' }}
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -115,6 +115,29 @@ SIF、SellerSprite 和 Sorftime MCP，但不保存连接配置或密钥。专家
 以及“专家对应哪些 skill”的映射仍由产品管理；本积木只按名称选择、安装和
 开放 skill，不在 SDK 内部创建专家角色或固定工作流。
 
+### 自助上传与发版
+
+预制 Skill 的日常新增和调整由 Agent Ops 创建审核 PR。管理员提交稳定 SemVer 和
+一个或多个 ZIP；服务端校验后写入 `src/builtin-skills/<skill-name>/`，并在
+`self-service-builtin-skill-catalog.json` 中登记本次版本。相同名称表示升级，
+新名称表示新增；重命名和删除不属于自助入口。
+
+PR 合并时 `.skill-releases/<version>.json` 会触发 Release Action，统一发布 GitHub
+Packages 与 OSS runtime artifact。CI 会独立验证：
+
+- 新版本严格大于目标分支版本。
+- `package.json`、`package-lock.json` 和发布标记版本一致。
+- 变更 Skill 在 catalog 中使用本次版本。
+- 每个 ZIP 能通过内置来源解析和 AgentSkill 受管安装。
+
+产品用法不变，只需升级 SDK 版本并继续传入名称白名单：
+
+```js
+const agentSkill = new AgentSkill({
+  skillNames: ["some-managed-skill"]
+});
+```
+
 远端搜索和安装能力仍保留：
 
 ```js

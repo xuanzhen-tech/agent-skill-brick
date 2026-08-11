@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -33,6 +35,15 @@ jobs:
         run: |
           npm run smoke:contract
           npm run smoke:skill
+          npm run validate:self-service-skills
+
+      - name: Validate self-service release version
+        if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'skill-release/') }}
+        shell: pwsh
+        run: |
+          $basePackage = git show "${{ github.event.pull_request.base.sha }}:package.json" | ConvertFrom-Json
+          $env:AGENT_SKILL_BASE_VERSION = $basePackage.version
+          npm run validate:self-service-release
 
       - name: Verify package
         run: |
