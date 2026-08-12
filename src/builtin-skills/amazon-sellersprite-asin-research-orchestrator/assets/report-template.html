@@ -66,6 +66,8 @@
     .report-tabs a:first-child { color:#1668ff; border-bottom-color:#1668ff; }
     .global-toolbar { display:flex; justify-content:flex-end; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid var(--rule); background:#fafbfe; }
     .global-toolbar label { color:var(--muted); font-size:12px; }
+.report-period-label { color:var(--muted); font-size:12px; }
+.report-period-value { color:var(--ink); font-size:12px; font-weight:700; letter-spacing:.01em; }
     .control { height:34px; padding:0 10px; border:1px solid #d6dce7; border-radius:4px; background:#fff; color:#374151; }
 
     .section { scroll-margin-top:16px; margin-top:28px; }
@@ -110,7 +112,7 @@
     .chart-caption small { display:block; margin-top:2px; color:var(--muted); font-size:11px; font-weight:400; }
     .chart-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .chart-actions label { color:var(--muted); font-size:11px; }
-    .chart { height:500px; background:#fff; }
+    .chart { height:540px; background:#fff; }
     .chart.compact { height:430px; }
     .chart-foot { display:flex; justify-content:space-between; gap:12px; padding:9px 16px; color:var(--muted); border-top:1px solid var(--rule); font-size:11px; }
     .chart-foot strong { color:var(--ink); }
@@ -152,6 +154,7 @@
     .turning-tooltip-impact.negative { color:#b83a3a; background:#fee8e8; }
     .turning-tooltip-impact.mixed { color:#6537db; background:#eee8ff; }
     .turning-tooltip-impact.unknown { color:#5f6b7d; background:#eef1f5; }
+.turning-tooltip-status { display:inline-block; margin:7px 0 0 6px; padding:2px 7px; border:1px solid #d8dee8; border-radius:10px; color:#657286; background:#fff; font-size:9px; }
     .turning-tooltip-body { display:grid; gap:9px; padding:11px 14px 12px; }
     .turning-tooltip-facts { display:grid; grid-template-columns:72px 1fr; gap:3px 8px; padding-bottom:7px; border-bottom:1px dashed #e1e5ed; font-size:10px; }
     .turning-tooltip-facts b,.turning-tooltip-section b { color:#30394a; }
@@ -246,14 +249,10 @@
       <a href="#overview">报告概览</a><a href="#price">价格趋势</a><a href="#orders">订单趋势</a>
       <a href="#bsr">BSR排名</a><a href="#rating">评分趋势</a><a href="#reviews">评论分析</a><a href="#changes">变动监控</a>
     </nav>
-    <div class="global-toolbar">
-      <label for="asin-selector">监控对象</label>
-      <!-- 【可扩展】选项由 REPORT_DATA.products 动态生成；增加或删除竞品只修改数据对象。 -->
-      <select class="control" id="asin-selector"></select>
-      <label for="start-date">时间范围</label>
-      <input class="control" id="start-date" type="date">
-      <span>～</span>
-      <input class="control" id="end-date" type="date">
+    <div class="global-toolbar" aria-label="报告范围说明">
+      <span class="comparison-scope" aria-label="图表比较范围">全部研究对象同图比较</span>
+      <span class="report-period-label">研究期间</span>
+      <strong class="report-period-value" id="report-period">以本次已验证数据覆盖为准</strong>
     </div>
   </header>
 
@@ -309,7 +308,7 @@
     <h2 class="section-title"><span class="section-index">04</span>BSR 排名趋势图</h2>
     <div class="panel chart-panel">
       <div class="chart-toolbar"><div class="chart-caption">BSR 排名<small>按实际返回的历史数值与可验证类目层级展示</small></div><div class="chart-actions"><span class="status status-partial">实际粒度由数据覆盖条说明</span></div></div>
-      <div class="chart" id="bsr-chart" role="img" aria-label="所选 ASIN 的大类目与小类目 BSR 排名趋势图"></div>
+      <div class="chart" id="bsr-chart" role="img" aria-label="全部研究对象的供应商 BSR 数值趋势图；数值越小越好"></div>
       <div class="chart-foot"><span><strong>区间对比：</strong>拖动底部区间滑块或修改顶部日期；排名数值越小越好。</span><span>未返回的小类目不生成占位曲线</span></div>
       <div class="range-comparison" id="bsr-range-comparison" aria-live="polite"></div>
     </div>
@@ -449,6 +448,7 @@ function deriveDailyRatingIncrement(values){
   alerts/analysis：总控基于本次多源证据生成的预警与分章节分析；数量可扩展，证据不足时删除，不得复制预览结论。
   reviewTopics/reviewTrend/reviewEvidence：由原始评论重新编码并绑定匿名证据ID；不得复制模板主题、比例、摘要或引文。
   events：所有观察到的价格、Listing、评论和排名变动，以及明确标记为 forecast 的预测动作。前后值只在图表 Tooltip 展示。
+  report.startDate / report.endDate：报告的静态研究期间说明。它们描述本次已验证数据覆盖，不是报告级筛选控件；图表局部缩放不得改写报告范围、数据、计算、证据或结论。
   deepDiagnostics：留评比例代理、异常筛查、L1/L2/L3 归因、数据溯源和行动建议；必须保留口径、替代解释和限制。
 
   null 表示来源明确缺失；不要用 0、空字符串、演示值或另一字段替代。正式报告可以删除未返回的可选曲线、竞品、主题或变动记录，
@@ -633,8 +633,12 @@ function formatBsr(value){return value==null?'未返回':`#${Number(value).toLoc
 
 function chart(id){if(!chartInstances[id])chartInstances[id]=echarts.init(document.getElementById(id),null,{renderer:'svg'});return chartInstances[id];}
 function baseOption(){return{animationDuration:400,textStyle:{fontFamily:'Microsoft YaHei, Arial',color:'#7b8494'},toolbox};}
+/* 多 ASIN 对比图采用三层垂直区域：图例/筛选在顶层，工具栏置于其下，绘图区再下移，避免长 ASIN 名、筛选按钮与工具重叠。 */
+function comparisonBaseOption(){return{...baseOption(),toolbox:{...toolbox,top:64}};}
+/* 多 ASIN 图例：点击对象名可单独显示/隐藏；提供全选与反选，方便快速聚焦比较集合。 */
+function multiAsinLegend(names){return{top:12,left:18,right:18,data:[...new Set(names)],selectedMode:'multiple',selector:[{type:'all',title:'显示全部'},{type:'inverse',title:'反选'}],selectorLabel:{color:'#526174',fontSize:12,padding:[4,6],borderRadius:3,borderColor:'#cbd3df',borderWidth:1},selectorPosition:'end',itemGap:12,selectorButtonGap:14};}
 function halfYearXAxis(){return{type:'category',data:REPORT_DATA.halfYearDates,boundaryGap:false,...axisStyle,axisLabel:{color:'#8a93a3',hideOverlap:true,showMinLabel:true,showMaxLabel:true,formatter:value=>value.slice(5)}};}
-let activeProductKey='target';
+
 
 /*
   将富事件合同渲染成拐点分析卡。直接/间接因素、比较与建议都必须由 Agent 在 REPORT_DATA 中提供；
@@ -648,9 +652,13 @@ function eventTooltip(event){
   const factRows=[
     event.before!=null?`<b>转折前</b><span>${escapeHtml(event.before)}</span>`:'',
     event.after!=null?`<b>转折后</b><span>${escapeHtml(event.after)}</span>`:'',
-    event.change!=null?`<b>变化</b><span>${escapeHtml(event.change)}</span>`:''
+    event.change!=null?`<b>变化</b><span>${escapeHtml(event.change)}</span>`:'',
+    event.grain?`<b>实际粒度</b><span>${escapeHtml(event.grain)}</span>`:'',
+    event.dataNature?`<b>数据性质</b><span>${escapeHtml(event.dataNature)}</span>`:''
   ].filter(Boolean).join('');
-  return `<div class="turning-tooltip"><div class="turning-tooltip-head"><div class="turning-tooltip-title">${escapeHtml(event.label)}</div><div class="turning-tooltip-meta">${escapeHtml(event.date)} · ${escapeHtml(product?`${product.role} ${product.asin}`:event.objectKey)}</div><span class="turning-tooltip-impact ${direction}">${escapeHtml(impact.label||'影响尚未判断')}</span></div><div class="turning-tooltip-body">${factRows?`<div class="turning-tooltip-facts">${factRows}</div>`:''}<div class="turning-tooltip-section"><b>影响判断</b><div>${escapeHtml(impact.assessment||'尚未形成影响评估')}</div></div><div class="turning-tooltip-section"><b>直接因素</b><ul>${list(event.directFactors,'尚未识别可证实的直接因素')}</ul></div><div class="turning-tooltip-section"><b>间接因素</b><ul>${list(event.indirectFactors,'尚未形成间接因素候选')}</ul></div><div class="turning-tooltip-section"><b>目标 / 竞品对比</b><div>${escapeHtml(event.comparison||'当前证据不足以形成同口径对比')}</div></div><div class="turning-tooltip-section"><b>可提取建议</b><ul>${list(event.recommendations,'当前证据不足，不生成行动建议')}</ul></div><div class="turning-tooltip-section"><b>替代解释</b><ul>${list(event.alternativeExplanations,'尚未完成替代解释检查')}</ul></div><div class="turning-tooltip-evidence">来源：${escapeHtml(event.source||'未说明')} · 证据：${escapeHtml(event.evidenceId||'未绑定')} · 置信度：${escapeHtml(event.confidence||'未说明')}</div></div></div>`;
+  const status=event.analysisStatus||'已审查事件';
+  const sellerImplications=event.sellerImplications||'请结合同口径价格、订单/销量估算、BSR、Listing、评论与第一方经营数据判断，不将单一曲线变化直接当作经营结果。';
+  return `<div class="turning-tooltip"><div class="turning-tooltip-head"><div class="turning-tooltip-title">${escapeHtml(event.label)}</div><div class="turning-tooltip-meta">${escapeHtml(event.date)} · ${escapeHtml(product?`${product.role} ${product.asin}`:event.objectKey)}</div><span class="turning-tooltip-impact ${direction}">${escapeHtml(impact.label||'影响尚未判断')}</span><span class="turning-tooltip-status">${escapeHtml(status)}</span></div><div class="turning-tooltip-body">${factRows?`<div class="turning-tooltip-facts">${factRows}</div>`:''}<div class="turning-tooltip-section"><b>影响判断</b><div>${escapeHtml(impact.assessment||'尚未形成影响评估')}</div></div><div class="turning-tooltip-section"><b>对卖家的可能意义</b><div>${escapeHtml(sellerImplications)}</div></div><div class="turning-tooltip-section"><b>直接观察因素</b><ul>${list(event.directFactors,'尚未识别可证实的直接因素')}</ul></div><div class="turning-tooltip-section"><b>间接因素 / 候选机制（待验证）</b><ul>${list(event.indirectFactors,'尚未形成间接因素候选')}</ul></div><div class="turning-tooltip-section"><b>目标 / 竞品对比</b><div>${escapeHtml(event.comparison||'当前证据不足以形成同口径对比')}</div></div><div class="turning-tooltip-section"><b>卖家建议与验证动作</b><ul>${list(event.recommendations,'当前证据不足，不生成行动建议')}</ul></div><div class="turning-tooltip-section"><b>替代解释</b><ul>${list(event.alternativeExplanations,'尚未完成替代解释检查')}</ul></div><div class="turning-tooltip-evidence">来源：${escapeHtml(event.source||'未说明')} · 证据：${escapeHtml(event.evidenceId||'未绑定')} · 置信度：${escapeHtml(event.confidence||'未说明')}</div></div></div>`;
 }
 
 function eventMarkerColor(event){
@@ -659,66 +667,6 @@ function eventMarkerColor(event){
 }
 
 /* 把富事件详情绑定到主图拐点；颜色表示影响方向，悬停展示完整证据与分析，不再生成独立 diff 表。 */
-function eventMarkPoint(chartType,product,primaryValues){
-  const data=(REPORT_DATA.events||[]).filter(event=>event.chart===chartType&&event.objectKey===activeProductKey).map(event=>{
-    const index=REPORT_DATA.halfYearDates.indexOf(event.date);
-    const value=index<0?null:primaryValues[index];
-    return value==null?null:{name:event.label,coord:[event.date,value],value:event.label,event,itemStyle:{color:eventMarkerColor(event)}};
-  }).filter(Boolean);
-  return data.length?{symbol:'pin',symbolSize:50,label:{show:false},emphasis:{scale:1.15},tooltip:{trigger:'item',enterable:true,confine:true,padding:0,backgroundColor:'rgba(255,255,255,.98)',borderColor:'#dce3ee',borderWidth:1,extraCssText:'max-width:440px;white-space:normal;box-shadow:0 12px 32px rgba(34,52,82,.18);',formatter:params=>eventTooltip(params.data.event)},data}:undefined;
-}
-
-function firstAndLastNonNull(values,startIndex,endIndex){
-  let first=null,last=null;
-  for(let index=startIndex;index<=endIndex;index++){if(values[index]!=null){first={index,value:Number(values[index])};break;}}
-  for(let index=endIndex;index>=startIndex;index--){if(values[index]!=null){last={index,value:Number(values[index])};break;}}
-  return{first,last};
-}
-
-function renderRangeComparison(id,definitions,startIndex=0,endIndex=REPORT_DATA.halfYearDates.length-1){
-  const baseId=id.replace(/-chart$/,'');
-  const container=document.getElementById(`${baseId}-range-comparison`);
-  const start=REPORT_DATA.halfYearDates[Math.max(0,startIndex)];
-  const end=REPORT_DATA.halfYearDates[Math.min(REPORT_DATA.halfYearDates.length-1,endIndex)];
-  const rows=definitions.map(definition=>{
-    const pair=firstAndLastNonNull(definition.values,startIndex,endIndex);
-    if(!pair.first||!pair.last)return null;
-    const delta=pair.last.value-pair.first.value;
-    const percent=pair.first.value===0?null:delta/pair.first.value*100;
-    const deltaSign=delta>0?'+':delta<0?'-':'';
-    const tone=delta>0?'up':delta<0?'down':'flat';
-    const percentLabel=percent==null?'':` · ${percent>=0?'+':''}${percent.toFixed(1)}%`;
-    return `<div class="range-summary"><span class="range-summary-name">${escapeHtml(definition.name)}</span><span class="range-summary-values">${escapeHtml(definition.format(pair.first.value))} → ${escapeHtml(definition.format(pair.last.value))}</span><span class="range-summary-change ${tone}">${deltaSign}${escapeHtml(definition.formatDelta(delta))}${escapeHtml(percentLabel)}</span></div>`;
-  }).filter(Boolean);
-  container.innerHTML=`<div class="range-comparison-head"><div class="range-comparison-title">选定区间对比<span class="range-comparison-dates">${escapeHtml(start)} → ${escapeHtml(end)}</span></div><span class="range-comparison-hint">拖动滑块选择</span></div>${rows.length?`<div class="range-comparison-list">${rows.join('')}</div>`:'<div class="range-comparison-empty">该区间没有足够的首尾有效值可比较</div>'}`;
-}
-
-function bindRangeInteraction(id,definitions){
-  const instance=chart(id);
-  const baseId=id.replace(/-chart$/,'');
-  const comparison=document.getElementById(`${baseId}-range-comparison`);
-  rangeDefinitionsByChart[id]=definitions;
-  instance.off('datazoom');
-  instance.off('showTip');
-  instance.off('hideTip');
-  instance.off('mouseover');
-  instance.off('mouseout');
-  instance.on('datazoom',params=>{
-    const zoom=params.batch?.[0]||params;
-    const max=REPORT_DATA.halfYearDates.length-1;
-    const startIndex=zoom.startValue!=null?Number(zoom.startValue):Math.round((zoom.start??0)/100*max);
-    const endIndex=zoom.endValue!=null?Number(zoom.endValue):Math.round((zoom.end??100)/100*max);
-    renderRangeComparison(id,definitions,startIndex,endIndex);
-  });
-  /* 富拐点卡出现时临时隐藏区间浮层，避免两张分析卡同时遮挡核心曲线。 */
-  instance.on('showTip',params=>{if(params.componentType==='markPoint'||params.data?.event)comparison.classList.add('is-suppressed');});
-  instance.on('hideTip',()=>comparison.classList.remove('is-suppressed'));
-  instance.on('mouseover',params=>{if(params.componentType==='markPoint')comparison.classList.add('is-suppressed');});
-  instance.on('mouseout',params=>{if(params.componentType==='markPoint')comparison.classList.remove('is-suppressed');});
-  renderRangeComparison(id,definitions);
-}
-
-/* 【覆盖合同渲染】固定七部分不变。每部分就近展示真实数据范围与本地处理；直接字段不足时须展示最邻近关联证据、因素搜索及验证路径。 */
 function coverageFor(k){return REPORT_DATA.sectionCoverage?.[k]||{status:'未说明',scope:'未说明',period:'未说明',grain:'未说明',sources:[],localProcessing:'未说明',note:''};}
 function renderSectionCoverage(){['overview','price','orders','bsr','rating','reviews','changes'].forEach(function(k){var e=document.getElementById('coverage-'+k);if(!e)return;var d=coverageFor(k),src=Array.isArray(d.sources)?d.sources.join('、'):d.sources;e.innerHTML='<span><strong>数据状态：</strong>'+escapeHtml(d.status)+'</span><span><strong>对象：</strong>'+escapeHtml(d.scope)+'</span><span><strong>期间：</strong>'+escapeHtml(d.period)+'</span><span><strong>粒度：</strong>'+escapeHtml(d.grain)+'</span><span><strong>来源：</strong>'+escapeHtml(src||'未说明')+'</span><span><strong>本地处理：</strong>'+escapeHtml(d.localProcessing||'无')+'</span><span class="coverage-note">'+escapeHtml(d.note||'')+'</span>';});}
 function actualPoints(raw,fallback){var p=Array.isArray(raw?.points)?raw.points:(raw?.values||fallback||[]).map(function(v,i){return {date:REPORT_DATA.halfYearDates?.[i]||String(i+1),value:v};});return p.filter(function(x){return x&&x.date!=null;});}
@@ -745,14 +693,12 @@ function updateProductHeader(product){
   else{thumb.textContent=product.image?.statusLabel||'商品主图未返回';}
 }
 
-/* 【固定渲染】对象选择器、日期、概览 KPI 与比较表均从唯一业务数据区生成。 */
+/* 【固定渲染】日期、概览 KPI 与比较表从唯一业务数据区生成；趋势图默认并列展示全部研究对象。 */
 function renderReportShell(){
   document.getElementById('template-notice').hidden=!REPORT_DATA.templateMode;
-  document.getElementById('start-date').value=REPORT_DATA.report.startDate;
-  document.getElementById('end-date').value=REPORT_DATA.report.endDate;
-  const selector=document.getElementById('asin-selector');
-  selector.replaceChildren();
-  Object.entries(REPORT_DATA.products).forEach(([key,product])=>selector.add(new Option(`${product.role} ${product.asin}`,key)));
+  const start=REPORT_DATA.report.startDate||'起始日期未说明';
+  const end=REPORT_DATA.report.endDate||'结束日期未说明';
+  document.getElementById('report-period').textContent=`${start} ～ ${end}`;
   renderSectionCoverage();
 }
 
@@ -807,54 +753,183 @@ function renderDeepDiagnostics(){
   document.getElementById('recommendation-body').innerHTML=(diagnostics.recommendations||[]).map(item=>`<tr><td><span class="priority">${escapeHtml(item.priority)}</span></td><td>${escapeHtml(item.action)}</td><td>${escapeHtml(item.evidence)}</td><td>${escapeHtml(item.effort)}</td><td>${escapeHtml(item.expectedEffect)}</td><td>${escapeHtml(item.limitation)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty-state">证据不足，未生成行动建议</td></tr>';
 }
 
-/*
-  价格图只接受当前 SellerSprite MCP 能明确查询的五类序列。
-  键名直接对齐 keepa_info 与 asin_coupon_trend 的返回语义；不在渲染层模拟合同外价格或
-  无法区分类型的促销事件，null 始终保持断线。
-*/
-function renderPrice(product){
-  const names=['商品售价','Buy Box价格','Listing Price','Deal Price','Coupon最终价'];
-  const keys=['price','buyBox','priceList','dealPrice','couponFinal'];
-  const colors=['#2f8cff','#55d8aa','#73839f','#ff7a45','#ef77b5'];
-  const definitions=keys.map((key,index)=>({name:names[index],key,color:colors[index],values:toHalfYearDailySeries(product.prices[key]),format:value=>`${product.currency} ${Number(value).toFixed(2)}`,formatDelta:value=>`${product.currency} ${Math.abs(Number(value)).toFixed(2)}`,inverse:false})).filter(item=>item.values.some(value=>value!=null));
-  const series=definitions.map((item,index)=>({name:item.name,type:'line',smooth:.22,smoothMonotone:'x',data:item.values,connectNulls:false,showSymbol:false,lineStyle:{width:item.key==='price'||item.key==='buyBox'?2.4:1.7,color:item.color},itemStyle:{color:item.color},emphasis:{focus:'series'},markPoint:index===0?eventMarkPoint('price',product,item.values):undefined}));
-  chart('price-chart').setOption({...baseOption(),tooltip:{trigger:'axis',valueFormatter:value=>value==null?'未返回':`${product.currency} ${Number(value).toFixed(2)}`},legend:{top:14,data:series.map(item=>item.name)},grid:{left:58,right:28,top:78,bottom:72},xAxis:halfYearXAxis(),yAxis:{type:'value',name:product.currency,scale:true,...axisStyle},dataZoom,series},true);
-  bindRangeInteraction('price-chart',definitions);
+
+function productEntries(){return Object.entries(REPORT_DATA.products||{});}
+function productLabel(key,product){return `${product.name||product.role||key} · ${product.asin||key}`;}
+const productColors=['#2f8cff','#e05a47','#16a085','#8e5bd9','#d98b16','#ba4d9a','#4f7cac','#2b9348'];
+function productColor(key){const keys=productEntries().map(([itemKey])=>itemKey);const index=Math.max(0,keys.indexOf(key));return productColors[index%productColors.length];}
+function productSeriesPoints(raw,fallback){if(Array.isArray(raw))return raw.map((value,index)=>({date:REPORT_DATA.halfYearDates?.[index]||String(index+1),value}));return actualPoints(raw,fallback);}
+function seriesLabels(sets){
+  const labels=[...new Set(sets.flatMap(set=>set.points.map(point=>String(point.date))))];
+  return labels.length?labels.sort():REPORT_DATA.halfYearDates;
+}
+function valuesForLabels(points,labels){const byDate=new Map(points.map(point=>[String(point.date),point.value]));return labels.map(date=>byDate.has(String(date))?byDate.get(String(date)):null);}
+function hasDailyAlignment(sets){return sets.length>0&&sets.every(set=>set.raw?.grain==='日级'||(set.raw?.grain==null&&set.points.length===REPORT_DATA.halfYearDates.length&&set.points.every(point=>REPORT_DATA.halfYearDates.includes(String(point.date)))));}
+function eventMarkerColor(event){
+  const direction=event.impact?.direction;
+  return direction==='positive'?'#22a66a':direction==='negative'?'#e24b4b':direction==='mixed'?'#8b5cf6':'#2f8cff';
 }
 
-/*
-  兼容旧模板预览的日级订单估算渲染。正式报告由后续动态粒度渲染器覆盖，
-  并保留 MCP 实际日、周、月或快照时间点；不得将月度总量摊分为日值。
-*/
-function renderOrders(product){
-  const values=toHalfYearDailySeries(product.orders);
-  const definitions=[{name:'日订单估算',values,format:value=>Number(value).toLocaleString(),formatDelta:value=>Math.abs(Number(value)).toLocaleString(),inverse:false}];
-  chart('orders-chart').setOption({...baseOption(),tooltip:{trigger:'axis',valueFormatter:value=>value==null?'未返回':Number(value).toLocaleString()},grid:{left:66,right:28,top:56,bottom:72},xAxis:halfYearXAxis(),yAxis:{type:'value',min:0,...axisStyle,axisLabel:{formatter:value=>Number(value).toLocaleString(),color:'#8a93a3'}},dataZoom,series:[{name:'日订单估算',type:'line',smooth:.22,smoothMonotone:'x',data:values,connectNulls:false,showSymbol:false,lineStyle:{width:2.2,color:'#2f8cff'},itemStyle:{color:'#2f8cff'},areaStyle:{color:'rgba(47,140,255,.03)'},markPoint:eventMarkPoint('orders',product,values)}]},true);
-  bindRangeInteraction('orders-chart',definitions);
+function trendMetricLabel(chartType){return chartType==='price'?'价格':chartType==='orders'?'供应商销量/订单估算':chartType==='bsr'?'BSR数值':chartType==='rating'?'星级评分':'指标';}
+function trendValue(value,chartType,product){
+  if(value==null)return '未返回';
+  if(chartType==='price')return `${product.currency||REPORT_DATA.report.currency||'USD'} ${Number(value).toFixed(2)}`;
+  if(chartType==='rating')return Number(value).toFixed(1);
+  return Number(value).toLocaleString();
+}
+function trendDelta(before,after,chartType,product){
+  if(before==null||after==null)return '变化幅度未返回';
+  const delta=Number(after)-Number(before); const sign=delta>0?'+':delta<0?'-':'';
+  const abs=chartType==='price'?`${product.currency||REPORT_DATA.report.currency||'USD'} ${Math.abs(delta).toFixed(2)}`:chartType==='rating'?Math.abs(delta).toFixed(1):Math.abs(delta).toLocaleString();
+  const pct=Number(before)===0?'':`（${delta>=0?'+':''}${(delta/Number(before)*100).toFixed(1)}%）`;
+  return `${sign}${abs}${pct}`;
+}
+function autoFactorSet(chartType){
+  const common=['核对同一对象、同一变体/父子体和同一站点口径','对齐变化日前后其他指标与第一方经营数据，确认是否为真实经营变化'];
+  const map={
+    price:['Amazon前台售价/Buy Box卖家或履约方式变化','优惠、Coupon、Deal或促销状态变化','库存、变体选择或价格字段口径变化','竞品价格与类目竞争环境变化'],
+    orders:['售价、促销或Buy Box变化影响需求承接','自然/广告可见性、流量或关键词排名变化','库存、履约、季节性或供应商估算模型变化','父子体/变体聚合或销量字段定义变化'],
+    bsr:['供应商销量/订单估算或需求速度变化','售价、促销、库存与履约变化','类目节点、父子体/变体聚合或排名字段变化','采样刷新、排名短期波动或季节性变化'],
+    rating:['评分累计数新增与星级四舍五入效应','评论延迟发布、删除、编辑或变体聚合变化','评论样本构成或供应商字段刷新变化','商品体验、质量或Listing预期变化（需评论与第一方数据验证）']
+  };
+  return [...(map[chartType]||[]),...common];
+}
+function autoSellerImplication(chartType,before,after){
+  const direction=Number(after)>Number(before)?'上升':'下降';
+  if(chartType==='price')return `该对象价格${direction}本身不等于利润或转化改善；可能提升单位收入，也可能削弱价格竞争力。需结合Buy Box、转化、销量/订单估算、BSR、毛利和竞品价格决定是否动作。`;
+  if(chartType==='orders')return `供应商销量/订单估算${direction}可作为需求信号，但不是Amazon第一方订单；需先验证对象、单位和时间粒度，再决定补货、广告或价格动作。`;
+  if(chartType==='bsr')return `BSR数值${direction}通常分别意味着排名变弱/变强（越小越好），但不能直接等同销量或份额；先排除类目、变体、库存和字段刷新因素。`;
+  if(chartType==='rating')return `评分曲线${direction}可能影响信任与转化，但圆整评分和评论数量变化不能单独证明体验改善或恶化；应联动评论主题、退货和第一方体验指标。`;
+  return '该变化需要结合跨模块证据判断经营意义。';
+}
+function autoTurningEvents(chartType,product,objectKey,values,labels){
+  const valid=values.map((value,index)=>value==null?null:{index,date:labels[index],value:Number(value)}).filter(Boolean);
+  if(valid.length<3)return [];
+  /* 高覆盖候选扫描：标记方向反转、显著阶跃与稳定段起止；仅作为待审查分析入口。 */
+  const thresholdMap={price:.05,orders:.12,bsr:.12,rating:.015};
+  const threshold=thresholdMap[chartType]??.1;
+  const candidates=[];
+  for(let i=1;i<valid.length;i++){
+    const prev=valid[i-1],cur=valid[i],next=valid[i+1];
+    const base=Math.max(Math.abs(prev.value),Math.abs(cur.value),1);
+    const relativeChange=Math.abs(cur.value-prev.value)/base;
+    const reversal=next&&((cur.value-prev.value)*(next.value-cur.value)<0);
+    const stableStep=next&&Math.abs(next.value-cur.value)<=Math.max(base*.002,1e-9)&&relativeChange>=threshold;
+    const endingStep=relativeChange>=threshold&&(i===valid.length-1||!next||Math.abs(next.value-cur.value)<Math.abs(cur.value-prev.value)*.45);
+    if(!(reversal||stableStep||endingStep))continue;
+    const metric=trendMetricLabel(chartType); const before=trendValue(prev.value,chartType,product); const after=trendValue(cur.value,chartType,product);
+    const direction=chartType==='bsr'?(cur.value<prev.value?'positive':'negative'):chartType==='rating'?(cur.value>prev.value?'positive':'negative'):chartType==='orders'?(cur.value>prev.value?'positive':'negative'):'mixed';
+    candidates.push({eventType:chartType,chart:chartType,objectKey,date:cur.date,label:`自动候选拐点 · ${metric}`,before,after,change:trendDelta(prev.value,cur.value,chartType,product),grain:coverageFor(chartType).grain||'实际返回粒度未说明',dataNature:'derived · series-change-candidate',analysisStatus:'自动识别候选，因素待证据审查',source:'模板本地曲线拐点检测',evidenceId:'not_applicable · 本地派生候选，无独立工具证据',confidence:'候选',impact:{direction,label:direction==='positive'?'方向性利好候选':direction==='negative'?'方向性风险候选':'影响方向未定',assessment:`观察到${metric}在${cur.date}由${before}变为${after}；该事实支持变化识别，不支持单独的因果归因。`},sellerImplications:autoSellerImplication(chartType,prev.value,cur.value),directFactors:[`同一ASIN的${metric}在相邻观测点由${before}变为${after}（直接曲线观察）`],indirectFactors:autoFactorSet(chartType),comparison:'同图竞品曲线可用于方向性对照，但只有对象、变体、期间、字段和粒度一致时才形成同口径比较。',recommendations:['核对变化日前后原始返回值、日期边界、对象/变体和字段定义','将该日期与价格、订单/销量估算、BSR、评分、Listing、评论和可见性事件对齐','如第一方数据确认变化，再制定价格、广告、库存或Listing动作，并设置观察窗与停止条件'],alternativeExplanations:['供应商采样、刷新或字段口径变化','父子体/变体聚合变化','类目节点、库存或履约状态变化','季节性、短期波动或未观测的第一方经营因素']});
+  }
+  return candidates;
+}
+function turningEventsFor(chartType,product,objectKey,values,labels){
+  const explicit=(REPORT_DATA.events||[]).filter(event=>event.chart===chartType&&event.objectKey===objectKey);
+  const explicitDates=new Set(explicit.map(event=>event.date));
+  return [...explicit,...autoTurningEvents(chartType,product,objectKey,values,labels).filter(event=>!explicitDates.has(event.date))];
+}
+/* 拐点以水滴图钉呈现：已审查事件使用大图钉，自动候选使用较小但高密度的图钉；点击/悬停均可查看分析与验证边界。 */
+function eventMarkPoint(chartType,product,primaryValues,objectKey,labels=REPORT_DATA.halfYearDates){
+  const data=turningEventsFor(chartType,product,objectKey,primaryValues,labels).map(event=>{
+    const index=labels.indexOf(event.date); const value=index<0?null:primaryValues[index];
+    return value==null?null:{name:event.label,coord:[event.date,value],value:event.label,event,symbol:'pin',symbolSize:event.analysisStatus?.startsWith('自动识别')?24:42,itemStyle:{color:eventMarkerColor(event),borderColor:'#fff',borderWidth:2}};
+  }).filter(Boolean);
+  return data.length?{symbol:'pin',symbolSize:42,label:{show:false},emphasis:{scale:1.2},tooltip:{trigger:'item',enterable:true,confine:true,padding:0,backgroundColor:'rgba(255,255,255,.98)',borderColor:'#dce3ee',borderWidth:1,extraCssText:'max-width:440px;white-space:normal;box-shadow:0 12px 32px rgba(34,52,82,.18);',formatter:params=>eventTooltip(params.data.event)},data}:undefined;
 }
 
-/* BSR 图固定展示大类目，并按 MCP 的 subSalesRank 数组动态生成零到多条真实小类目曲线。 */
-function renderBsr(product){
-  const category=product.bsr.category;
-  const subcategories=Array.isArray(product.bsr.subcategories)?product.bsr.subcategories:[];
-  const subcategoryColors=['#55d8aa','#73839f','#f59e0b','#8b5cf6','#ef77b5'];
-  const categoryValues=toHalfYearDailySeries(category.values);
-  const series=[{name:category.name,type:'line',smooth:.2,smoothMonotone:'x',data:categoryValues,connectNulls:false,showSymbol:false,lineStyle:{width:2.2,color:'#2f9fff'},itemStyle:{color:'#2f9fff'},markPoint:eventMarkPoint('bsr',product,categoryValues)}];
-  subcategories.forEach((subcategory,index)=>series.push({name:subcategory.name,type:'line',smooth:.2,smoothMonotone:'x',yAxisIndex:1,data:toHalfYearDailySeries(subcategory.values),connectNulls:false,showSymbol:false,lineStyle:{width:1.8,color:subcategoryColors[index%subcategoryColors.length]},itemStyle:{color:subcategoryColors[index%subcategoryColors.length]}}));
-  chart('bsr-chart').setOption({...baseOption(),tooltip:{trigger:'axis',valueFormatter:value=>value==null?'未返回':'# '+Number(value).toLocaleString()},legend:{top:14,data:series.map(item=>item.name)},grid:{left:66,right:58,top:76,bottom:72},xAxis:halfYearXAxis(),yAxis:[{type:'value',inverse:true,min:0,name:'大类目排名',...axisStyle},{type:'value',inverse:true,min:0,name:'小类目排名',...axisStyle}],dataZoom,series},true);
-  bindRangeInteraction('bsr-chart',[{name:category.name,values:categoryValues,format:value=>`#${Number(value).toLocaleString()}`,formatDelta:value=>Math.abs(Number(value)).toLocaleString(),inverse:true},...subcategories.map(subcategory=>({name:subcategory.name,values:toHalfYearDailySeries(subcategory.values),format:value=>`#${Number(value).toLocaleString()}`,formatDelta:value=>Math.abs(Number(value)).toLocaleString(),inverse:true}))]);
+function firstAndLastNonNull(values,startIndex,endIndex){
+  let first=null,last=null;
+  for(let index=startIndex;index<=endIndex;index++){if(values[index]!=null){first={index,value:Number(values[index])};break;}}
+  for(let index=endIndex;index>=startIndex;index--){if(values[index]!=null){last={index,value:Number(values[index])};break;}}
+  return{first,last};
 }
 
-/* 评分图直接展示星级评分，并将 MCP 累计评分数严格按相邻自然日差分为派生日增量。 */
-function renderRating(product){
-  const incrementName='评分数日增量（派生）';
-  const starValues=toHalfYearDailySeries(product.star);
-  const incrementValues=deriveDailyRatingIncrement(product.ratingCount);
-  chart('rating-chart').setOption({...baseOption(),tooltip:{trigger:'axis'},legend:{top:14,data:['星级评分',incrementName]},grid:{left:58,right:72,top:76,bottom:72},xAxis:halfYearXAxis(),yAxis:[{type:'value',name:'星级评分',min:0,max:6,...axisStyle},{type:'value',name:'评分数日增量',...axisStyle}],dataZoom,series:[{name:'星级评分',type:'line',smooth:.2,smoothMonotone:'x',data:starValues,showSymbol:false,lineStyle:{width:2.2,color:'#45a7df'},itemStyle:{color:'#45a7df'},markPoint:eventMarkPoint('rating',product,starValues)},{name:incrementName,type:'line',smooth:.2,smoothMonotone:'x',yAxisIndex:1,data:incrementValues,connectNulls:false,showSymbol:false,lineStyle:{width:2.1,color:'#55d8aa'},itemStyle:{color:'#55d8aa'}}]},true);
-  bindRangeInteraction('rating-chart',[{name:'星级评分',values:starValues,format:value=>Number(value).toFixed(1),formatDelta:value=>Math.abs(Number(value)).toFixed(1),inverse:false},{name:incrementName,values:incrementValues,format:value=>Number(value).toLocaleString(),formatDelta:value=>Math.abs(Number(value)).toLocaleString(),inverse:false}]);
+function renderRangeComparison(id,definitions,startIndex=0,endIndex=REPORT_DATA.halfYearDates.length-1){
+  const baseId=id.replace(/-chart$/,'');
+  const container=document.getElementById(`${baseId}-range-comparison`);
+  const start=REPORT_DATA.halfYearDates[Math.max(0,startIndex)];
+  const end=REPORT_DATA.halfYearDates[Math.min(REPORT_DATA.halfYearDates.length-1,endIndex)];
+  const rows=definitions.map(definition=>{
+    const pair=firstAndLastNonNull(definition.values,startIndex,endIndex);
+    if(!pair.first||!pair.last)return null;
+    const delta=pair.last.value-pair.first.value;
+    const percent=pair.first.value===0?null:delta/pair.first.value*100;
+    const deltaSign=delta>0?'+':delta<0?'-':'';
+    const tone=delta>0?'up':delta<0?'down':'flat';
+    const percentLabel=percent==null?'':` · ${percent>=0?'+':''}${percent.toFixed(1)}%`;
+    return `<div class="range-summary"><span class="range-summary-name">${escapeHtml(definition.name)}</span><span class="range-summary-values">${escapeHtml(definition.format(pair.first.value))} → ${escapeHtml(definition.format(pair.last.value))}</span><span class="range-summary-change ${tone}">${deltaSign}${escapeHtml(definition.formatDelta(delta))}${escapeHtml(percentLabel)}</span></div>`;
+  }).filter(Boolean);
+  container.innerHTML=`<div class="range-comparison-head"><div class="range-comparison-title">选定区间对比<span class="range-comparison-dates">${escapeHtml(start)} → ${escapeHtml(end)}</span></div><span class="range-comparison-hint">拖动滑块选择</span></div>${rows.length?`<div class="range-comparison-list">${rows.join('')}</div>`:'<div class="range-comparison-empty">该区间没有足够的首尾有效值可比较</div>'}`;
 }
 
-/* 评论表只消费可追溯的命中数、分母和覆盖范围；主题标签、摘要与证据均明确标记为分析派生。 */
+function bindRangeInteraction(id,definitions){
+  const instance=chart(id);
+  const baseId=id.replace(/-chart$/,'');
+  const comparison=document.getElementById(`${baseId}-range-comparison`);
+  rangeDefinitionsByChart[id]=definitions;
+  instance.off('datazoom');
+  instance.off('showTip');
+  instance.off('hideTip');
+  instance.off('mouseover');
+  instance.off('mouseout');
+  instance.on('datazoom',params=>{
+    const zoom=params.batch?.[0]||params;
+    const max=REPORT_DATA.halfYearDates.length-1;
+    const startIndex=zoom.startValue!=null?Number(zoom.startValue):Math.round((zoom.start??0)/100*max);
+    const endIndex=zoom.endValue!=null?Number(zoom.endValue):Math.round((zoom.end??100)/100*max);
+    renderRangeComparison(id,definitions,startIndex,endIndex);
+  });
+  instance.on('showTip',params=>{if(params.componentType==='markPoint'||params.data?.event)comparison.classList.add('is-suppressed');});
+  instance.on('hideTip',()=>comparison.classList.remove('is-suppressed'));
+  instance.on('mouseover',params=>{if(params.componentType==='markPoint')comparison.classList.add('is-suppressed');});
+  instance.on('mouseout',params=>{if(params.componentType==='markPoint')comparison.classList.remove('is-suppressed');});
+  renderRangeComparison(id,definitions);
+}
+
+function primaryBsrSeries(product){
+  const bsr=product.bsr||{};
+  if(bsr.category)return bsr.category;
+  if(Array.isArray(bsr.series)&&bsr.series.length)return bsr.series[0];
+  return null;
+}
+
+/* 多对象渲染：颜色按 REPORT_DATA.products 的稳定顺序分配，同一 ASIN 在所有图表保持同色。图例支持按 ASIN 单独隐藏/显示、显示全部与反选。 */
+function renderPrice(){
+  const sets=productEntries().map(([key,product])=>({key,product,raw:product.prices?.price,points:productSeriesPoints(product.prices?.price)})).filter(set=>set.points.some(point=>point.value!=null));
+  const labels=seriesLabels(sets);
+  const defs=sets.map(set=>({name:productLabel(set.key,set.product),values:valuesForLabels(set.points,labels),format:value=>`${set.product.currency||REPORT_DATA.report.currency||'USD'} ${Number(value).toFixed(2)}`,formatDelta:value=>`${set.product.currency||REPORT_DATA.report.currency||'USD'} ${Math.abs(Number(value)).toFixed(2)}`,inverse:false}));
+  const series=sets.map((set,index)=>{const values=defs[index].values;return{name:defs[index].name,type:'line',data:values,smooth:labels.length===REPORT_DATA.halfYearDates.length?.22:false,connectNulls:false,showSymbol:labels.length!==REPORT_DATA.halfYearDates.length,lineStyle:{width:2.4,color:productColor(set.key)},itemStyle:{color:productColor(set.key)},emphasis:{focus:'series'},markPoint:eventMarkPoint('price',set.product,values,set.key,labels)};});
+  const isDaily=hasDailyAlignment(sets);
+  chart('price-chart').setOption({...comparisonBaseOption(),tooltip:{trigger:'axis',valueFormatter:value=>value==null?'未返回':`${REPORT_DATA.report.currency||'USD'} ${Number(value).toFixed(2)}`},legend:multiAsinLegend(series.map(item=>item.name)),grid:{left:58,right:28,top:122,bottom:isDaily?72:38},xAxis:{type:'category',data:labels,boundaryGap:false,...axisStyle},yAxis:{type:'value',name:REPORT_DATA.report.currency||'USD',scale:true,...axisStyle},dataZoom:isDaily?dataZoom:[],series},true);
+  if(isDaily)bindRangeInteraction('price-chart',defs);else{rangeDefinitionsByChart['price-chart']=[];document.getElementById('price-range-comparison').innerHTML='';}
+}
+
+function renderOrders(){
+  const sets=productEntries().map(([key,product])=>{const raw=product.salesSeries||{name:'供应商销量/订单估算',values:product.orders||[]};return{key,product,raw,points:productSeriesPoints(raw,product.orders)}}).filter(set=>set.points.some(point=>point.value!=null));
+  const labels=seriesLabels(sets); const isDaily=hasDailyAlignment(sets);
+  const defs=sets.map(set=>({name:productLabel(set.key,set.product),values:valuesForLabels(set.points,labels),format:value=>Number(value).toLocaleString(),formatDelta:value=>Math.abs(Number(value)).toLocaleString(),inverse:false}));
+  const series=sets.map((set,index)=>({name:defs[index].name,type:'line',data:defs[index].values,smooth:isDaily?.22:false,connectNulls:false,showSymbol:!isDaily,lineStyle:{width:2.2,color:productColor(set.key)},itemStyle:{color:productColor(set.key)},markPoint:eventMarkPoint('orders',set.product,defs[index].values,set.key,labels)}));
+  chart('orders-chart').setOption({...comparisonBaseOption(),tooltip:{trigger:'axis',valueFormatter:v=>v==null?'未返回':Number(v).toLocaleString()},legend:multiAsinLegend(series.map(item=>item.name)),grid:{left:66,right:28,top:122,bottom:isDaily?72:38},xAxis:{type:'category',data:labels,boundaryGap:false,...axisStyle},yAxis:{type:'value',min:0,...axisStyle},dataZoom:isDaily?dataZoom:[],series},true);
+  if(isDaily)bindRangeInteraction('orders-chart',defs);else{rangeDefinitionsByChart['orders-chart']=[];document.getElementById('orders-range-comparison').innerHTML='';}
+}
+
+function renderBsr(){
+  const sets=productEntries().map(([key,product])=>{const raw=primaryBsrSeries(product);return{key,product,raw,points:productSeriesPoints(raw,raw?.values)}}).filter(set=>set.points.some(point=>point.value!=null));
+  const labels=seriesLabels(sets); const isDaily=hasDailyAlignment(sets);
+  const defs=sets.map(set=>({name:productLabel(set.key,set.product),values:valuesForLabels(set.points,labels),format:value=>`#${Number(value).toLocaleString()}`,formatDelta:value=>Math.abs(Number(value)).toLocaleString(),inverse:true}));
+  const series=sets.map((set,index)=>({name:defs[index].name,type:'line',data:defs[index].values,smooth:isDaily?.2:false,connectNulls:false,showSymbol:!isDaily,lineStyle:{width:2.2,color:productColor(set.key)},itemStyle:{color:productColor(set.key)},markPoint:eventMarkPoint('bsr',set.product,defs[index].values,set.key,labels)}));
+  chart('bsr-chart').setOption({...comparisonBaseOption(),tooltip:{trigger:'axis',valueFormatter:v=>v==null?'未返回':'# '+Number(v).toLocaleString()},legend:multiAsinLegend(series.map(item=>item.name)),grid:{left:66,right:28,top:122,bottom:isDaily?72:38},xAxis:{type:'category',data:labels,boundaryGap:false,...axisStyle},yAxis:{type:'value',inverse:true,min:0,...axisStyle},dataZoom:isDaily?dataZoom:[],series},true);
+  if(isDaily)bindRangeInteraction('bsr-chart',defs);else{rangeDefinitionsByChart['bsr-chart']=[];document.getElementById('bsr-range-comparison').innerHTML='';}
+}
+
+function renderRating(){
+  const entries=productEntries(); const starSeries=[]; const incrementSeries=[]; const rangeDefs=[];
+  entries.forEach(([key,product])=>{const star=toHalfYearDailySeries(product.star);const increments=deriveDailyRatingIncrement(product.ratingCount);const color=productColor(key);const label=productLabel(key,product);if(star.some(value=>value!=null))starSeries.push({name:label,type:'line',data:star,smooth:.2,connectNulls:false,showSymbol:false,lineStyle:{width:2.2,color},itemStyle:{color},markPoint:eventMarkPoint('rating',product,star,key)});if(increments.some(value=>value!=null))incrementSeries.push({name:label,type:'line',yAxisIndex:1,data:increments,smooth:.2,connectNulls:false,showSymbol:false,lineStyle:{width:1.6,color,type:'dashed'},itemStyle:{color}});if(star.some(value=>value!=null))rangeDefs.push({name:label,values:star,format:value=>Number(value).toFixed(1),formatDelta:value=>Math.abs(Number(value)).toFixed(1),inverse:false});});
+  const series=[...starSeries,...incrementSeries];
+  chart('rating-chart').setOption({...comparisonBaseOption(),tooltip:{trigger:'axis',formatter:params=>{const rows=params.map(param=>{const metric=param.seriesIndex<starSeries.length?'星级评分':'评分数日增量（派生）';const value=param.value==null?'未返回':(metric==='星级评分'?Number(param.value).toFixed(1):Number(param.value).toLocaleString());return `${param.marker}${escapeHtml(param.seriesName)}｜${metric}：${value}`;});return `<strong>${escapeHtml(params[0]?.axisValue||'')}</strong><br>${rows.join('<br>')}`;}},legend:multiAsinLegend(series.map(item=>item.name)),grid:{left:58,right:72,top:122,bottom:72},xAxis:halfYearXAxis(),yAxis:[{type:'value',name:'星级评分',min:0,max:6,...axisStyle},{type:'value',name:'评分数日增量（派生）',...axisStyle}],dataZoom,series},true);
+  if(daily('rating')&&rangeDefs.length)bindRangeInteraction('rating-chart',rangeDefs);else{rangeDefinitionsByChart['rating-chart']=[];document.getElementById('rating-range-comparison').innerHTML='';}
+}
+
 function formatMentionRate(sample){if(!sample||!sample.total)return '未生成';return `${(sample.hits/sample.total*100).toFixed(1)}% (${sample.hits}/${sample.total})`;}
 function renderReviewTable(sentiment){
   const body=document.getElementById('review-topic-body');
@@ -884,40 +959,23 @@ function renderEventTimeline(){
   const categories=['价格','Listing','评论','BSR','评分','预测'];
   const categoryByType={price:'价格',listing:'Listing',review:'评论',bsr:'BSR',rating:'评分',forecast:'预测'};
   const events=Array.isArray(REPORT_DATA.events)?REPORT_DATA.events:[];
-  const observed=events.filter(event=>event.eventType!=='forecast').map(event=>({value:[event.date,categoryByType[event.eventType]||event.eventType],event}));
-  const forecast=events.filter(event=>event.eventType==='forecast').map(event=>({value:[event.date,'预测'],event}));
+  const observed=events.filter(event=>event.eventType!=='forecast').map(event=>({value:[event.date,categoryByType[event.eventType]||event.eventType],event,itemStyle:{color:productColor(event.objectKey)}}));
+  const forecast=events.filter(event=>event.eventType==='forecast').map(event=>({value:[event.date,'预测'],event,itemStyle:{color:productColor(event.objectKey)}}));
   chart('event-timeline-chart').setOption({...baseOption(),tooltip:{trigger:'item',formatter:params=>eventTooltip(params.data.event)},legend:{top:12,data:['观察事实 / 分析派生','预测动作']},grid:{left:78,right:34,top:62,bottom:72},xAxis:{type:'time',min:REPORT_DATA.report.startDate,max:REPORT_DATA.events.some(event=>event.eventType==='forecast')?undefined:REPORT_DATA.report.endDate,...axisStyle},yAxis:{type:'category',data:categories,...axisStyle},dataZoom:[{type:'inside',xAxisIndex:0},{type:'slider',xAxisIndex:0,height:22,bottom:12,borderColor:'#d9dfeb',backgroundColor:'#eef4ff',fillerColor:'rgba(47,140,255,.12)',handleStyle:{color:'#2f8cff'}}],series:[{name:'观察事实 / 分析派生',type:'scatter',symbol:'pin',symbolSize:48,data:observed,itemStyle:{color:'#2f8cff'}},{name:'预测动作',type:'scatter',symbol:'diamond',symbolSize:22,data:forecast,itemStyle:{color:'#8b5cf6',borderColor:'#fff',borderWidth:2}}]},true);
 }
 
 /* 【固定交互】一个监控对象选择器同步更新头部和四个历史图，避免图表间对象口径不一致。 */
-function renderSelectedProduct(key){activeProductKey=key;const product=REPORT_DATA.products[key];updateProductHeader(product);renderPrice(product);renderOrders(product);renderBsr(product);renderRating(product);}
-
-function applyGlobalDateWindow(){
-  const start=document.getElementById('start-date').value;
-  const end=document.getElementById('end-date').value;
-  if(!start||!end||start>end)return;
-  const max=REPORT_DATA.halfYearDates.length-1;
-  const startIndex=Math.max(0,REPORT_DATA.halfYearDates.findIndex(date=>date>=start));
-  const reversedIndex=[...REPORT_DATA.halfYearDates].reverse().findIndex(date=>date<=end);
-  const endIndex=reversedIndex<0?max:max-reversedIndex;
-  const startPercent=max?startIndex/max*100:0;
-  const endPercent=max?endIndex/max*100:100;
-  ['price-chart','orders-chart','bsr-chart','rating-chart'].forEach(id=>{chart(id).dispatchAction({type:'dataZoom',start:startPercent,end:endPercent});renderRangeComparison(id,rangeDefinitionsByChart[id]||[],startIndex,endIndex);});
+/* 【固定交互】不再选择单个 ASIN；头部固定展示目标商品，四个历史图同图渲染全部研究对象。 */
+function renderAllProducts(){
+  const target=REPORT_DATA.products.target||Object.values(REPORT_DATA.products)[0];
+  if(target)updateProductHeader(target);
+  renderPrice();renderOrders();renderBsr();renderRating();
 }
 
-/* 【动态粒度覆盖】日级是优先目标，不是阻塞门。salesSeries/bsr.series 可用 points 保留 MCP 实际日、周、月或快照时间点。 */
-function renderOrders(product){const raw=product.salesSeries||{name:'日订单估算',values:product.orders||[]};const pts=actualPoints(raw,product.orders),vals=pts.map(x=>x.value??null),isDaily=raw.grain==='日级'||(raw.grain==null&&daily('orders'));chart('orders-chart').setOption({...baseOption(),tooltip:{trigger:'axis',valueFormatter:v=>v==null?'未返回':Number(v).toLocaleString()},grid:{left:66,right:28,top:56,bottom:isDaily?72:38},xAxis:{type:'category',data:pts.map(x=>x.date),boundaryGap:false,...axisStyle},yAxis:{type:'value',min:0,...axisStyle},dataZoom:isDaily?dataZoom:[],series:[{name:raw.name||'供应商销量/订单估算',type:'line',data:vals,smooth:isDaily?.22:false,showSymbol:!isDaily,connectNulls:false,lineStyle:{width:2.2,color:'#2f8cff'},itemStyle:{color:'#2f8cff'}}]},true);if(isDaily)bindRangeInteraction('orders-chart',[{name:raw.name||'供应商估算',values:vals,format:v=>Number(v).toLocaleString(),formatDelta:v=>Math.abs(Number(v)).toLocaleString(),inverse:false}]);else{rangeDefinitionsByChart['orders-chart']=[];document.getElementById('orders-range-comparison').innerHTML='';}}
-function renderBsr(product){const raw=product.bsr||{},seriesRaw=Array.isArray(raw.series)?raw.series:[raw.category,...(raw.subcategories||[])].filter(Boolean),sets=seriesRaw.map((x,i)=>({name:x.name||('BSR '+(i+1)),points:actualPoints(x,x.values)})).filter(x=>x.points.length),labels=[...new Set(sets.flatMap(x=>x.points.map(p=>p.date)))].sort(),isDaily=daily('bsr'),colors=['#2f9fff','#55d8aa','#73839f','#f59e0b'];chart('bsr-chart').setOption({...baseOption(),tooltip:{trigger:'axis',valueFormatter:v=>v==null?'未返回':'# '+Number(v).toLocaleString()},legend:{top:14,data:sets.map(x=>x.name)},grid:{left:66,right:28,top:76,bottom:isDaily?72:38},xAxis:{type:'category',data:labels,boundaryGap:false,...axisStyle},yAxis:{type:'value',inverse:true,min:0,name:'供应商返回 BSR 数值',...axisStyle},dataZoom:isDaily?dataZoom:[],series:sets.map((x,i)=>({name:x.name,type:'line',data:labels.map(d=>x.points.find(p=>p.date===d)?.value??null),smooth:isDaily?.2:false,showSymbol:!isDaily,connectNulls:false,lineStyle:{width:i?1.7:2.2,color:colors[i%colors.length]},itemStyle:{color:colors[i%colors.length]}}))},true);if(!isDaily){rangeDefinitionsByChart['bsr-chart']=[];document.getElementById('bsr-range-comparison').innerHTML='';}}
-
-document.getElementById('asin-selector').addEventListener('change',event=>renderSelectedProduct(event.target.value));
-document.getElementById('start-date').addEventListener('change',applyGlobalDateWindow);
-document.getElementById('end-date').addEventListener('change',applyGlobalDateWindow);
-document.getElementById('start-date').addEventListener('input',applyGlobalDateWindow);
-document.getElementById('end-date').addEventListener('input',applyGlobalDateWindow);
 document.querySelectorAll('#sentiment-toggle button').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('#sentiment-toggle button').forEach(item=>item.classList.remove('active'));button.classList.add('active');renderReviewTable(button.dataset.sentiment);}));
 const topicSelector=document.getElementById('topic-selector');Object.keys(REPORT_DATA.reviewTrend).forEach(topic=>topicSelector.add(new Option(topic,topic)));topicSelector.addEventListener('change',event=>renderReviewTrend(event.target.value));
 window.addEventListener('resize',()=>Object.values(chartInstances).forEach(instance=>instance.resize()));
-/* 【固定启动顺序】先物化报告级信息与表格，再初始化图表；正式报告只替换数据，不改此顺序。 */
+/* 【固定启动顺序】先物化报告级信息与表格，再初始化图表；正式报告只替换数据，不改此顺序。趋势图一次渲染全部 ASIN。 */
 renderReportShell();
 renderOverview();
 renderAnalysis('price-analysis',REPORT_DATA.analysis.price);
@@ -927,7 +985,7 @@ renderAnalysis('rating-analysis',REPORT_DATA.analysis.rating);
 renderAnalysis('reviews-analysis',REPORT_DATA.analysis.reviews);
 renderReviewEvidence();
 renderDeepDiagnostics();
-renderSelectedProduct('target');
+renderAllProducts();
 renderReviewTable('positive');
 renderReviewTrend(topicSelector.value);
 renderEventTimeline();

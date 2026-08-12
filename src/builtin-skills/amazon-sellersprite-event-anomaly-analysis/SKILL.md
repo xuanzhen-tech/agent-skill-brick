@@ -137,3 +137,38 @@ Module Result 至少包含实际范围、实际覆盖、每项指标的最细合
 - 影响范围的参数已做行为验证；本地处理可复算且未引入无依据补值、日均摊或跨对象替代。
 - 事件来源、窗口、有效观察、缺失率、重叠和断点可复核；事件—因素链含替代解释和推翻/验证条件。
 - 未声称真实订单、库存、广告归因、竞品内部操作、评论操纵或平台违规。
+
+## 固化模板同步：多 ASIN、静态期间与拐点输入
+
+本 Skill 的输出服务于已经固化的单文件报告模板。报告头部 `report.startDate/endDate` 是**静态研究期间说明**，代表本次已验证数据覆盖；它不是日期输入、报告级筛选器或重算入口。专家不得把图表局部缩放、任意观察窗或用户读图区间写成报告范围变化。
+
+若模块返回价格、销量/订单估算、BSR、评分、评论或其他可时间对齐的对象序列，必须按**每个实际对象/ASIN独立序列**返回：对象键、ASIN、父子体/变体口径、期间、真实粒度、单位/字段语义、数据性质、缺口和证据引用均不可省略。总控会在同一图中并列所有合格 ASIN；不同对象缺数据时保持该对象缺失，不补零、不用另一对象替代、不伪造连续性。专家不选择图例，但必须确保每一条可比较曲线有稳定对象身份，供模板跨图一致着色、单项隐藏/恢复、显示全部和反选。
+
+对任何材料性变化、断点、方向反转、显著阶跃、稳定段起止或可观察事件，应尽可能返回 `event_factor_inputs`。已审查事件优先；曲线自动候选只作为高覆盖分析入口，不能被写成因果或独立证据。最小结构为：
+
+```yaml
+event_factor_inputs:
+  - objectKey: required
+    asin: required
+    chart: price | orders | bsr | rating | reviews | listing | visibility | other
+    date_or_interval: required
+    observation: required
+    before_after_or_change: required_when_available
+    actual_granularity: required
+    data_nature: observed | estimated | derived | local_snapshot_diff | evidence_signal
+    evidence_refs: required
+    direct_factors: required  # 可观察、同对象且可时间对齐的事实；无则明确尚未形成
+    indirect_factors: required  # 候选机制，须标待验证
+    seller_implications: required  # 对目标/竞品或卖家可能利弊，不保证结果
+    recommendations: required  # 验证指标、观察窗、停止/回滚条件；无则说明原因
+    alternative_explanations: required
+    confidence: required
+```
+
+不得将广告可见标签写成真实广告账户绩效；不得将 BSR 写成真实订单/销量；不得将评论发布日写成购买日；不得把供应商观察、估算或本地派生混同为 Amazon 第一方事实。所有候选因素都必须保留可推翻路径。
+
+## 固化模板模块补充：趋势、拐点与因素链
+
+对价格、供应商销量/订单估算、BSR、评分/累计评分数序列，逐 ASIN 返回真实时间点，不把月/周/快照摊为日值。主动高覆盖扫描变化点，并优先为材料性点提供经审查 `event_factor_inputs`：前后值、变化、同一对象口径、数据性质、可能直接观察、候选机制、对目标/竞品的方向性利弊、建议与验证窗。
+
+价格、订单、BSR、评分之间的同时发生只能形成时间对齐观察；继续检查 Listing、变体、可见性、评论、类目、供应商刷新和第一方验证需求。BSR 越小越好，但不得自动等同销量或份额；订单/销量估算不得称真实订单。对无法说明原因的变化保留高覆盖候选和替代解释，不以空白或端点分析代替。

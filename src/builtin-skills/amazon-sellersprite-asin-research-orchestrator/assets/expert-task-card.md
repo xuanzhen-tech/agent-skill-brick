@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 文件功能：定义总控发送给专家的最小 Task Card，以及专家必须回传并映射到固定七部分报告的最小 Module Result。
 职责边界：传递本次任务特有信息、能力预检和授权加工规则；通用证据和禁止推断由各 Skill 自身承担，避免字段爆炸和合同漂移。
 重要关联：../SKILL.md、../references/orchestration-runbook.md。
@@ -96,3 +96,42 @@ artifacts_temp: required
 ```
 
 专家不得复制原始响应、生成或编辑用户 Report、隐藏原料的实际粒度/对象范围或使用模板数据填充 `data`。当直接目标字段不足时，专家应返回经审查的邻近关联证据和它可支持的分析路线；总控决定跨模块因素链与最终叙述。HTML 模板只由总控复制和编辑。
+
+## 固化模板呈现合同（Task Card / Module Result 补充）
+
+### Task Card 新增字段
+
+```yaml
+report_presentation_contract:
+  research_period_is_static: true
+  report_period_source: REPORT_DATA.report.startDate/endDate
+  multi_asin_same_chart: required_for_comparable_metric_series
+  stable_object_key_and_asin: required
+  static_period_not_a_filter: true
+  turning_point_mode: high_coverage_candidate_plus_reviewed_events
+```
+
+总控在 Task Card 中必须明确：研究期间是静态覆盖说明；专家提供的序列需要逐对象可追溯；图内筛选/缩放不会改变报告范围。`required_visuals` 对价格、订单、BSR、评分应说明是否需要同图多 ASIN系列，以及对象可比性限制。
+
+### Module Result 新增事件字段
+
+```yaml
+event_factor_inputs:
+  - objectKey: required
+    asin: required
+    chart: required
+    date_or_interval: required
+    observation: required
+    before_after_or_change: required_when_available
+    actual_granularity: required
+    data_nature: required
+    evidence_refs: required
+    direct_factors: required
+    indirect_factors: required
+    seller_implications: required
+    recommendations: required
+    alternative_explanations: required
+    confidence: required
+```
+
+`event_factor_inputs` 可为零到多项。专家只提交本模块能够支撑的观察与因素输入；不将本地曲线候选、供应商估算或外部标签伪装为因果/第一方事实。总控负责跨模块合成最终 `REPORT_DATA.events`。
