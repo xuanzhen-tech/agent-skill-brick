@@ -35,13 +35,32 @@ description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、
 
 唯一外部业务源为运行时注入的只读 `sellersprite_mcp`。首次使用能力前执行 `search → describe → call`，按实际 schema 调用；记录工具、参数、调用时间、站点、ASIN/父子体/变体、字段、版本、分页/截断、数据性质和原始定位。
 
-调用时`sellersprite_mcp`，若无明确的说明时间跨度，默认为180天，若用户或者调度Agent说明了时间跨度，以说明时间为准。最小粒度为一天。
+调用时`sellersprite_mcp`，若无明确的说明时间跨度，默认为180天，若用户或者调度Agent说明了时间跨度，以说明时间为准。Listing 的最小合格粒度不是固定的日级，而是实际可比的版本、快照采集时点或供应商明确提供的历史记录；优先获取最密集且可审计的粒度，不得把抓取日期伪装成平台修改日期。
 
 通过Tool调用`sellersprite_mcp`时，Tool Result会有长度截断，响应内容超过32000字符会被丢弃，因此调用`sellersprite_mcp`时需要注意时间跨度，单次调用时间跨度建议10天，18次调用获取累计180天的数据，若因为不合理的时间跨度请求或者不合理的`sellersprite_mcp`调用方式导致没有获取到任何数据，应当及时调整调用和请求的策略，不得假设MCP不可用或者无数据可获取，应当充分研究发挥`sellersprite_mcp`的能力。
 
 若遇到`sellersprite_mcp`的并发调用次数限制，使用run_shell等待一分钟再继续调用。不得因为并发限制就终止数据获取或者谎称数据充足。
 
 冻结 marketplace、ASIN、父子体/变体、语言、字段范围、采集时间、基线和业务问题。用户指定竞品不可替换。`not_returned`、`truncated`、`metadata_only`、`remote_reference`、`not_verifiable`、`not_comparable`、`blocked`、空值和真实零值分开。
+
+## 能力与覆盖预检
+
+正式取数前，先按总控要求对 Listing、变体和媒体相关能力执行 `search → describe → call`。`describe` 只证明参数被 Schema 接受，不证明服务端实际执行；对时间范围、历史快照、分页、排序、字段投影、父子体/变体选择等影响结论的参数，至少用两个有明显差异的窄请求做行为对照。记录实际返回的字段、对象层级、版本/快照时间、媒体完整度、覆盖范围和字段语义。
+
+如果参数被忽略、历史字段为空或不同端点返回不一致，不得立即判定 Listing 无历史能力。应继续探查相关端点，使用分段/分页采集、同口径重复快照、响应字段对照和本地规范化/差异处理，直到确认是可恢复、可比较、仅当前快照、来源不一致或确实无法取得。
+
+## Listing 证据层级与事件解释
+
+严格区分四种结果：
+
+1. **当前快照**：本次返回的标题、Bullet、变体、图片/视频/A+ 标记和其他字段；用于描述当前页面表达，不代表历史变化。
+2. **历史快照**：供应商返回或本地保存的同口径旧版本；用于与当前或其他版本比较。
+3. **快照区间差异**：同一对象、同一字段语义的两个观测时点之间发现的变化；只能表述为“在两次观测之间观察到差异”。
+4. **供应商明确变更时间**：只有来源明确给出页面变更语义时，才可写入 `provider_changed_at`；`captured_at`、`first_observed_at`、`change_detected_at` 都不能替代它。
+
+当前 Listing 快照即使没有历史 diff，也应向总控提供可用于事件因素搜索的定位信息：产品形态、容量、使用场景、标题/Bullet 的卖点结构、变体策略、价格定位、媒体/A+/视频可见标记，以及与 VOC、价格、BSR、关键词可见性相邻的可验证关系。当前定位不是变更事实，也不自动证明卖点真实或有效。
+
+跨端点、跨字段版本或不同父子体口径出现的标题截断、品牌前缀、主图 URL 参数差异，默认先记录为“来源字段差异”；只有同一对象、同一字段定义、同一版本语义且可比性通过时，才进入 `listing_text_events` 或 `listing_media_events`。
 
 ## 快照生命周期
 
@@ -87,6 +106,11 @@ description: 使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、
 每个 visual 使用：`visual_id, status, status_reason, chart_type, title, data_nature, scope, period, data, evidence_refs, limitations`。专家不生成用户报告。
 
 ## 提交前检查
+
+- 已完成 Listing 相关能力的广覆盖探查；不因一个端点返回当前快照就停止检查可能提供历史、变体、媒体或变更信号的相关能力。
+- 已验证关键参数的实际行为；参数未生效时已改用可复算的本地处理、分段采集或替代端点。
+- Module Result 明确标注 `grain`、`object_scope`、`coverage`、`date_semantics`、`capability_evidence` 和 `local_processing`。
+- 当前快照、历史快照、快照区间差异与供应商明确变更时间没有混写。
 
 - 每项观察可回溯到站点、ASIN、父子体/变体、字段、版本/时间、工具和原始定位。
 - 当前快照、旧快照和 diff 使用同一字段语义和完整度。

@@ -9,9 +9,9 @@
 ## 受控值
 
 - `sentiment/theme_direction`: `positive | negative | mixed | neutral | unclear`
-- `coverage_status`: `complete_for_plan | partial_pages | unknown_page_ceiling | provider_coverage_insufficient | failed`
+- `coverage_status`: `complete_for_plan | complete_with_scope_limit | partial_pages | unknown_page_ceiling | provider_coverage_insufficient | failed`
 - `anomaly_status`: `observed | screen_positive | not_screened | not_calculable | explained_by_scope_change | insufficient_coverage`
-- `data_status`: `present | reported_zero | not_queried | not_returned | empty_result | failed | truncated | not_comparable | unknown_definition`
+- `data_status`: `present | reported_zero | locally_recovered | sample_only | evidence_only | not_queried | not_returned | empty_result | failed | truncated | not_comparable | unknown_definition`
 
 缺失状态不得变成 `reported_zero`。
 
@@ -19,7 +19,7 @@
 
 每个查询/时间桶保存：
 
-`coverage_id, case_id, dataset_version, marketplace, asin_scope, filters, sort, page_plan, returned_n, eligible_n, exact_duplicate_n, possible_duplicate_n, review_date_min, review_date_max, field_coverage, coverage_status, response_locator, limitations`
+`coverage_id, case_id, dataset_version, marketplace, asin_scope, review_object_scope, filters, sort, page_plan, returned_n, eligible_n, exact_duplicate_n, possible_duplicate_n, review_date_min, review_date_max, date_semantics, server_time_filter_behavior, local_time_filter_rule, bucket_unit, field_coverage, coverage_status, response_locator, limitations`
 
 ## 匿名评论证据
 
@@ -46,6 +46,17 @@
 `bucket_start, bucket_end, bucket_unit, asin_scope, comparison_level, parent_theme, child_theme, theme_direction, mention_review_n, eligible_review_n, mention_rate, codebook_version, coverage_status, evidence_ids, limitations`
 
 不同 comparison level 各自保存分母，`comparison_level=category_sample` 时显示名必须为“类目样本”。时间桶覆盖不足、codebook 变化或对象映射变化时中断趋势。父体或类目样本没有合格覆盖时不创建该层级记录。
+
+
+## 条件性评论/销量比例代理
+
+`review_rate_proxy` 仅在资格门通过时产生；否则返回 `eligibility=false` 及不计算原因，而不以空 KPI 替代评论分析。
+
+必填资格：`marketplace_match, object_scope_match, review_period, sales_period, period_alignment, grain_alignment, sales_unit_definition, review_coverage_status`。只有全部通过，才可记录：
+
+`metric_name="同期可见评论 / 供应商估算销量比例代理", visible_review_n, estimated_unit_sales_n, asin_scope, sales_scope, analysis_period, sales_period, grain, formula, eligibility, data_nature="derived + estimated_denominator", evidence_ids, limitations`
+
+禁止把该结果命名为真实留评率、订单留评率或购买者转化率；不得以月度销量日均摊为滚动窗口分母，不得混用父体/子体或变体池。
 
 ## 描述性异常
 
