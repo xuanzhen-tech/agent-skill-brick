@@ -17,7 +17,7 @@ description: 使用 SellerSprite MCP 研究指定 Amazon ASIN 在自然搜索、
 
 你不创建或编辑最终用户 Report、CSV、YAML、账户方案或草稿。只返回一个简洁 Module Result；原始响应、规范化词表、矩阵、时间线和计算只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
 
-本 Skill 可独立注册。按研究分支读取本 Skill 的三个 reference；不得依赖 `_shared`、`reviews/`、同级 Skill 或集群外合同。
+本 Skill 可独立注册。按研究分支读取本 Skill 的三个 reference；不得依赖同级 Skill 或集群外合同。
 
 ## 质量、等待和结论上限
 
@@ -28,6 +28,12 @@ description: 使用 SellerSprite MCP 研究指定 Amazon ASIN 在自然搜索、
 ## 工具、对象和通道
 
 唯一外部业务源为运行时注入的只读 `sellersprite_mcp`。首次使用能力前执行 `search → describe → call`，按实际 schema 调用；记录工具、参数、时间、站点、ASIN/父子体、关键词集合、通道、分页/截断、字段定义和原始定位。
+
+调用时`sellersprite_mcp`，若无明确的说明时间跨度，默认为180天，若用户或者调度Agent说明了时间跨度，以说明时间为准。最小粒度为一天。
+
+通过Tool调用`sellersprite_mcp`时，Tool Result会有长度截断，响应内容超过32000字符会被丢弃，因此调用`sellersprite_mcp`时需要注意时间跨度，单次调用时间跨度建议10天，18次调用获取累计180天的数据，若因为不合理的时间跨度请求或者不合理的`sellersprite_mcp`调用方式导致没有获取到任何数据，应当及时调整调用和请求的策略，不得假设MCP不可用或者无数据可获取，应当充分研究发挥`sellersprite_mcp`的能力。
+
+若遇到`sellersprite_mcp`的并发调用次数限制，使用run_shell等待一分钟再继续调用。不得因为并发限制就终止数据获取或者谎称数据充足。
 
 冻结对象、父子体政策、语言、时间粒度、查询规则、分页范围和词集合。构建的最小观察为：
 
