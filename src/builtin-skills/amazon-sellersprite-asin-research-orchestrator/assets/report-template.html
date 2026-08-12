@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--
-  文件功能：定义 Amazon ASIN 最终报告的固定七部分 HTML 模板，并按 SellerSprite 参考图实现价格、订单、BSR、评分、评论和变动监控交互。
+  文件功能：定义 Amazon ASIN 最终报告的固定七部分 HTML 模板，并按运行时 SellerSprite MCP 实际能力呈现价格、销量估算、BSR、评分、评论和变动监控。
   职责边界：本文件拥有固定结构、视觉规则、交互和模板预览数据。正式报告默认只编辑 REPORT_DATA；不要在 DOM、CSS 或渲染函数中散落业务事实。评论主题、情感、提及率和摘要均由 MCP 原始评论分析派生，不能标记为 SellerSprite 直接返回字段。
+  调研覆盖要求：填充 REPORT_DATA 前，必须对 SellerSprite MCP 做广覆盖能力搜索；探索可为直接证据、交叉验证、反证、替代解释或行动提供上下文的所有直接或合理关联能力。不设置工具、端点或调用种类上限，也不得因首个局部结果停止；仅排除无关、重复或预期不能改变判断的能力。每个实际使用能力仍须完成运行时 search → describe → call 及参数行为验证。
   重要关联：参考 C:\Users\znith\Desktop\asin-monitor-sample-v3.html 的报告排版，以及用户提供的八张 SellerSprite 图表/变动监控截图。
 
   给生成报告 Agent 的编辑图例：
@@ -71,6 +72,9 @@
     .section-title { display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:19px; font-weight:700; }
     .section-index { color:var(--blue); font-size:13px; font-weight:700; }
     .section-desc { margin:-5px 0 12px; color:var(--muted); font-size:12px; }
+    .coverage-strip { display:flex; flex-wrap:wrap; gap:6px 12px; margin:0 0 12px; padding:10px 12px; border:1px solid var(--rule); border-left:4px solid var(--blue); background:#f8fbff; color:#526173; font-size:11px; line-height:1.55; }
+    .coverage-strip strong { color:#26374d; }
+    .coverage-strip .coverage-note { flex-basis:100%; color:#6f5520; }
     .panel { background:var(--surface); border:1px solid var(--rule); box-shadow:var(--shadow); }
     .overview-callout { padding:15px 18px; border-left:4px solid var(--danger); }
     .overview-callout strong { color:var(--danger); }
@@ -258,6 +262,7 @@
     <h2 class="section-title"><span class="section-index">01</span>报告概览</h2>
     <p class="section-desc">固定展示报告对象、当前交易快照、核心结论与风险，不额外拆分其他一级章节。</p>
     <div class="panel overview-callout" id="overview-core-conclusion"><strong>核心结论：</strong>由本次真实证据综合生成。</div>
+    <div class="coverage-strip" id="coverage-overview"></div>
     <div class="metrics" id="overview-metrics"></div>
     <div class="panel snapshot-table">
       <table>
@@ -282,30 +287,33 @@
       <div class="chart-foot"><span><strong>区间对比：</strong>拖动底部区间滑块或修改顶部日期，图内对比浮层实时更新。</span><span>未返回的数据保留断点，不补零、不推断价格</span></div>
       <div class="range-comparison" id="price-range-comparison" aria-live="polite"></div>
     </div>
+    <div class="coverage-strip" id="coverage-price"></div>
     <div class="panel analysis-panel" id="price-analysis"></div>
   </section>
 
-  <!-- 【固定结构 03】订单为供应商估算，不得改写为 Amazon 真实订单；正式数据必须是日级序列。 -->
+  <!-- 【固定结构 03】订单/销量仅能称供应商估算。日级优先但不是门槛；按 MCP 实际支持的最细合格粒度展示，禁止把月级或父体数据伪装为日级或子体。 -->
   <section class="section" id="orders">
     <h2 class="section-title"><span class="section-index">03</span>订单趋势图</h2>
     <div class="panel chart-panel">
-      <div class="chart-toolbar"><div class="chart-caption">订单量趋势<small>最近半年；按日展示供应商订单估算</small></div><div class="chart-actions"><span class="status status-partial">半年 · 日粒度</span></div></div>
+      <div class="chart-toolbar"><div class="chart-caption">销量/订单估算趋势<small>按 MCP 实际返回的最细合格粒度展示；不是 Amazon 第一方真实订单</small></div><div class="chart-actions"><span class="status status-partial">实际粒度由数据覆盖条说明</span></div></div>
       <div class="chart" id="orders-chart" role="img" aria-label="所选 ASIN 的订单趋势图"></div>
       <div class="chart-foot"><span><strong>区间对比：</strong>拖动底部区间滑块或修改顶部日期，图内对比浮层实时更新。</span><span>供应商估算，不表述为真实订单</span></div>
       <div class="range-comparison" id="orders-range-comparison" aria-live="polite"></div>
     </div>
+    <div class="coverage-strip" id="coverage-orders"></div>
     <div class="panel analysis-panel" id="orders-analysis"></div>
   </section>
 
-  <!-- 【固定结构 04】【可扩展】大类目与小类目名称、数量由 MCP 返回决定，不保留不存在的小类目占位线。 -->
+  <!-- 【固定结构 04】【可扩展】只有历史记录逐期返回明确类目/节点时才绘制分层 BSR；否则展示供应商返回的未标层级 BSR 数值轨迹，并将当前类目快照单独说明。 -->
   <section class="section" id="bsr">
     <h2 class="section-title"><span class="section-index">04</span>BSR 排名趋势图</h2>
     <div class="panel chart-panel">
-      <div class="chart-toolbar"><div class="chart-caption">BSR 排名<small>最近半年；大类目固定展示，小类目按 MCP 返回动态生成</small></div><div class="chart-actions"><span class="status status-ready">半年 · 日粒度</span></div></div>
+      <div class="chart-toolbar"><div class="chart-caption">BSR 排名<small>按实际返回的历史数值与可验证类目层级展示</small></div><div class="chart-actions"><span class="status status-partial">实际粒度由数据覆盖条说明</span></div></div>
       <div class="chart" id="bsr-chart" role="img" aria-label="所选 ASIN 的大类目与小类目 BSR 排名趋势图"></div>
       <div class="chart-foot"><span><strong>区间对比：</strong>拖动底部区间滑块或修改顶部日期；排名数值越小越好。</span><span>未返回的小类目不生成占位曲线</span></div>
       <div class="range-comparison" id="bsr-range-comparison" aria-live="polite"></div>
     </div>
+    <div class="coverage-strip" id="coverage-bsr"></div>
     <div class="panel analysis-panel" id="bsr-analysis"></div>
   </section>
 
@@ -318,13 +326,15 @@
       <div class="chart-foot"><span><strong>区间对比：</strong>拖动底部区间滑块或修改顶部日期；日增量由相邻日累计值差分。</span><span>负值保留为供应商数据修正</span></div>
       <div class="range-comparison" id="rating-range-comparison" aria-live="polite"></div>
     </div>
+    <div class="coverage-strip" id="coverage-rating"></div>
     <div class="panel analysis-panel" id="rating-analysis"></div>
   </section>
 
   <!-- 【固定结构 06】【分析派生】主题、情感、提及率、摘要和趋势均需基于本次原始评论重新分析。 -->
   <section class="section" id="reviews">
     <h2 class="section-title"><span class="section-index">06</span>评论分析</h2>
-    <p class="section-desc">固定由“评论主题明细表”和“评论主题及趋势图”两部分组成；原始评论来自 SellerSprite MCP，主题、情感、提及率、趋势和摘要均由报告侧分析派生。</p>
+    <p class="section-desc">固定由“评论主题明细表”和“评论主题及趋势图”两部分组成；原始评论来自 SellerSprite MCP，主题、情感、提及率、趋势和摘要均由可复算的本地筛选、去重与编码派生。</p>
+    <div class="coverage-strip" id="coverage-reviews"></div>
     <div class="review-grid">
       <div class="panel">
         <div class="review-controls"><div class="chart-caption">评论主题明细<small>MCP 原始评论 + 报告侧主题分析；所有百分比必须同时展示 n/N</small></div><div class="segmented" id="sentiment-toggle"><button class="active" data-sentiment="positive">正面主题</button><button data-sentiment="negative">负面主题</button></div></div>
@@ -353,7 +363,8 @@
   -->
   <section class="section" id="changes">
     <h2 class="section-title"><span class="section-index">07</span>变动监控</h2>
-    <p class="section-desc">固定包含深度诊断、交互式事件时间线、归因洞察、数据溯源与行动建议；观察事实与推断必须分层表达。</p>
+    <p class="section-desc">固定包含深度诊断、交互式事件时间线、归因洞察、数据溯源与行动建议；观察、可复算处理、直接因素、间接因素、替代解释与验证路径必须分层表达。</p>
+    <div class="coverage-strip" id="coverage-changes"></div>
     <div class="diagnostic-stack">
       <div>
         <h3 class="subsection-title">7.1 留评比例代理</h3>
@@ -446,11 +457,22 @@ function deriveDailyRatingIncrement(values){
 const REPORT_DATA={
   templateMode:true,
   report:{
+    /* 【能力与覆盖预检】sectionCoverage 以运行时 search → describe → call 和参数行为验证为准。 */
     title:'目标商品竞争研究报告（模板预览）',
     startDate:'2026-02-11',
     endDate:'2026-08-11',
     coreConclusion:'【分析派生占位】使用本次价格、订单估算、BSR、评分、评论和变动证据形成综合结论；不得复制模板演示判断，也不得由单一趋势直接推导因果。',
     negativeHighFrequencyTopicCount:3
+  },
+  /* 【正式报告必填】固定七部分的实际范围、最细合格粒度、来源和本地处理；不得用空字段提前结束关联证据与因素搜索。 */
+  sectionCoverage:{
+    overview:{status:'模板预览',scope:'目标及指定竞品',period:'2026-02-11 至 2026-08-11',grain:'当前快照 + 日级演示',sources:['SellerSprite MCP'],localProcessing:'无',note:'【替换：能力预检、参数行为和对象口径摘要】'},
+    price:{status:'模板预览',scope:'指定 ASIN',period:'最近半年',grain:'日级演示',sources:['keepa_info'],localProcessing:'仅展示实际返回价格口径',note:'不得补齐未返回的价格字段。'},
+    orders:{status:'模板预览',scope:'指定 ASIN',period:'最近半年',grain:'日级演示',sources:['asin_prediction'],localProcessing:'无',note:'日级优先；无日级时可展示最细可用周/月级估算或关联证据，不伪装为日订单。'},
+    bsr:{status:'模板预览',scope:'指定 ASIN',period:'最近半年',grain:'日级演示',sources:['keepa_info','asin_detail'],localProcessing:'历史轨迹与当前类目快照分开',note:'无逐期类目层级时，只称供应商返回 BSR 数值趋势。'},
+    rating:{status:'模板预览',scope:'指定 ASIN',period:'最近半年',grain:'日级演示',sources:['keepa_info'],localProcessing:'相邻观测差分',note:'保留断点和修订。'},
+    reviews:{status:'模板预览',scope:'明确 ASIN 或父体/变体评论池',period:'最近半年',grain:'逐条评论后按日/周聚合',sources:['review'],localProcessing:'全页采集、按已验证站点日期本地筛选、去重和主题编码',note:'参数必须实测；失效时使用本地 date 筛选。'},
+    changes:{status:'模板预览',scope:'全部对象',period:'本次实际覆盖',grain:'事件/快照区间',sources:['跨模块证据'],localProcessing:'时间对齐、快照比对与因素搜索',note:'区分直接因素、间接因素、替代解释和验证路径；不伪造权重。'}
   },
   /* 【分析派生】【可扩展】真实报告可有零到多条预警；每条至少绑定一个 evidenceRef。 */
   alerts:[
@@ -696,6 +718,12 @@ function bindRangeInteraction(id,definitions){
   renderRangeComparison(id,definitions);
 }
 
+/* 【覆盖合同渲染】固定七部分不变。每部分就近展示真实数据范围与本地处理；直接字段不足时须展示最邻近关联证据、因素搜索及验证路径。 */
+function coverageFor(k){return REPORT_DATA.sectionCoverage?.[k]||{status:'未说明',scope:'未说明',period:'未说明',grain:'未说明',sources:[],localProcessing:'未说明',note:''};}
+function renderSectionCoverage(){['overview','price','orders','bsr','rating','reviews','changes'].forEach(function(k){var e=document.getElementById('coverage-'+k);if(!e)return;var d=coverageFor(k),src=Array.isArray(d.sources)?d.sources.join('、'):d.sources;e.innerHTML='<span><strong>数据状态：</strong>'+escapeHtml(d.status)+'</span><span><strong>对象：</strong>'+escapeHtml(d.scope)+'</span><span><strong>期间：</strong>'+escapeHtml(d.period)+'</span><span><strong>粒度：</strong>'+escapeHtml(d.grain)+'</span><span><strong>来源：</strong>'+escapeHtml(src||'未说明')+'</span><span><strong>本地处理：</strong>'+escapeHtml(d.localProcessing||'无')+'</span><span class="coverage-note">'+escapeHtml(d.note||'')+'</span>';});}
+function actualPoints(raw,fallback){var p=Array.isArray(raw?.points)?raw.points:(raw?.values||fallback||[]).map(function(v,i){return {date:REPORT_DATA.halfYearDates?.[i]||String(i+1),value:v};});return p.filter(function(x){return x&&x.date!=null;});}
+function daily(k){return /日级/.test(coverageFor(k).grain||'');}
+
 /*
   【固定渲染】报告头部只读取 REPORT_DATA，不承载第二份业务事实。
   image.src 有值时显示真实图片；没有图片时显示语义状态，绝不伪造或继续展示模板图片。
@@ -725,6 +753,7 @@ function renderReportShell(){
   const selector=document.getElementById('asin-selector');
   selector.replaceChildren();
   Object.entries(REPORT_DATA.products).forEach(([key,product])=>selector.add(new Option(`${product.role} ${product.asin}`,key)));
+  renderSectionCoverage();
 }
 
 function renderOverview(){
@@ -794,8 +823,8 @@ function renderPrice(product){
 }
 
 /*
-  订单图与价格图共享连续半年自然日，但只消费自身的日订单估算序列。
-  渲染层不把月度总量摊分成日值；正式编排器必须直接填入 MCP 返回的日级估算，null 保持断线。
+  兼容旧模板预览的日级订单估算渲染。正式报告由后续动态粒度渲染器覆盖，
+  并保留 MCP 实际日、周、月或快照时间点；不得将月度总量摊分为日值。
 */
 function renderOrders(product){
   const values=toHalfYearDailySeries(product.orders);
@@ -875,6 +904,10 @@ function applyGlobalDateWindow(){
   const endPercent=max?endIndex/max*100:100;
   ['price-chart','orders-chart','bsr-chart','rating-chart'].forEach(id=>{chart(id).dispatchAction({type:'dataZoom',start:startPercent,end:endPercent});renderRangeComparison(id,rangeDefinitionsByChart[id]||[],startIndex,endIndex);});
 }
+
+/* 【动态粒度覆盖】日级是优先目标，不是阻塞门。salesSeries/bsr.series 可用 points 保留 MCP 实际日、周、月或快照时间点。 */
+function renderOrders(product){const raw=product.salesSeries||{name:'日订单估算',values:product.orders||[]};const pts=actualPoints(raw,product.orders),vals=pts.map(x=>x.value??null),isDaily=raw.grain==='日级'||(raw.grain==null&&daily('orders'));chart('orders-chart').setOption({...baseOption(),tooltip:{trigger:'axis',valueFormatter:v=>v==null?'未返回':Number(v).toLocaleString()},grid:{left:66,right:28,top:56,bottom:isDaily?72:38},xAxis:{type:'category',data:pts.map(x=>x.date),boundaryGap:false,...axisStyle},yAxis:{type:'value',min:0,...axisStyle},dataZoom:isDaily?dataZoom:[],series:[{name:raw.name||'供应商销量/订单估算',type:'line',data:vals,smooth:isDaily?.22:false,showSymbol:!isDaily,connectNulls:false,lineStyle:{width:2.2,color:'#2f8cff'},itemStyle:{color:'#2f8cff'}}]},true);if(isDaily)bindRangeInteraction('orders-chart',[{name:raw.name||'供应商估算',values:vals,format:v=>Number(v).toLocaleString(),formatDelta:v=>Math.abs(Number(v)).toLocaleString(),inverse:false}]);else{rangeDefinitionsByChart['orders-chart']=[];document.getElementById('orders-range-comparison').innerHTML='';}}
+function renderBsr(product){const raw=product.bsr||{},seriesRaw=Array.isArray(raw.series)?raw.series:[raw.category,...(raw.subcategories||[])].filter(Boolean),sets=seriesRaw.map((x,i)=>({name:x.name||('BSR '+(i+1)),points:actualPoints(x,x.values)})).filter(x=>x.points.length),labels=[...new Set(sets.flatMap(x=>x.points.map(p=>p.date)))].sort(),isDaily=daily('bsr'),colors=['#2f9fff','#55d8aa','#73839f','#f59e0b'];chart('bsr-chart').setOption({...baseOption(),tooltip:{trigger:'axis',valueFormatter:v=>v==null?'未返回':'# '+Number(v).toLocaleString()},legend:{top:14,data:sets.map(x=>x.name)},grid:{left:66,right:28,top:76,bottom:isDaily?72:38},xAxis:{type:'category',data:labels,boundaryGap:false,...axisStyle},yAxis:{type:'value',inverse:true,min:0,name:'供应商返回 BSR 数值',...axisStyle},dataZoom:isDaily?dataZoom:[],series:sets.map((x,i)=>({name:x.name,type:'line',data:labels.map(d=>x.points.find(p=>p.date===d)?.value??null),smooth:isDaily?.2:false,showSymbol:!isDaily,connectNulls:false,lineStyle:{width:i?1.7:2.2,color:colors[i%colors.length]},itemStyle:{color:colors[i%colors.length]}}))},true);if(!isDaily){rangeDefinitionsByChart['bsr-chart']=[];document.getElementById('bsr-range-comparison').innerHTML='';}}
 
 document.getElementById('asin-selector').addEventListener('change',event=>renderSelectedProduct(event.target.value));
 document.getElementById('start-date').addEventListener('change',applyGlobalDateWindow);

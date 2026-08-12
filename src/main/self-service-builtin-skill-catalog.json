@@ -2,37 +2,37 @@
   {
     "id": "amazon-sellersprite-ad-visibility-gap-analysis",
     "name": "amazon-sellersprite-ad-visibility-gap-analysis",
-    "version": "0.8.8",
+    "version": "0.8.9",
     "description": "使用 SellerSprite MCP 研究指定 Amazon ASIN 在自然搜索、供应商标记 Ads/PPC 和推荐/关联来源中的外部可见记录、关键词覆盖、差异与时间变化，并向总控返回可作为报告概览证据或既有趋势事件标记的条件性结果。适用于外部可见性、词簇覆盖和待验证缺口；不适用于独立报告章节、真实 Campaign/Ad Group 还原、广告位、曝光、点击、花费、订单、转化、归因、预算竞价动作或最终用户报告生成与编辑。"
   },
   {
     "id": "amazon-sellersprite-asin-research-orchestrator",
     "name": "amazon-sellersprite-asin-research-orchestrator",
-    "version": "0.8.8",
-    "description": "统筹基于 SellerSprite MCP 的 Amazon 目标 ASIN 与用户指定竞品研究。用于当前经营快照、半年日粒度价格/订单估算/BSR/评分趋势、评论分析和 Listing/图片/价格变动监控；负责调度五个专家、审查证据，并复制内置模板生成固定七部分、图表优先的单文件 HTML 报告。不适用于常驻监控产品、平台执行、真实订单或广告账户还原、竞品私有后台推断及 SellerSprite-only 因果认定。"
+    "version": "0.8.9",
+    "description": "统筹基于 SellerSprite MCP 的 Amazon 目标 ASIN 与用户指定竞品研究。以运行时实际能力探测为起点，在固定七部分报告中组织当前快照、趋势、评论、Listing、可见性与事件归因；优先追求最细可审计粒度，并以 MCP 实际支持的最小合格粒度展示和分析。负责调度五个专家、审查证据，并复制内置模板生成固定七部分、图表优先的单文件 HTML 报告。不适用于常驻监控产品、平台执行、真实订单或广告账户还原、竞品私有后台推断及 SellerSprite-only 因果认定。"
   },
   {
     "id": "amazon-sellersprite-competitive-landscape",
     "name": "amazon-sellersprite-competitive-landscape",
-    "version": "0.8.8",
+    "version": "0.8.9",
     "description": "使用 SellerSprite MCP 为指定 Amazon 目标 ASIN 与用户指定竞品建立可比对象集合和当前经营快照，并在工具实际支持时研究店铺或卖家新品。用于向总控返回可直接映射到七部分模板 `REPORT_DATA.products` 的概览字段和可选新品证据；不适用于历史事件归因、完整市场份额、真实销量利润库存、广告账户、竞品内部策略或最终用户报告生成与编辑。"
   },
   {
     "id": "amazon-sellersprite-event-anomaly-analysis",
     "name": "amazon-sellersprite-event-anomaly-analysis",
-    "version": "0.8.8",
-    "description": "使用 SellerSprite MCP 对指定 Amazon ASIN、父子体或变体查询最近半年日粒度的价格与促销、订单/销量估算、BSR、星级和累计评分数，形成可复核的趋势、价格变动、事件标记和候选机制，并向总控返回第 2–5、7 部分所需的图表就绪数据。适用于当前与历史数值变化和跨指标时序对齐；不适用于真实订单、库存、广告归因、竞品内部操作、评论操纵或因果确认，也不生成或编辑最终用户报告。"
+    "version": "0.8.9",
+    "description": "使用 SellerSprite MCP 对指定 Amazon ASIN、父子体或变体广泛探查价格与促销、销量/销售额估算、BSR、星级和累计评分数，优先取得最细且可验证的实际粒度，形成可复核的趋势、变化事实、事件标记、关联因素搜索和可证伪解释，并向总控返回第 2–5、7 部分所需的图表就绪数据。适用于当前与历史数值变化和跨指标时序对齐；不适用于真实订单、库存、广告归因、竞品内部操作、评论操纵或因果确认，也不生成或编辑最终用户报告。"
   },
   {
     "id": "amazon-sellersprite-listing-competitor-audit",
     "name": "amazon-sellersprite-listing-competitor-audit",
-    "version": "0.8.8",
+    "version": "0.8.9",
     "description": "使用 SellerSprite MCP 审计指定 Amazon ASIN 的当前标题、Bullet Points、父子体/变体和媒体字段，并通过供应商历史或本地重复快照生成可追溯的文本、图片与变体差异数据。用于向总控提供报告概览的当前 Listing 字段和第 7 部分变动监控数据；不适用于网页抓取、无数据的历史重建、图片视觉质量或合规判断、广告/转化归因、无事实文案及最终用户报告生成或编辑。"
   },
   {
     "id": "amazon-sellersprite-review-voc-anomaly-screening",
     "name": "amazon-sellersprite-review-voc-anomaly-screening",
-    "version": "0.8.8",
+    "version": "0.8.9",
     "description": "使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语料，派生可审计的正负面 VOC 主题、命中数/合格分母、提及率、摘要、可比较趋势、匿名评论证据、留评比例代理和异常筛查，并向总控返回第 6 与第 7 部分所需数据。适用于明确站点、ASIN/变体、时间、分页和语料分母的评论研究；不适用于全量消费者外推、真实订单留评率、评论真实性、刷评操纵、买家身份、平台违规或因果判定，也不生成或编辑最终用户报告。"
   }
 ]
