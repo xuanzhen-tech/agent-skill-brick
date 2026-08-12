@@ -14,7 +14,7 @@
 
 ## 可比性门
 
-只有站点、ASIN/变体、语言、字段定义、完整度、工具语义、采集范围和版本可比较时为 `fully_comparable`。否则并列展示或返回 `not_comparable`，不写新增、删除、优化或换图。
+只有站点、ASIN/变体、语言、字段定义、完整度、工具语义、采集范围和版本可比较时为 `fully_comparable`。否则仍可保留当前快照或来源差异作为材料，但必须标注 `source_field_difference`、`metadata_only` 或 `not_comparable`，不得写新增、删除、优化或换图。跨端点的标题截断、品牌前缀、URL 参数或缓存差异，默认不是 Listing 变更。
 
 ## 文本 diff
 
@@ -22,7 +22,7 @@
 2. 先按标题/Bullet 项，再按句、token 或 span 比较；
 3. 分类 `added | removed | replaced | reordered | format_only`；
 4. 每条 diff 链接两侧 evidence；
-5. 两时点只称相对基线差异，不确定真实修改日、次数和中间版本。
+5. 两时点只称相对基线差异，报告“变更发生在两次观测之间”；不确定真实修改日、次数和中间版本。只有供应商明确提供变更时间语义时，才使用该时间。
 
 最小事件数据：`field, before, after, diff_type, before_captured_at, after_captured_at, change_detected_at, before_evidence, after_evidence, limitations`。总控将其规范化为 `REPORT_DATA.events`，前后内容仅在图中事件 Tooltip 显示，不再独立输出前后对比表。
 
@@ -37,7 +37,7 @@
 - `replaced`：同一位置的稳定资产不同；
 - `moved`：同一稳定资产位置改变。
 
-无法取得稳定资产或完整列表时降级为元数据事件，不能生成确定性换图结论。没有可比旧快照时返回 `baseline_only`，第 7 部分显示“已建立基线”，不填模板演示前后值。
+无法取得稳定资产或完整列表时降级为元数据事件，不能生成确定性换图结论；但当前快照中的媒体访问状态、数量、顺序和远程引用仍可作为可观察事实或后续因素搜索输入。没有可比旧快照时返回 `baseline_only`，第 7 部分显示“已建立基线”，不填模板演示前后值。
 
 ## VOC 对齐
 

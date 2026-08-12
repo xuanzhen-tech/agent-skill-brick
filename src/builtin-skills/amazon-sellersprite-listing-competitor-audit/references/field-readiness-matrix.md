@@ -26,3 +26,10 @@
 `media_access = embedded | remote_reference | metadata_only | unavailable`
 
 以及 `semantic_slot, url_or_asset_id_present, stable_hash_possible, order_present, historical_source`。`semantic_slot` 使用 `main_image | dimension_image | feature_image | usage_scene | comparison_image | package_contents | other_<position>` 等有业务语义名称，不使用 `asset1/asset2`。仅有 URL/数量/顺序时不能做图像语义、质量、合规或转化判断。
+
+
+## 粒度与来源行为
+
+Listing 历史研究优先使用实际支持的最小合格粒度：供应商版本记录、带时间语义的历史字段、同口径本地重复快照，或两次观测之间的区间。日级不是硬性门槛。对 `startTimestamp/endTimestamp`、分页、排序、字段投影和变体选择先做行为验证；Schema 接受参数不等于服务端执行。服务端过滤失效时，可将完整返回原料保存后按已确认的时间字段本地筛选、规范化和差异比较。
+
+当前快照、历史快照、来源字段差异和变更事件必须分别记录；不得从当前值补齐历史，也不得将 `captured_at` 或本地首次发现时间写成平台真实修改时间。

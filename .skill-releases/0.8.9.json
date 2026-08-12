@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "agent-skill.self-service-release.v1",
+  "version": "0.8.9",
+  "skills": [
+    {
+      "name": "amazon-sellersprite-ad-visibility-gap-analysis",
+      "contentHash": "ed2ff324877c526fc9afb6476d90e98e3b5422f890b9e58454c731406f95ef98",
+      "fileCount": 4
+    },
+    {
+      "name": "amazon-sellersprite-asin-research-orchestrator",
+      "contentHash": "560c276d6ef427b1cd45d12a8152afbaa640efc38c8272746a8c6c2a77d25858",
+      "fileCount": 8
+    },
+    {
+      "name": "amazon-sellersprite-competitive-landscape",
+      "contentHash": "3fd246dfd2ed14acd28dd739a64cf63b4d25146c4111fd4cd6c28e591b8694bf",
+      "fileCount": 2
+    },
+    {
+      "name": "amazon-sellersprite-event-anomaly-analysis",
+      "contentHash": "cdefe2f6a906d13735aa894bc8bb8eff8ee1d88fa9c8291043197531190ef702",
+      "fileCount": 2
+    },
+    {
+      "name": "amazon-sellersprite-listing-competitor-audit",
+      "contentHash": "9073c36119aaa0b668bb92d8958c9b2980453f2dd3e012905a759ed85b7945fd",
+      "fileCount": 4
+    },
+    {
+      "name": "amazon-sellersprite-review-voc-anomaly-screening",
+      "contentHash": "3cf2f34316b2e682bac18169577c265bd648ff8780246e0dbde2f38ab3bc19e1",
+      "fileCount": 4
+    }
+  ]
+}
