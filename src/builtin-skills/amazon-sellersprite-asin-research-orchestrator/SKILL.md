@@ -19,7 +19,7 @@ description: 统筹基于 SellerSprite MCP 的 Amazon 目标 ASIN 与用户指�
 
 HTML 是最终报告载体，不是独立监控产品或前端应用。除这份报告外，不在 `outputs/` 生成 Markdown、CSV、YAML、图片包、证据台账或草稿。用户无需打开任何内部文件即可理解范围、数据、图表、结论、限制和下一步。
 
-本 Skill 可独立注册和执行。只读取本文件直接列出的内部 reference 和 asset；不得依赖 `_shared`、`reviews/`、同级 Skill 目录或集群外合同。
+本 Skill 可独立注册和执行。只读取本文件直接列出的内部 reference 和 asset；不得依赖同级 Skill 目录或集群外合同。
 
 ## 不可退让的研究原则
 
@@ -28,6 +28,11 @@ HTML 是最终报告载体，不是独立监控产品或前端应用。除这份
 - 专家首次回传不是最终答案。任何材料性结论必须经过苏格拉底式审查；证据不足时补证、重算、改写、降级、记录未知或停止相应分支。
 - 所有外部业务数据仅通过运行时注入的只读 `sellersprite_mcp` 获取。允许多次调用，但首次使用任何能力前必须按运行时执行 `search → describe → call`，以实际 schema 和返回为准，不写死记忆中的工具名、参数或字段。
 - SellerSprite 返回属于供应商观察、估算、预测或外部可见信号，不是 Amazon 第一方订单、送达、库存、转化、广告账户、内部策略或因果事实。
+- 调用时`sellersprite_mcp`，若无明确的说明时间跨度，默认为180天，若用户或者调度Agent说明了时间跨度，以说明时间为准。
+- 用户若未明确说明时间跨度，应该在调度Agent专家之前，首先向用户确认范围，提供选项，14天，30天，60天，90天，180天，全部，默认180天，最小粒度为1天。
+- 通过Tool调用`sellersprite_mcp`时，Tool Result会有长度截断，响应内容超过32000字符会被丢弃，因此调用`sellersprite_mcp`时需要注意时间跨度，单次调用时间跨度建议10天，18次调用获取累计180天的数据，若因为不合理的时间跨度请求或者不合理的`sellersprite_mcp`调用方式导致没有获取到任何数据，应当及时调整调用和请求的策略，不得假设MCP不可用或者无数据可获取，应当充分研究发挥`sellersprite_mcp`的能力。
+- 若遇到`sellersprite_mcp`的并发调用次数限制，使用run_shell等待一分钟再继续调用。不得因为并发限制就终止数据获取或者谎称数据充足。
+- 调度其他Agent专家协同时应当充分传递其需要的信息和大家共享的上下文，比如时间跨度，ASIN，markerplace……
 - `not_returned`、`not_queried`、`empty_result`、`failed`、`truncated`、`invalid_data`、`not_comparable` 和来源明确的真实零值必须分开；不得补零、猜测或用其他字段替代。
 
 ## 启动与研究合同

@@ -17,7 +17,7 @@ description: 使用 SellerSprite MCP 为指定 Amazon 目标 ASIN 与用户指�
 
 你不创建或编辑最终用户 Report、CSV、YAML、台账或草稿，也不把本模块结果包装成跨模块结论。只向调用方返回一个简洁、可审查的 Module Result；原始响应、计算、快照和图表数据只写入 `temp/amazon-asin-research/<case_id>/`。最终 `report.html` 仅由总控生成。
 
-本 Skill 可独立注册。按需读取 `references/current-snapshot-and-store-monitoring.md`；不得读取 `_shared`、`reviews/`、同级 Skill 或集群外合同。
+本 Skill 可独立注册。按需读取 `references/current-snapshot-and-store-monitoring.md`；不得读取同级 Skill 或集群外合同。
 
 ## 研究质量与协作
 
@@ -30,6 +30,12 @@ description: 使用 SellerSprite MCP 为指定 Amazon 目标 ASIN 与用户指�
 唯一外部业务源为运行时注入的只读 `sellersprite_mcp`。首次使用能力前执行 `search → describe → call`，以实际 schema 为准；记录工具、参数摘要、调用时间、站点、对象层级、期间、分页、字段性质、原始定位和截断。
 
 用户指定竞品不可静默替换；新发现 ASIN 只作为候选，未经确认不进入正式集合。SellerSprite 观察、估算或预测不是 Amazon 全市场、真实订单、利润、库存、转化、广告表现或竞品内部策略。缺失、空结果、未查询、失败、截断、不可验证、不可比和真实零值分别记录。
+
+调用时`sellersprite_mcp`，若无明确的说明时间跨度，默认为180天，若用户或者调度Agent说明了时间跨度，以说明时间为准。最小粒度为一天。
+
+通过Tool调用`sellersprite_mcp`时，Tool Result会有长度截断，响应内容超过32000字符会被丢弃，因此调用`sellersprite_mcp`时需要注意时间跨度，单次调用时间跨度建议10天，18次调用获取累计180天的数据，若因为不合理的时间跨度请求或者不合理的`sellersprite_mcp`调用方式导致没有获取到任何数据，应当及时调整调用和请求的策略，不得假设MCP不可用或者无数据可获取，应当充分研究发挥`sellersprite_mcp`的能力。
+
+若遇到`sellersprite_mcp`的并发调用次数限制，使用run_shell等待一分钟再继续调用。不得因为并发限制就终止数据获取或者谎称数据充足。
 
 ## 对象与可比性
 

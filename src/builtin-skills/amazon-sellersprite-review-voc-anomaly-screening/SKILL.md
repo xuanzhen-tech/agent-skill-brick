@@ -32,6 +32,12 @@ description: 使用 SellerSprite MCP 返回的可定位逐条 Amazon 评论语�
 
 唯一外部业务源为运行时注入的只读 `sellersprite_mcp`，以及调用方提供且保留来源和日期的可信材料。首次使用能力前执行 `search → describe → call`，不猜测参数、页码、字段、默认站点或覆盖。
 
+调用时`sellersprite_mcp`，若无明确的说明时间跨度，默认为180天，若用户或者调度Agent说明了时间跨度，以说明时间为准。最小粒度为一天。
+
+通过Tool调用`sellersprite_mcp`时，Tool Result会有长度截断，响应内容超过32000字符会被丢弃，因此调用`sellersprite_mcp`时需要注意时间跨度，单次调用时间跨度建议10天，18次调用获取累计180天的数据，若因为不合理的时间跨度请求或者不合理的`sellersprite_mcp`调用方式导致没有获取到任何数据，应当及时调整调用和请求的策略，不得假设MCP不可用或者无数据可获取，应当充分研究发挥`sellersprite_mcp`的能力。
+
+若遇到`sellersprite_mcp`的并发调用次数限制，使用run_shell等待一分钟再继续调用。不得因为并发限制就终止数据获取或者谎称数据充足。
+
 冻结 marketplace、ASIN/父子体/变体、目标期、语言、筛选、排序、分页计划、时间分桶、分层和 codebook 规则。父体、子体或指定变体集合不可混作同一语料；范围、字段、排序、分页、去重或 codebook 改变时分段，不把断点解释为评论变化。
 
 按 `references/corpus-acceptance-and-pagination.md` 验收语料。MCP 直接证据是逐条评论及其实际返回字段；主题、方向、命中数、分母、提及率、摘要和趋势均是本专家基于合格语料的分析派生，不能标记为 SellerSprite 直接返回字段。没有可定位正文、ASIN 映射、评论日期和可审计分页时，不能计算主题提及率或趋势；供应商摘要和高频词只能形成候选词表，不能替代逐条编码。

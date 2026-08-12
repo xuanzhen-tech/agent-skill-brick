@@ -36,6 +36,12 @@ description: 使用 SellerSprite MCP 对指定 Amazon ASIN、父子体或变体�
 
 唯一外部业务源为运行时注入的只读 `sellersprite_mcp`。首次使用能力前执行 `search → describe → call`，只按实际 schema 请求；记录工具、参数、调用时间、站点、ASIN/变体、日期覆盖、粒度、单位、字段性质、分页/截断和原始定位。
 
+调用时`sellersprite_mcp`，若无明确的说明时间跨度，默认为180天，若用户或者调度Agent说明了时间跨度，以说明时间为准。
+
+通过Tool调用`sellersprite_mcp`时，Tool Result会有长度截断，响应内容超过32000字符会被丢弃，因此调用`sellersprite_mcp`时需要注意时间跨度，单次调用时间跨度建议10天，18次调用获取累计180天的数据，若因为不合理的时间跨度请求或者不合理的`sellersprite_mcp`调用方式导致没有获取到任何数据，应当及时调整调用和请求的策略，不得假设MCP不可用或者无数据可获取，应当充分研究发挥`sellersprite_mcp`的能力。
+
+若遇到`sellersprite_mcp`的并发调用次数限制，使用run_shell等待一分钟再继续调用。不得因为并发限制就终止数据获取或者谎称数据充足。
+
 开始时冻结，并默认请求截至采集日最近半年、最小粒度 1 天的实际历史覆盖：
 
 `marketplace × object_id × object_level × metric × grain × date_or_period × scope`
