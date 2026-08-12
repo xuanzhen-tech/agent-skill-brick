@@ -119,3 +119,38 @@ description: 使用 SellerSprite MCP 为指定 Amazon 目标 ASIN 与用户指�
 - 估算、预测、缺失、不可比和真实零值未混淆。
 - 未声称全市场、真实销量利润库存、广告表现、内部策略或因果。
 - `current_snapshot` 有真实结果或明确状态；可选新品结果不会制造第八部分。
+
+## 固化模板同步：多 ASIN、静态期间与拐点输入
+
+本 Skill 的输出服务于已经固化的单文件报告模板。报告头部 `report.startDate/endDate` 是**静态研究期间说明**，代表本次已验证数据覆盖；它不是日期输入、报告级筛选器或重算入口。专家不得把图表局部缩放、任意观察窗或用户读图区间写成报告范围变化。
+
+若模块返回价格、销量/订单估算、BSR、评分、评论或其他可时间对齐的对象序列，必须按**每个实际对象/ASIN独立序列**返回：对象键、ASIN、父子体/变体口径、期间、真实粒度、单位/字段语义、数据性质、缺口和证据引用均不可省略。总控会在同一图中并列所有合格 ASIN；不同对象缺数据时保持该对象缺失，不补零、不用另一对象替代、不伪造连续性。专家不选择图例，但必须确保每一条可比较曲线有稳定对象身份，供模板跨图一致着色、单项隐藏/恢复、显示全部和反选。
+
+对任何材料性变化、断点、方向反转、显著阶跃、稳定段起止或可观察事件，应尽可能返回 `event_factor_inputs`。已审查事件优先；曲线自动候选只作为高覆盖分析入口，不能被写成因果或独立证据。最小结构为：
+
+```yaml
+event_factor_inputs:
+  - objectKey: required
+    asin: required
+    chart: price | orders | bsr | rating | reviews | listing | visibility | other
+    date_or_interval: required
+    observation: required
+    before_after_or_change: required_when_available
+    actual_granularity: required
+    data_nature: observed | estimated | derived | local_snapshot_diff | evidence_signal
+    evidence_refs: required
+    direct_factors: required  # 可观察、同对象且可时间对齐的事实；无则明确尚未形成
+    indirect_factors: required  # 候选机制，须标待验证
+    seller_implications: required  # 对目标/竞品或卖家可能利弊，不保证结果
+    recommendations: required  # 验证指标、观察窗、停止/回滚条件；无则说明原因
+    alternative_explanations: required
+    confidence: required
+```
+
+不得将广告可见标签写成真实广告账户绩效；不得将 BSR 写成真实订单/销量；不得将评论发布日写成购买日；不得把供应商观察、估算或本地派生混同为 Amazon 第一方事实。所有候选因素都必须保留可推翻路径。
+
+## 固化模板模块补充：同图对象比较与竞争解释
+
+为每个纳入同图比较的 ASIN 返回稳定对象键、ASIN、父子体/变体、规格/购买任务、类目、当前快照和可比性结论。规格、容量、形态、父体聚合不同的对象可作为相邻竞争层，但必须限制为方向性比较，不能让同图曲线暗示完全可比。
+
+主动为当前价差、BSR差距、评分体量、变体结构和竞争层级提供可挂载 `event_factor_inputs` 的比较事实、卖家意义、替代解释与验证路径；不得用快照 BSR 推断市场份额、真实销量、利润或因果。
