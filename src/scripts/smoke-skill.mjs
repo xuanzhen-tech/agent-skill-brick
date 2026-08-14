@@ -472,17 +472,9 @@ try {
     const activated = await selectedAsinResearchSkills.activate(skillName);
     assert.equal(activated.loadedSkill.name, skillName);
     assert.doesNotMatch(activated.loadedSkill.content, /\.\.\/_shared\//);
-    assert.equal(
-      activated.loadedSkill.resources.some(
-        (resource) => resource.path === "references/shared/sellersprite-mcp-contract.md"
-      ),
-      true
-    );
-    const sharedContract = await selectedAsinResearchSkills.readReference(
-      skillName,
-      "references/shared/sellersprite-mcp-contract.md"
-    );
-    assert.match(sharedContract.loadedSkillReference.content, /search.*describe.*call/s);
+    // 新版研究包允许把 MCP 渐进调用合同直接写入正文，不再强制依赖一个
+    // 固定名称的共享 reference；实际声明的每个资源仍在下方逐项验真。
+    assert.match(activated.loadedSkill.content, /search.*describe.*call/s);
     const referencedResources = [...activated.loadedSkill.content.matchAll(
       /`((?:references|assets)\/[^`]+)`/g
     )].map((match) => match[1]);
@@ -550,7 +542,7 @@ try {
     assert.equal(activated.loadedSkill.content.length > 0, true);
   }
 
-  // 通用创建指南也必须作为真实预制包完成安装、激活和 reference 读取，不能
+  // 通用 Skill 管理指南也必须作为真实预制包完成安装、激活和 reference 读取，不能
   // 只在 catalog 中登记一条不可用元数据。
   const managementRoot = path.join(tempRoot, "skill-management-managed");
   const managementRuntime = new AgentSkill({
