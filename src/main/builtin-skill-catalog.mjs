@@ -49,6 +49,12 @@ const BASE_BUILTIN_SKILLS = [
     version: "0.4.1",
     description: "用于 Amazon 商品白底主图、卖点图、场景图生成和版本化迭代。"
   }),
+  Object.freeze({
+    id: "skill-management",
+    name: "skill-management",
+    version: "0.1.0",
+    description: "指导 Agent 查找、安装、激活、使用、创建、更新和验证 Skill，并理解摘要、完整正文、references、assets 与受管路径的加载机制。适用于用户要求寻找能力、安装 Skill、使用 Skill 资源、沉淀新能力或排查 Skill 可见性时。"
+  }),
   ...ASIN_RESEARCH_BUILTIN_SKILLS,
   ...EXPERT_BUILTIN_SKILLS
 ];
