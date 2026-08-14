@@ -52,8 +52,8 @@ const BASE_BUILTIN_SKILLS = [
   Object.freeze({
     id: "skill-management",
     name: "skill-management",
-    version: "0.1.0",
-    description: "指导 Agent 查找、安装、激活、使用、创建、更新和验证 Skill，并理解摘要、完整正文、references、assets 与受管路径的加载机制。适用于用户要求寻找能力、安装 Skill、使用 Skill 资源、沉淀新能力或排查 Skill 可见性时。"
+    version: "0.2.0",
+    description: "指导 Agent 查找、安装、激活、使用、创建、更新、删除和验证 Skill，并理解摘要、完整正文、references、assets 与受管路径的加载机制。适用于用户要求寻找能力、安装或移除 Skill、使用 Skill 资源、沉淀新能力或排查 Skill 可见性时。"
   }),
   ...ASIN_RESEARCH_BUILTIN_SKILLS,
   ...EXPERT_BUILTIN_SKILLS

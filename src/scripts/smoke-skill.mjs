@@ -556,6 +556,7 @@ try {
   assert.match(activatedManagement.loadedSkill.content, /skill_activate/);
   assert.match(activatedManagement.loadedSkill.content, /skill_resource/);
   assert.match(activatedManagement.loadedSkill.content, /skill_create/);
+  assert.match(activatedManagement.loadedSkill.content, /skill_remove/);
   const managementLifecycle = await managementRuntime.readReference(
     "skill-management",
     "references/installation-lifecycle.md"
