@@ -506,7 +506,9 @@ try {
     "amazon-sku-profit-summary",
     "amazon-inventory-ledger-summary",
     "amazon-operating-analysis",
-    "amazon-product-image-generation"
+    "amazon-product-image-generation",
+    // skill-management 是通用元 Skill，不属于十四位业务专家的 64 项能力。
+    "skill-management"
   ]);
   const expertBuiltinCatalog = listBuiltinSkills()
     .filter((skill) => !legacyBuiltinNames.has(skill.name))
@@ -547,6 +549,31 @@ try {
     assert.equal(activated.loadedSkill.name, skillName);
     assert.equal(activated.loadedSkill.content.length > 0, true);
   }
+
+  // 通用创建指南也必须作为真实预制包完成安装、激活和 reference 读取，不能
+  // 只在 catalog 中登记一条不可用元数据。
+  const managementRoot = path.join(tempRoot, "skill-management-managed");
+  const managementRuntime = new AgentSkill({
+    skillsPath: managementRoot,
+    skills: ["skill-management"]
+  });
+  const managementIndex = await managementRuntime.refresh();
+  assert.deepEqual(managementIndex.skills.map((skill) => skill.name), ["skill-management"]);
+  const activatedManagement = await managementRuntime.activate("skill-management");
+  assert.match(activatedManagement.loadedSkill.content, /skill_find/);
+  assert.match(activatedManagement.loadedSkill.content, /skill_activate/);
+  assert.match(activatedManagement.loadedSkill.content, /skill_resource/);
+  assert.match(activatedManagement.loadedSkill.content, /skill_create/);
+  const managementLifecycle = await managementRuntime.readReference(
+    "skill-management",
+    "references/installation-lifecycle.md"
+  );
+  assert.match(managementLifecycle.loadedSkillReference.content, /AgentSkill\.install/);
+  const managementUsage = await managementRuntime.readReference(
+    "skill-management",
+    "references/skill-usage-flow.md"
+  );
+  assert.match(managementUsage.loadedSkillReference.content, /search.*describe|skill_find/s);
 
   const opportunityReference = await selectedExpertSkills.readReference(
     "amazon-opportunity-discovery",
