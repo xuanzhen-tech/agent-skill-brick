@@ -74,3 +74,16 @@ skill_create
 ```
 
 `skill_create` 不直接接收“包含多个 Skill 的 ZIP”。产品批量导入 ZIP 时，应由产品导入服务拆分并逐包调用 AgentSkill 安装合同。
+
+## 删除 Skill
+
+删除使用单独的 `skill_remove`，不复用 `skill_find` 的安装动作，也不通过 shell 操作目录：
+
+```text
+skill_find 确认精确名称
+→ 用户明确要求删除
+→ skill_remove({ skill, confirm: true })
+→ skill_find 验证当前索引已移除
+```
+
+`skill_remove` 只改变当前 AgentSkill 受管目录、安装登记和当前实例选择。产品白名单仍是产品配置；如果产品继续选中同名预制 Skill，后续启动可能再次安装。

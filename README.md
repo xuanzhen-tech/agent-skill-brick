@@ -117,9 +117,9 @@ SIF、SellerSprite 和 Sorftime MCP，但不保存连接配置或密钥。专家
 开放 skill，不在 SDK 内部创建专家角色或固定工作流。
 
 `skill-management` 说明 Skill 的发现、远端安装、激活、资源读取、创建、更新、
-冲突、可见性和受管路径机制。`skill_find`、`skill_activate`、`skill_resource` 与
-`skill_create` 各自承担一个清晰阶段；其中创建能力仍要求产品显式选择
-AgentTool 的 `skill_create`。该 Skill 不会教模型通过 shell 猜测或直接写
+删除、冲突、可见性和受管路径机制。`skill_find`、`skill_activate`、`skill_resource`、
+`skill_create` 与 `skill_remove` 各自承担一个清晰阶段；其中创建和删除能力仍要求产品显式选择
+AgentTool 的对应工具。该 Skill 不会教模型通过 shell 猜测或直接写
 `skillsPath`。
 
 ### 自助上传与发版

@@ -4,7 +4,7 @@
 
 AgentSkill 默认使用 `~/.agent-cli/skills`。产品可以注入自己的 `skillsPath`，但该路径仍应位于产品管理的 `.agent-cli/skills` 范围。运行时注入值优先于通用默认值。
 
-Agent 不应直接写该目录。远端安装由 `skill_find` 委托 AgentSkill，创建由 `skill_create` 先在系统临时目录组包再调用 `AgentSkill.install()`。最终路径、包校验、事务替换、安装登记和索引刷新都由 AgentSkill 决定。
+Agent 不应直接写该目录。远端安装由 `skill_find` 委托 AgentSkill，创建由 `skill_create` 先在系统临时目录组包再调用 `AgentSkill.install()`，删除由 `skill_remove` 委托 `AgentSkill.remove()`。最终路径、包校验、事务替换、安装登记和索引刷新都由 AgentSkill 决定。
 
 ## 安装链路
 
@@ -32,6 +32,8 @@ Agent 不应直接写该目录。远端安装由 `skill_find` 委托 AgentSkill�
 
 ## 删除与更新
 
-删除只能通过 AgentSkill 的公开删除合同，并受产品默认 Skill 保护规则约束。更新默认先检查冲突；未知来源或用户手工修改的同名 Skill 不应被自动覆盖。
+删除只能通过 `skill_remove` 进入 AgentSkill 的公开删除合同，并要求用户明确确认。工具只接收当前索引中的 Skill id/name，不接收路径；更新默认先检查冲突，未知来源或用户手工修改的同名 Skill 不应被自动覆盖。
+
+删除会更新当前 AgentSkill 实例的选择状态，但不会修改产品仓库持久化的 Skill 白名单。若产品下次仍显式选择同名预制 Skill，运行时会按产品配置重新准备它。
 
 安装、替换或删除失败时，旧 Skill 应继续可用，不留下半安装目录或错误登记。

@@ -1,16 +1,16 @@
 ---
 name: skill-management
 displayChineseName: Skill 使用与管理
-version: 0.1.0
-description: 指导 Agent 查找、安装、激活、使用、创建、更新和验证 Skill，并理解摘要、完整正文、references、assets 与受管路径的加载机制。适用于用户要求寻找能力、安装 Skill、使用 Skill 资源、沉淀新能力或排查 Skill 可见性时。
+version: 0.2.0
+description: 指导 Agent 查找、安装、激活、使用、创建、更新、删除和验证 Skill，并理解摘要、完整正文、references、assets 与受管路径的加载机制。适用于用户要求寻找能力、安装或移除 Skill、使用 Skill 资源、沉淀新能力或排查 Skill 可见性时。
 requiredTools: [skill_find, skill_activate]
-optionalTools: [skill_resource, skill_create]
+optionalTools: [skill_resource, skill_create, skill_remove]
 ---
 
 <!--
-文件功能：定义 Agent 使用和管理 Skill 的完整生命周期，统一发现、安装、激活、资源访问、创建、更新与验证方式。
+文件功能：定义 Agent 使用和管理 Skill 的完整生命周期，统一发现、安装、激活、资源访问、创建、更新、删除与验证方式。
 职责边界：只通过 AgentSkill 和 AgentTool 的公开合同操作 Skill，不直接修改受管目录、产品选择状态或安装登记。
-关联关系：skill_find 负责发现和远端安装，skill_activate 加载完整正文，skill_resource 按需读取资源，skill_create 创建或更新受控包。
+关联关系：skill_find 负责发现和远端安装，skill_activate 加载完整正文，skill_resource 按需读取资源，skill_create 创建或更新受控包，skill_remove 删除已登记受管 Skill。
 -->
 
 # Skill 使用与管理
@@ -42,6 +42,7 @@ optionalTools: [skill_resource, skill_create]
 - `skill_activate`：加载一个已登记 Skill 的完整 `SKILL.md` 和资源清单。
 - `skill_resource`：以 `read_reference` 读取文本资料，或以 `copy_asset` 把模板和资产物化到 workspace 受控临时目录。
 - `skill_create`：把新定义组装成完整包并委托 `AgentSkill.install()`；它默认不对所有产品开放。
+- `skill_remove`：在用户明确要求删除后，把精确 Skill 名称委托给 `AgentSkill.remove()`；它默认不对所有产品开放，也不接受文件路径。
 
 ## 工作流
 
@@ -75,6 +76,13 @@ optionalTools: [skill_resource, skill_create]
 4. 首次调用 `skill_create` 使用 `conflict=check`。返回 conflict 时不写盘；只有用户明确授权更新或覆盖后才用 `replace`。
 5. 创建后依次使用 `skill_find`、`skill_activate`，并按需用 `skill_resource` 验证真实安装内容。
 
+### 第五步：删除
+
+1. 只有用户明确要求移除某个 Skill 时才使用 `skill_remove`，不能根据“似乎没用”自行清理。
+2. 先用当前 Skill 摘要或 `skill_find` 确认精确名称，再传 `confirm=true`；不要提交目录路径或猜测名称。
+3. 删除成功只代表当前 AgentSkill 受管目录和当前实例选择已经更新。若产品配置仍显式选择同名预制 Skill，下次启动时可能重新安装，应如实告知用户由产品同步更新白名单。
+4. 删除后再次使用 `skill_find` 确认该名称不再出现在当前索引中，不用 shell 检查或修改受管目录。
+
 ## 失败与降级
 
 - 找不到 Skill：调整查询词或指定远端来源；不要虚构已安装能力。
@@ -83,6 +91,7 @@ optionalTools: [skill_resource, skill_create]
 - 激活失败：重新核对精确名称和当前索引；不要根据猜测路径读取 `SKILL.md`。
 - reference 或 asset 不存在：先查看激活结果中的资源清单，不把相似文件名当成真实资源。
 - `skill_create` 不可见：当前产品没有开放创建能力；仍可使用查找、安装、激活和资源工具，不用 shell 替代。
+- `skill_remove` 不可见：当前产品没有开放删除能力；说明限制并保留现有 Skill，不用 shell 或 `run_shell` 绕过。
 
 ## 质量门
 
