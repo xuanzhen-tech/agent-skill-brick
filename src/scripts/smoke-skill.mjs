@@ -431,6 +431,43 @@ try {
   assert.match(amazonUsGuidance.loadedSkillReference.content, /AgentTool 公开 schema/);
   assert.doesNotMatch(amazonUsGuidance.loadedSkillReference.content, /API易|apiyi/i);
 
+  await selectedBuiltinSkill.setSkillNames(["ecommerce-product-video-generation"]);
+  assert.equal(selectedBuiltinSkill.definitions[0].version, "0.1.0");
+  assert.deepEqual(selectedBuiltinSkill.definitions[0].requiredTools, [
+    "ecommerce_video_generate",
+    "ecommerce_video_list"
+  ]);
+  const videoSkillActivated = await selectedBuiltinSkill.activate("ecommerce-product-video-generation");
+  assert.deepEqual(
+    videoSkillActivated.loadedSkill.resources.map((resource) => resource.path).sort(),
+    [
+      "references/production-quality-gate.md",
+      "references/prompt-playbook.md",
+      "references/tool-examples.md"
+    ]
+  );
+  assert.match(videoSkillActivated.loadedSkill.content, /6 秒、1080p、`adaptive`、无音频/);
+  assert.match(videoSkillActivated.loadedSkill.content, /不处理真人、数字人/);
+  const videoPromptPlaybook = await selectedBuiltinSkill.readReference(
+    "ecommerce-product-video-generation",
+    "references/prompt-playbook.md"
+  );
+  assert.match(videoPromptPlaybook.loadedSkillReference.content, /Product identity lock/);
+  assert.match(videoPromptPlaybook.loadedSkillReference.content, /Do not add or remove parts/);
+  const videoToolExamples = await selectedBuiltinSkill.readReference(
+    "ecommerce-product-video-generation",
+    "references/tool-examples.md"
+  );
+  assert.match(videoToolExamples.loadedSkillReference.content, /"modelId": "doubao-seedance-2-0"/);
+  assert.match(videoToolExamples.loadedSkillReference.content, /deliveryReady=true/);
+  assert.doesNotMatch(videoToolExamples.loadedSkillReference.content, /providerTaskId|api key/i);
+  const videoQualityGate = await selectedBuiltinSkill.readReference(
+    "ecommerce-product-video-generation",
+    "references/production-quality-gate.md"
+  );
+  assert.match(videoQualityGate.loadedSkillReference.content, /无法播放视频时/);
+  assert.match(videoQualityGate.loadedSkillReference.content, /每次生成都可能计费/);
+
   await selectedBuiltinSkill.setSkillNames(["amazon-inventory-ledger-summary"]);
   assert.deepEqual(selectedBuiltinSkill.definitions.map((skill) => skill.name), ["amazon-inventory-ledger-summary"]);
   assert.equal(await exists(path.join(builtinRoot, "amazon-inventory-ledger-summary", "SKILL.md")), true);
@@ -499,6 +536,7 @@ try {
     "amazon-inventory-ledger-summary",
     "amazon-operating-analysis",
     "amazon-product-image-generation",
+    "ecommerce-product-video-generation",
     // skill-management 是通用元 Skill，不属于十四位业务专家的 64 项能力。
     "skill-management"
   ]);

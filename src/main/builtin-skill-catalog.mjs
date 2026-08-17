@@ -50,6 +50,12 @@ const BASE_BUILTIN_SKILLS = [
     description: "用于 Amazon 商品白底主图、卖点图、场景图生成和版本化迭代。"
   }),
   Object.freeze({
+    id: "ecommerce-product-video-generation",
+    name: "ecommerce-product-video-generation",
+    version: "0.1.0",
+    description: "把一张真实商品照片和简单意图扩写为高质量商品视频提示词，并调用 Seedance 生成可交付 MP4；适用于电商商品展示、广告素材、详情页动态演示和社媒短视频，不处理真人或数字人视频。"
+  }),
+  Object.freeze({
     id: "skill-management",
     name: "skill-management",
     version: "0.2.0",
