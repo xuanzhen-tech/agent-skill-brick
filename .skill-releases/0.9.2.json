@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "agent-skill.self-service-release.v1",
+  "version": "0.9.2",
+  "skills": [
+    {
+      "name": "amazon-monitoring-data-fetch",
+      "contentHash": "f0b0afbba9015b9b99e5b2c237bc814f7e3df9c393db2eecfb0bc7d3f6f4ac71",
+      "fileCount": 6
+    },
+    {
+      "name": "amazon-operation-review",
+      "contentHash": "afa867cbc5cb51b8033771d149d3bcf491715183112827b04417a4d80ec5e9f6",
+      "fileCount": 1
+    },
+    {
+      "name": "amazon-report-generate",
+      "contentHash": "3c67ac17fc85e9ea040606bc46d970eae8c7eb01bbf3e0ea1950708e0228d305",
+      "fileCount": 3
+    }
+  ]
+}
