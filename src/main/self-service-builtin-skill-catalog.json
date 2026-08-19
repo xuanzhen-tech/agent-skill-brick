@@ -1,5 +1,23 @@
 [
   {
+    "id": "amazon-monitoring-data-fetch",
+    "name": "amazon-monitoring-data-fetch",
+    "version": "0.9.2",
+    "description": "通过 SellerSprite 与 Sorftime MCP 按用户指定的 Amazon 站点获取并核验 ASIN 的价格、销量估算、BSR、评分、评论和 Listing 变动监控数据，输出标准化 CSV；用户要求竞品监控、ASIN 监控、竞品分析、拉取 ASIN 数据、还原竞品操作或复刻操作时使用。"
+  },
+  {
+    "id": "amazon-operation-review",
+    "name": "amazon-operation-review",
+    "version": "0.9.2",
+    "description": "亚马逊运营复盘归因分析。将趋势图拐点与listing变动事件精确匹配，结合因果逻辑判断操作影响。当用户上传卖家精灵/Keepa截图或数据并要求运营复盘、归因分析、拐点分析时触发。"
+  },
+  {
+    "id": "amazon-report-generate",
+    "name": "amazon-report-generate",
+    "version": "0.9.2",
+    "description": "将 Amazon ASIN 的运营复盘与竞品分析结果整理为自包含 HTML 报告，按连续编号 1–11 呈现关键结论、图表解析、风险、可复刻方案和行动清单；用户要求生成报告、输出复盘报告、竞品分析报告或可复刻方案时使用。"
+  },
+  {
     "id": "amazon-sellersprite-ad-visibility-gap-analysis",
     "name": "amazon-sellersprite-ad-visibility-gap-analysis",
     "version": "0.8.10",
