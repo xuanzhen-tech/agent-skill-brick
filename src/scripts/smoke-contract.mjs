@@ -36,14 +36,15 @@ assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skil
 assert.equal(brickDefinition.configSchema.properties.skills.type, "array");
 
 const builtinSkills = listBuiltinSkills();
-assert.equal(builtinSkills.length, 75);
+assert.equal(builtinSkills.length, 79);
 assert.equal(builtinSkills.some((skill) => skill.name === "skill-management"), true);
 assert.equal(builtinSkills.some((skill) => skill.name === "skill-creator"), false);
-assert.deepEqual(builtinSkills.slice(0, 4).map((skill) => skill.name), [
+assert.deepEqual(builtinSkills.slice(0, 5).map((skill) => skill.name), [
   "amazon-sku-profit-summary",
   "amazon-inventory-ledger-summary",
   "amazon-operating-analysis",
-  "amazon-product-image-generation"
+  "amazon-product-image-generation",
+  "ecommerce-product-video-generation"
 ]);
 assert.equal(new Set(builtinSkills.map((skill) => skill.name)).size, builtinSkills.length);
 assert.equal(builtinSkills.some((skill) => skill.name === "amazon-opportunity-discovery"), true);
