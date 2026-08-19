@@ -31,6 +31,7 @@ console.log("[build-artifact] 2/5 stage runtime files");
 await copyFileIntoRuntime(path.join(repoRoot, "src", "cli.mjs"), "src/cli.mjs");
 await copyFileIntoRuntime(path.join(repoRoot, "src", "index.mjs"), "src/index.mjs");
 await copyFileIntoRuntime(path.join(repoRoot, "src", "brick-definition.mjs"), "src/brick-definition.mjs");
+await copyFileIntoRuntime(path.join(repoRoot, "THIRD_PARTY_NOTICES.md"), "THIRD_PARTY_NOTICES.md");
 await writeJsonIntoRuntime("brick-definition.snapshot.json", brickDefinition);
 
 const mainSourceFiles = await readFiles(path.join(repoRoot, "src", "main"));

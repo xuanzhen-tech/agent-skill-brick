@@ -107,9 +107,48 @@ import { listBuiltinSkills } from "@xuanzhen-tech/agent-skill-brick";
 console.log(listBuiltinSkills());
 ```
 
-预制目录包含 14 类跨境经营专家能力对应的 64 个独立 skill、6 个 SellerSprite
-ASIN 深度研究 skill、既有经营分析和生图能力，以及通用 `skill-management` 元 Skill，
-共 75 个。
+`listBuiltinSkills()` 保持兼容，只返回现有 79 个 core Skill。统一共享池另外包含
+203 个已经翻译和加工的 ecosystem Skill；它们随 SDK 和 runtime artifact 离线
+发布，但不会自动安装、启用或注入上下文。
+
+可通过统一目录按集合、平台、场景和关键词分页查询：
+
+```js
+import {
+  AgentSkill,
+  getSkillCatalogEntry,
+  listSkillCatalog
+} from "@xuanzhen-tech/agent-skill-brick";
+
+const page = listSkillCatalog({
+  collections: ["ecosystem"],
+  platforms: ["amazon"],
+  sceneTags: ["pricing-profit"],
+  query: "价格优化",
+  limit: 50
+});
+
+const legacy = getSkillCatalogEntry(
+  "nexscope-ai-ecommerce-skills-price-optimization-tool"
+);
+
+const runtime = new AgentSkill();
+await runtime.installCatalogSkill(legacy.legacyEcosystemId);
+```
+
+目录安装只把离线包写入唯一受管目录，不会让所有 Agent 自动看到它。需要使用时，
+仍由对应 `AgentSkill` 实例通过 `skillNames` 或 `setSkillNames()` 选择 canonical name：
+
+```js
+await runtime.setSkillNames([legacy.name]);
+```
+
+因此共享池表示“可选择的能力”，白名单表示“当前 Agent 已启用的能力”。生态目录
+安装不访问生态服务器、GitHub API 或 GitHub Raw；`legacyEcosystemId` 只用于旧记录
+映射，不会触发远端下载。
+
+core 预制目录包含 14 类跨境经营专家能力、SellerSprite ASIN 深度研究、既有经营
+分析和生图能力，以及通用 `skill-management` 元 Skill。
 ASIN 研究总控和五个研究模块均可独立选择，每个包都携带完整共享研究合同，安装
 单个模块不会产生跨目录资源依赖。新版专家 skill 可按任务渐进使用
 SIF、SellerSprite 和 Sorftime MCP，但不保存连接配置或密钥。专家身份、提示词

@@ -1,0 +1,5769 @@
+[
+  {
+    "id": "1688-product-find",
+    "name": "1688-product-find",
+    "version": "0.1.0",
+    "description": "用于 Amazon 新品开发和1688货源初筛场景，评估供需匹配、成本结构、认证要求、FBA尺寸重量和竞品价格，输出候选货源评分与开发建议。",
+    "displayName": "1688选品评估",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "pricing-profit"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-1688-product-find",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "78efd927c6d9e0d53bbf2a8285177a5f4fe727168893a656b3b11a29cb72ffba"
+  },
+  {
+    "id": "1688-source-suppliers",
+    "name": "1688-source-suppliers",
+    "version": "0.1.0",
+    "description": "用于 Amazon 供应链开发和备选工厂评估场景，核对资质、报价、MOQ、打样、交期、认证和验货风险，输出供应商评分表与谈判清单。",
+    "displayName": "1688供应商筛选",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-1688-source-suppliers",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "78d8815f0bbfabff2a935dda9fb38a0504ebbdbf168a8a8cb3aa37a39fd924f2"
+  },
+  {
+    "id": "actors-mcp-server",
+    "name": "actors-mcp-server",
+    "version": "0.1.0",
+    "description": "用于电商数据采集、清洗和报告任务标准化场景，定义输入参数、运行频率、失败处理、权限边界和输出格式，输出可复用任务规格。",
+    "displayName": "电商任务流程封装",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-actors-mcp-server",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "45f05d96c8b14b824188dab04560d0d36062369297ba01035be67f7dd59b71af"
+  },
+  {
+    "id": "amazon-abakeyword",
+    "name": "amazon-abakeyword",
+    "version": "0.1.0",
+    "description": "用于 Amazon Brand Analytics关键词机会挖掘场景，分析SFR、点击份额、转化份额、竞品ASIN和词根聚类，输出Listing与广告用词建议。",
+    "displayName": "Amazon ABA关键词分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-amazon-abakeyword",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "00b45458e64e2bf1b841f5c3609bc3f4011d9847d1fd4f6e97aab8fa93b39c5d"
+  },
+  {
+    "id": "amazon-competitor-monitor",
+    "name": "amazon-competitor-monitor",
+    "version": "0.1.0",
+    "description": "用于 Amazon 竞品动态跟踪场景，监测价格、排名、评价、库存、促销、内容变更和广告信号，输出异常提醒与应对动作。",
+    "displayName": "Amazon竞品监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-amazon-competitor-monitor",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "c44b175549871428dcdb4a63899424015165894d179a055df9146a5cf0a0e91b"
+  },
+  {
+    "id": "amazon-operations-analysis-dashboard",
+    "name": "amazon-operations-analysis-dashboard",
+    "version": "0.1.0",
+    "description": "用于 Amazon 店铺日常经营复盘场景，汇总流量、转化、广告、库存、利润和评价指标，输出经营诊断看板与优先级行动项。",
+    "displayName": "Amazon运营分析看板",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-amazon-operations-analysis-dashboard",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "cf282f3f4c2e2dd0123f319cbbee651d4ac6881b2e057d30ee49a901a41f631c"
+  },
+  {
+    "id": "amazon-product-search",
+    "name": "amazon-product-search",
+    "version": "0.1.0",
+    "description": "用于 Amazon 市场选品和竞品池构建场景，按关键词、类目、价格带和评价质量筛选商品，输出可比较的候选ASIN清单。",
+    "displayName": "Amazon商品搜索研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "listing-content",
+      "pricing-profit",
+      "customer-voice"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "listing-content",
+      "pricing-profit",
+      "customer-voice"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-amazon-product-search",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "b813202fe189d3fff7cea4e1687153c407810e52e6cc1933ff40a557b9947e40"
+  },
+  {
+    "id": "amazon-reviews",
+    "name": "amazon-reviews",
+    "version": "0.1.0",
+    "description": "用于 Amazon 商品评价洞察场景，提取买家痛点、满意点、质量问题、功能需求和情绪趋势，输出VOC摘要与产品优化建议。",
+    "displayName": "Amazon评论分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-amazon-reviews",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "702844a637b0985a793c2089c0bc0d78d42adcb39cbcb6b11c9ad9c1c985f967"
+  },
+  {
+    "id": "amazon-sp-mcp",
+    "name": "amazon-sp-mcp",
+    "version": "0.1.0",
+    "description": "用于 Amazon 经营数据读取和权限控制场景，规划订单、商品、库存与报表数据请求，输出字段清单、调用计划和审计记录。",
+    "displayName": "Amazon SP数据调用",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "inventory-supply-chain",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-amazon-sp-mcp",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "429e8027701d7fc67f05294083d455cfbcbd2796dba0ecbfb50b5c67b9f88fc6"
+  },
+  {
+    "id": "brightdata-mcp",
+    "name": "brightdata-mcp",
+    "version": "0.1.0",
+    "description": "用于 Amazon 公开页面和跨站市场资料采集场景，设计采集范围、字段、频率、失败重试和合规边界，输出结构化数据表。",
+    "displayName": "公开电商数据采集",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-brightdata-mcp",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "785e708f8fb5240645dccd8bd000e57609e0dd24ae5cd49479a002f87efecd4d"
+  },
+  {
+    "id": "bsc-amazon-advertising-strategy",
+    "name": "bsc-amazon-advertising-strategy",
+    "version": "0.1.0",
+    "description": "用于 Amazon 广告投放复盘和预算优化场景，分析关键词、竞价、ACOS/TACOS、转化和利润约束，输出分层调整建议。",
+    "displayName": "Amazon广告策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-bsc-amazon-advertising-strategy",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "8a6b251394e93a6f6db297b09952cc84471ff35319f2f4e028a0c0b929387e0b"
+  },
+  {
+    "id": "bsc-amazon-opc-agent-os",
+    "name": "bsc-amazon-opc-agent-os",
+    "version": "0.1.0",
+    "description": "用于 Amazon 运营流程统筹场景，梳理选品、内容、广告、库存、利润和复盘节奏，输出可执行的经营作战计划。",
+    "displayName": "Amazon OPC运营系统",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-bsc-amazon-opc-agent-os",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "dbb471530b343c7247657c7c01d9e5b6cfefe217379a448cbbe970bee2378531"
+  },
+  {
+    "id": "bsc-amazon-rufus-cosmo",
+    "name": "bsc-amazon-rufus-cosmo",
+    "version": "0.1.0",
+    "description": "用于 Amazon 搜索理解和内容相关性优化场景，分析买家意图、属性覆盖、语义缺口和问答线索，输出页面内容改写建议。",
+    "displayName": "Amazon Rufus与COSMO优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-bsc-amazon-rufus-cosmo",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "8b96e70d3eb99f5063c847a4cbd262c4531443c9833a8dd27119167d6bb9eec4"
+  },
+  {
+    "id": "bsc-amazon-sif-keyword-lark-builder",
+    "name": "bsc-amazon-sif-keyword-lark-builder",
+    "version": "0.1.0",
+    "description": "用于 Amazon 关键词管理和协作表建设场景，整理词根、搜索量、意图、竞品和广告表现，输出可维护关键词矩阵。",
+    "displayName": "Amazon SIF关键词表搭建",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-bsc-amazon-sif-keyword-lark-builder",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "1bdd310062ad6434d5c52e05da23a3d7ba26d189de9e4bbc6273bd960e876d54"
+  },
+  {
+    "id": "bsc-amazon-sif-tool",
+    "name": "bsc-amazon-sif-tool",
+    "version": "0.1.0",
+    "description": "用于 Amazon 搜索意图与关键词结构分析场景，归类词根、流量层级、转化表现和页面覆盖，输出SIF优化清单。",
+    "displayName": "Amazon SIF分析工具",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-bsc-amazon-sif-tool",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "49e2f74430591068eaffe850c2383749d49d51ee850064fc7bba977739e3b7fc"
+  },
+  {
+    "id": "bsc-amazon-voc-trending-products",
+    "name": "bsc-amazon-voc-trending-products",
+    "version": "0.1.0",
+    "description": "用于 Amazon 趋势选品和需求验证场景，分析评论、搜索词、社媒反馈和竞品缺口，输出趋势机会与风险判断。",
+    "displayName": "Amazon VOC趋势选品",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-bsc-amazon-voc-trending-products",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "c7c1d0c30c1de20e92eee3ab2c439ef5c69e39d1a61837614c1cc5a6faffb011"
+  },
+  {
+    "id": "bsc-sif-amazon-keyword-database",
+    "name": "bsc-sif-amazon-keyword-database",
+    "version": "0.1.0",
+    "description": "用于 Amazon 关键词资产沉淀场景，规范词根、搜索意图、类目、竞品、广告指标和历史表现，输出可查询关键词库。",
+    "displayName": "Amazon关键词数据库",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-bsc-sif-amazon-keyword-database",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "302b2936ec622066c134627638894669f0234eb7c9a57fb0c918033b91f5b7ea"
+  },
+  {
+    "id": "ecom-details-image",
+    "name": "ecom-details-image",
+    "version": "0.1.0",
+    "description": "用于 Amazon 商品图片与详情视觉优化场景，评估卖点表达、场景图、尺寸信息、对比图和合规风险，输出图片改版清单。",
+    "displayName": "电商详情图优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-ecom-details-image",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "33667b827a87a628fd70c27b2ad07368f8413c0cdf6d711235738a4d3f8ca911"
+  },
+  {
+    "id": "ecommerce-content-compliance-review",
+    "name": "ecommerce-content-compliance-review",
+    "version": "0.1.0",
+    "description": "用于 Amazon Listing、图片和营销文案上线前审核场景，检查违规承诺、侵权素材、敏感词和证据缺口，输出合规修改意见。",
+    "displayName": "电商内容合规审核",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "customer-voice",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth",
+      "customer-voice",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-ecommerce-content-compliance-review",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "25c311aceb8dc223cd660c6dc6cdb8e9e0f6336997eb7c13914f1e1aa40e16b9"
+  },
+  {
+    "id": "firecrawl-mcp-server",
+    "name": "firecrawl-mcp-server",
+    "version": "0.1.0",
+    "description": "用于 Amazon 市场研究中的网页资料抓取和清洗场景，设定来源、字段、频率和质量校验，输出可复核资料表。",
+    "displayName": "网页资料采集整理",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-firecrawl-mcp-server",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "98d3115d41c3c0126db3a33c1c105ec40dd06510271e71a81fb633433d5ee265"
+  },
+  {
+    "id": "google-trends-skills",
+    "name": "google-trends-skills",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外需求趋势判断场景，分析关键词热度、季节性、区域变化和品类关联，输出趋势解读与选品提示。",
+    "displayName": "Google Trends趋势分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "listing-content",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "listing-content",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-google-trends-skills",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "d86f828f143610ccb8a1c1bf900a2c79633f2a000e28fd2b01b2c9e98976dc85"
+  },
+  {
+    "id": "review-analyzer-skill",
+    "name": "review-analyzer-skill",
+    "version": "0.1.0",
+    "description": "用于 Amazon 评论复盘和产品改良场景，聚合买家反馈、差评原因、功能诉求和竞品对比，输出VOC报告与优先级建议。",
+    "displayName": "评论洞察分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-review-analyzer-skill",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "cca9ba4f2117059c9d3a33ae1afdb7f6e455bfd22e2c0c03c10ff5ef25ed04ed"
+  },
+  {
+    "id": "sif-mcp-skills",
+    "name": "sif-mcp-skills",
+    "version": "0.1.0",
+    "description": "用于 Amazon 关键词和搜索意图数据处理场景，规范采集、清洗、聚类、评分和输出格式，输出可复用SIF分析结果。",
+    "displayName": "SIF数据流程",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-sif-mcp-skills",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "b445afcbd8f355b3e41425315b80f5b411a568ef8b3e3fa96213278873c68dd6"
+  },
+  {
+    "id": "skill-creator",
+    "name": "skill-creator",
+    "version": "0.1.0",
+    "description": "用于 Amazon 运营知识沉淀和流程模板化场景，梳理适用场景、输入、步骤、指标和输出要求，输出结构化技能草案。",
+    "displayName": "技能模板生成",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-skill-creator",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "d4167554552b9ce446b1783baf1b13913430a54e0d4e29a3603539523c0d1192"
+  },
+  {
+    "id": "sorftime-cli",
+    "name": "sorftime-cli",
+    "version": "0.1.0",
+    "description": "用于 Amazon 选品机会评分场景，分析市场容量、竞争强度、价格、评价、利润和供应风险，输出选品评分与进入建议。",
+    "displayName": "SORFTIME选品评估",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-sorftime-cli",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "f54b2adb240fc4c85db65079293140503f88bcd6716d873d6d8af0ca278aba13"
+  },
+  {
+    "id": "tavily-mcp",
+    "name": "tavily-mcp",
+    "version": "0.1.0",
+    "description": "用于 Amazon 市场、竞品和趋势资料检索场景，围绕问题收集可信来源、交叉验证信息并提炼结论，输出资料摘要与证据链接。",
+    "displayName": "网络检索研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-tavily-mcp",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "57dfa0d59041b5faf1822609efe43925d3a1a8350176bb7a907b9edd8d679974"
+  },
+  {
+    "id": "voc-amazon-reviews",
+    "name": "voc-amazon-reviews",
+    "version": "0.1.0",
+    "description": "用于 Amazon 买家声音分析场景，抽取评论主题、痛点频率、满意驱动、差评风险和功能机会，输出产品与内容优化清单。",
+    "displayName": "Amazon VOC评论研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-voc-amazon-reviews",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "5904a226008a49e53fde0032f93ea234bbffb9f7967353d7917981de0a6ae099"
+  },
+  {
+    "id": "zach-feature-demand-validator",
+    "name": "zach-feature-demand-validator",
+    "version": "0.1.0",
+    "description": "用于 Amazon 新功能或卖点验证场景，结合评论、搜索词、竞品页面和价格带判断真实需求，输出需求强度与验证方案。",
+    "displayName": "功能需求验证",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "customer-voice"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "pricing-profit",
+      "customer-voice"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-zach-feature-demand-validator",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "9c051073965c0774a3efd21c3688479d0711b64715c815979629144e5cb1aae9"
+  },
+  {
+    "id": "zach-listing-health-checker",
+    "name": "zach-listing-health-checker",
+    "version": "0.1.0",
+    "description": "用于 Amazon Listing上线和复盘场景，检查标题、五点、图片、A+、关键词、评价和转化障碍，输出页面修复优先级。",
+    "displayName": "Listing健康检查",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "customer-voice"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "customer-voice"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-zach-listing-health-checker",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "9ac3e9826726821acfddd0b178d28df4c9d9533c7c468cc9dac01485387dbf12"
+  },
+  {
+    "id": "zach-product-research",
+    "name": "zach-product-research",
+    "version": "0.1.0",
+    "description": "用于 Amazon 新品调研场景，分析市场容量、竞品结构、评价门槛、差异化空间和利润可行性，输出产品机会评估。",
+    "displayName": "Amazon产品研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-zach-product-research",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "683e5e2eb4c3a46b0375f704eb7d7303ba08ccf7e7f3401b823be0a6cac199e1"
+  },
+  {
+    "id": "zach-search-term-report-analyzer",
+    "name": "zach-search-term-report-analyzer",
+    "version": "0.1.0",
+    "description": "用于 Amazon 广告搜索词复盘场景，识别高效词、浪费词、否词机会、预算迁移和Listing补词点，输出投放调整清单。",
+    "displayName": "搜索词报告分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-zach-search-term-report-analyzer",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "8f7f4ecf9e9297b93c7cf684f0cd6d6589030e89117364b7a3626e0f6e4905b1"
+  },
+  {
+    "id": "zach-seller-skill-creator",
+    "name": "zach-seller-skill-creator",
+    "version": "0.1.0",
+    "description": "用于 Amazon 卖家运营流程沉淀场景，整理目标、输入数据、分析步骤、关键指标和交付物，输出可复用操作模板。",
+    "displayName": "卖家流程模板生成",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "hikari0511-awesome-amazon-ec-skills-zach-seller-skill-creator",
+    "originKind": "external-listing",
+    "sourceRepository": "hikari0511/awesome-amazon-ec-skills",
+    "sourcePath": "README.md",
+    "sourceLicense": "CC0-1.0",
+    "distributionStatus": "redistributable",
+    "contentHash": "38e83aab76992a573955cd405f1eb997a81857c3d68344f44ba96fb2ee298656"
+  },
+  {
+    "id": "affiliate-marketing-strategy",
+    "name": "affiliate-marketing-strategy",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外联盟推广规划场景，评估渠道、佣金、内容资产、转化链路和归因方式，输出合作策略与复盘指标。",
+    "displayName": "联盟营销策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-affiliate-marketing-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "affiliate-marketing-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "14ddeccba325bfb364ff9394ee029c1c408a0a70f3d558d48dd34e91f28cfc85"
+  },
+  {
+    "id": "amazon-review-checker",
+    "name": "amazon-review-checker",
+    "version": "0.1.0",
+    "description": "用于 Amazon 评价风险和口碑质量检查场景，识别异常评价、差评主题、星级波动和合规风险，输出评价诊断报告。",
+    "displayName": "Amazon评价检查",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-amazon-review-checker",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "review-checker/amazon-review-checker/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "d5e3ed93baeab6c5971b83dda67bc5a6d7efe3e1d8fed794c083c2e268948698"
+  },
+  {
+    "id": "api-monitoring",
+    "name": "api-monitoring",
+    "version": "0.1.0",
+    "description": "用于 Amazon 经营数据接口和关键服务稳定性监控场景，跟踪可用性、延迟、错误率、字段完整性和告警阈值，输出监控方案。",
+    "displayName": "接口监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-api-monitoring",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "api-monitoring/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "edcc62653d0cca4273457983eb3b11c4364adf71317bbb9fd8794d56bd2bb5b4"
+  },
+  {
+    "id": "brand-monitoring",
+    "name": "brand-monitoring",
+    "version": "0.1.0",
+    "description": "用于 Amazon 品牌资产和市场声量监控场景，追踪品牌词、竞品占位、侵权线索、价格异常和评价风险，输出监控摘要。",
+    "displayName": "品牌监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-brand-monitoring",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "brand-monitoring/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "c27c63646aebe29749311927b38aceed4539507d047b2cfb7a4ea6536cd0dd21"
+  },
+  {
+    "id": "brand-protection-amazon",
+    "name": "brand-protection-amazon",
+    "version": "0.1.0",
+    "description": "用于 Amazon 品牌保护和合规治理场景，整理跟卖、侵权、篡改、MAP破价和证据链，输出投诉路径与治理清单。",
+    "displayName": "Amazon品牌保护",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-brand-protection-amazon",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "brand-protection/brand-protection-amazon/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "32612e0a2588002bc75eeb30eb8b6dfcbab613dda50cc19539687fc053608950"
+  },
+  {
+    "id": "brand-protection-ebay",
+    "name": "brand-protection-ebay",
+    "version": "0.1.0",
+    "description": "用于 eBay 品牌维权、假货排查或未授权销售治理场景，梳理商标/版权证据、链接风险、test buy 和 VeRO 路径，输出侵权线索表、证据包与投诉优先级。",
+    "displayName": "eBay 品牌保护",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "ebay",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-brand-protection-ebay",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "brand-protection/brand-protection-ebay/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "4a799ab67be7f7c9dda63736211f19b89d53e6ec3beff3411df75c1d0d02a451"
+  },
+  {
+    "id": "brand-protection-shopify",
+    "name": "brand-protection-shopify",
+    "version": "0.1.0",
+    "description": "用于 Shopify 独立站被仿冒、素材被盗用或渠道侵权排查场景，整理商标、页面、商品和交易证据，输出投诉路径、下架动作与渠道治理清单。",
+    "displayName": "Shopify 品牌保护",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "shopify",
+      "brand-compliance",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-brand-protection-shopify",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "brand-protection/brand-protection-shopify/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "adf2ae925e75340754a5462f1c2b9d07d4a19006b1b2e598d63d6120b5305b84"
+  },
+  {
+    "id": "brand-protection-tiktok",
+    "name": "brand-protection-tiktok",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 假货、盗图盗视频、未授权达人或商标侵权处理场景，梳理侵权证据和影响范围，输出投诉材料、处置优先级与渠道防护动作。",
+    "displayName": "TikTok Shop 品牌保护",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-brand-protection-tiktok",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "brand-protection/brand-protection-tiktok/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "a41d0887829efa222931049834f1a2bd36c43f5b7ebc6fcbee1f42290ad672f9"
+  },
+  {
+    "id": "brand-protection-walmart",
+    "name": "brand-protection-walmart",
+    "version": "0.1.0",
+    "description": "用于 Walmart Marketplace 品牌保护、假货排查或 Buy Box 被异常抢占场景，整理商标/版权证据、seller 链接、test buy 和 Brand Portal 路径，输出分级处置清单与复盘指标。",
+    "displayName": "Walmart 品牌保护",
+    "collection": "ecosystem",
+    "platforms": [
+      "walmart"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "walmart",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-brand-protection-walmart",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "brand-protection/brand-protection-walmart/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "cf496215db5624444afcd3239f5809fdd0ce139a2d6206fde6971507243820d8"
+  },
+  {
+    "id": "competitive-pricing-strategy",
+    "name": "competitive-pricing-strategy",
+    "version": "0.1.0",
+    "description": "用于 Amazon 价格竞争和利润守护场景，分析竞品价格、Buy Box、促销、成本和库存约束，输出分层定价建议。",
+    "displayName": "竞争定价策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-competitive-pricing-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "competitive-pricing-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "746d517314e90386b227367f29bc3947c826cc175de3ad1fffd07190fee263c9"
+  },
+  {
+    "id": "competitor-price-analysis",
+    "name": "competitor-price-analysis",
+    "version": "0.1.0",
+    "description": "用于 Amazon 竞品价格复盘场景，比较价格带、优惠、配送方式、评分和转化影响，输出价格机会与风险判断。",
+    "displayName": "竞品价格分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-competitor-price-analysis",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "competitor-price-analysis/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "68f4f152c756422190512d299bc7efa86d4119667d2b5883f44818ad105ab7cf"
+  },
+  {
+    "id": "competitor-price-tracker",
+    "name": "competitor-price-tracker",
+    "version": "0.1.0",
+    "description": "用于 Amazon 价格波动监控场景，持续跟踪竞品售价、优惠、库存、Buy Box和促销节点，输出变价提醒与应对建议。",
+    "displayName": "竞品价格追踪",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-competitor-price-tracker",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "competitor-price-tracker/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "115cb4fc700b70dc86a1e33fec0d5eb74f02865a56dc51bbdd11a1b62ed2c11a"
+  },
+  {
+    "id": "conversion-rate-optimization",
+    "name": "conversion-rate-optimization",
+    "version": "0.1.0",
+    "description": "用于跨境店铺有流量但订单不足、加购流失或页面改版复盘场景，诊断漏斗、首屏、信任资产、价格配送和结账阻力，输出实验假设、页面改稿与成功指标。",
+    "displayName": "转化率优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "cross-platform"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "cross-platform",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-conversion-rate-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "conversion-rate-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "14b9415ec841a375a78091d8a72af6a1a5ad2edc5e704f2b835cb20297358591"
+  },
+  {
+    "id": "cross-border-ecommerce",
+    "name": "cross-border-ecommerce",
+    "version": "0.1.0",
+    "description": "用于 Mercado Libre 拉美市场进入或扩张评估场景，分析国家选择、履约、定价、税费、刊登本地化和声誉约束，输出市场评分、进入路线图与验证节点。",
+    "displayName": "Mercado Libre 跨境扩张",
+    "collection": "ecosystem",
+    "platforms": [
+      "mercado-libre"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "analytics-automation",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "mercado-libre",
+      "pricing-profit",
+      "analytics-automation",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-cross-border-ecommerce",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "cross-border-ecommerce/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "f8296dacf1fe7f317196fc5db7064e9f7467947c5be3478508f309c75a709b5b"
+  },
+  {
+    "id": "customer-feedback-analysis",
+    "name": "customer-feedback-analysis",
+    "version": "0.1.0",
+    "description": "用于 Amazon 买家反馈和售后问题复盘场景，归类评论、问答、退货原因和客服记录，输出问题主题与改进动作。",
+    "displayName": "客户反馈分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-customer-feedback-analysis",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "customer-feedback-analysis/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "35046cfb8f96a49ecaca2524d8af03f711f28a6bc254eec1d046cb226fc388f5"
+  },
+  {
+    "id": "domain-monitoring",
+    "name": "domain-monitoring",
+    "version": "0.1.0",
+    "description": "用于 Amazon 品牌站外风险监控场景，发现仿冒域名、钓鱼页面、侵权落地页和跳转异常，输出风险清单与处理优先级。",
+    "displayName": "域名监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-domain-monitoring",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "domain-monitoring/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "dc4d55c076734220144caddc107c828d68ccfac02bbf0618900bee5c348a564c"
+  },
+  {
+    "id": "dropshipping-product-research",
+    "name": "dropshipping-product-research",
+    "version": "0.1.0",
+    "description": "用于 Amazon 代发或轻库存选品评估场景，分析需求、供货稳定性、配送时效、利润和售后风险，输出可行性判断。",
+    "displayName": "代发商品研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-dropshipping-product-research",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "dropshipping-product-research/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "7272e43aa1e7d984b013dceb4b127f6cac77e83b10873789d29facd449b4d8d4"
+  },
+  {
+    "id": "dynamic-pricing-for-e-commerce",
+    "name": "dynamic-pricing-for-e-commerce",
+    "version": "0.1.0",
+    "description": "用于 Amazon 动态定价和促销节奏管理场景，结合竞品、库存、利润、转化和季节性，输出价格调整规则。",
+    "displayName": "动态定价",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-dynamic-pricing-ecommerce",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "dynamic-pricing-ecommerce/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "5e9c22b7eebfa500e8a495687a42821cd824adf348b0cbf425c2c178e613a1cb"
+  },
+  {
+    "id": "ebay-advertising",
+    "name": "ebay-advertising",
+    "version": "0.1.0",
+    "description": "用于 eBay 广告冷启动、扩量或 ROAS 复盘场景，联动刊登质量、关键词、预算和 seller metrics，输出投放结构、出价调整与验证指标。",
+    "displayName": "eBay 广告投放",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "searchTags": [
+      "ebay",
+      "listing-content",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ebay-advertising",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ebay-advertising/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "957342224d35ff699d25fc27f08008511d90c7394c8268830306962b542916c7"
+  },
+  {
+    "id": "ebay-product-research",
+    "name": "ebay-product-research",
+    "version": "0.1.0",
+    "description": "用于 eBay 新品机会评估或类目扩展场景，分析 sold listings、价格带、sell-through、竞争密度和物流限制，输出选品优先级、风险判断与测试清单。",
+    "displayName": "eBay 选品研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "product-research",
+      "listing-content",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "ebay",
+      "product-research",
+      "listing-content",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ebay-product-research",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ebay-product-research/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b2eef1b0d68e813d6ed0dccbcaa8e6542d5d633703cb3f582bbb3f7664722394"
+  },
+  {
+    "id": "ebay-review-checker",
+    "name": "ebay-review-checker",
+    "version": "0.1.0",
+    "description": "用于 eBay 账号声誉、竞品可信度或售后问题复盘场景，解析 feedback、DSR、退货原因和 defect 信号，输出风险主题、修复动作与监控指标。",
+    "displayName": "eBay 评论与声誉检查",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "ebay",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ebay-review-checker",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "review-checker/ebay-review-checker/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "2e5618cbaa4d22ac5a403c8060f4b57096e8a5cb959831f7d5d7c3a4b5285602"
+  },
+  {
+    "id": "ebay-seller-guide",
+    "name": "ebay-seller-guide",
+    "version": "0.1.0",
+    "description": "用于 eBay 店铺启动、日常运营或账号健康复盘场景，梳理刊登、定价、物流、广告、退货和 seller metrics，输出运营优先级与执行路线。",
+    "displayName": "eBay 卖家运营指南",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "searchTags": [
+      "ebay",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ebay-seller-guide",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ebay-seller-guide/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "e53e6b532c4d37e1363964867a911e23904c4626d6218a1c5da32631d38fa692"
+  },
+  {
+    "id": "ebay-seller-tools",
+    "name": "ebay-seller-tools",
+    "version": "0.1.0",
+    "description": "用于 eBay 卖家工具选型或系统替换场景，比较刊登、调价、库存、广告、客服、退货和财务能力，输出工具短名单、适配风险与选型建议。",
+    "displayName": "eBay 卖家工具选型",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "ebay",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ebay-seller-tools",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ebay-seller-tools/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b7ad2a9ec28c1b06264d03caeb2659b231f04ba6fa6f8e7b6b194ada505e87f8"
+  },
+  {
+    "id": "ebay-seo",
+    "name": "ebay-seo",
+    "version": "0.1.0",
+    "description": "用于 eBay 自然搜索排名提升或刊登转化诊断场景，优化标题关键词、item specifics、类目匹配和 Best Match 信号，输出页面改稿、验证指标与复盘节奏。",
+    "displayName": "eBay 搜索优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "listing-content"
+    ],
+    "searchTags": [
+      "ebay",
+      "listing-content"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ebay-seo",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ebay-seo/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "510e0a727bced4ea788d2ef239fa9d401ab555e4199136bf7096ad1768066715"
+  },
+  {
+    "id": "e-commerce-a-b-testing",
+    "name": "e-commerce-a-b-testing",
+    "version": "0.1.0",
+    "description": "用于 Amazon 页面、价格、图片或文案实验场景，设计假设、样本、指标和观察窗口，输出实验方案与结论模板。",
+    "displayName": "电商A/B测试",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "pricing-profit"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-ab-testing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-ab-testing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "1209d6e41dc87c7a4eee27e5d0df1b67eb8363f6f7427e93ac963cf8d1151a85"
+  },
+  {
+    "id": "ecommerce-branding",
+    "name": "ecommerce-branding",
+    "version": "0.1.0",
+    "description": "用于 Amazon 品牌定位和页面资产规划场景，梳理目标人群、差异化、视觉语言、卖点和信任证据，输出品牌表达框架。",
+    "displayName": "电商品牌建设",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-branding",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-branding/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "6a9dfee815ab10f41b7532c4af0e2cc58c65f54c896f6e1e4ee9372d21265f72"
+  },
+  {
+    "id": "ecommerce-business-plan",
+    "name": "ecommerce-business-plan",
+    "version": "0.1.0",
+    "description": "用于 Amazon 新业务或新品线规划场景，测算市场、成本、利润、供应链、营销和风险，输出商业计划摘要。",
+    "displayName": "电商商业计划",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-business-plan",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-business-plan/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "5b144b0df1a8c3037de257d6ab816742751a357bdd682613ade4e9110539438b"
+  },
+  {
+    "id": "ecommerce-checkout-optimization",
+    "name": "ecommerce-checkout-optimization",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外成交链路或品牌独立站结账优化场景，分析流失点、支付、物流和信任障碍，输出转化改进清单。",
+    "displayName": "电商结账优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "amazon",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-checkout-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-checkout-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "c96491990017b0857fc59053385f1e3ff40d93914eda3a652f0aedc929dae447"
+  },
+  {
+    "id": "ecommerce-competitor-analysis",
+    "name": "ecommerce-competitor-analysis",
+    "version": "0.1.0",
+    "description": "用于 Amazon 竞品系统研究场景，比较定位、价格、页面、评价、广告、供应和差异化，输出竞品矩阵与机会点。",
+    "displayName": "电商竞品分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-competitor-analysis",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-competitor-analysis/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "38858b6a89e6c210e05bea6fa91b29231e8fa35009e28681a4abf0629acb31fc"
+  },
+  {
+    "id": "ecommerce-content-marketing",
+    "name": "ecommerce-content-marketing",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外内容获客和品牌教育场景，规划主题、渠道、素材、转化路径和复盘指标，输出内容日历。",
+    "displayName": "电商内容营销",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "advertising-growth",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-content-marketing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-content-marketing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "84fa84f831ae1c8c8b1443c11a43f7ffb699d3259250cab620850c3afecaf5cf"
+  },
+  {
+    "id": "e-commerce-customer-retention",
+    "name": "e-commerce-customer-retention",
+    "version": "0.1.0",
+    "description": "用于 Shopify 独立站复购下降、客户流失或 LTV 提升场景，分析购买周期、客户分群、触达节奏和售后体验，输出留存策略、自动化触达方案与复盘指标。",
+    "displayName": "电商客户留存",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "shopify",
+      "customer-voice",
+      "analytics-automation",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-customer-retention",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-customer-retention/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "6dc1cb7a57f2c2efd5bced54c7dcaf6f67d9269a8f1e5acb7c6ddaa0be59a969"
+  },
+  {
+    "id": "ecommerce-email-marketing-builder",
+    "name": "ecommerce-email-marketing-builder",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外私域和复购营销场景，设计欢迎、弃购、复购、召回和评价引导流程，输出邮件流程图与文案要点。",
+    "displayName": "电商邮件营销搭建",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "customer-voice"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth",
+      "customer-voice"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-email-marketing-builder",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-email-marketing-builder/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9e7afaee512bfee3f2ca6419e1e9b4ad413a1d95f28cff48d6e82cb0c4526782"
+  },
+  {
+    "id": "e-commerce-feed-management",
+    "name": "e-commerce-feed-management",
+    "version": "0.1.0",
+    "description": "用于 Amazon 及广告渠道商品Feed管理场景，检查字段完整性、分类、价格、库存和图片规则，输出Feed修复清单。",
+    "displayName": "电商Feed管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-feed-management",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-feed-management/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "3e41d4146c5d0320a8c75c03b54fe740914bb16daf2e15ef06436ec1d0a9a0fc"
+  },
+  {
+    "id": "ecommerce-growth-strategy",
+    "name": "ecommerce-growth-strategy",
+    "version": "0.1.0",
+    "description": "用于 Amazon 店铺增长规划场景，统筹流量、转化、广告、库存、复购和利润目标，输出阶段性增长路线图。",
+    "displayName": "电商增长策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-growth-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-growth-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "293a56e8762b5745e7af789f54d6bb6a00f5d5a1ff50a01c7f2134d7ca9e4aa4"
+  },
+  {
+    "id": "ecommerce-keyword-research",
+    "name": "ecommerce-keyword-research",
+    "version": "0.1.0",
+    "description": "用于 Amazon 搜索词和内容布局场景，收集关键词、意图、竞争度、转化表现和页面覆盖，输出关键词分层表。",
+    "displayName": "电商关键词研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-keyword-research",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-keyword-research/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "546b84717c8cd75d7566e5f741628ee3f47e9c846d7147bb105bf8008dbd19e0"
+  },
+  {
+    "id": "ecommerce-landing-page",
+    "name": "ecommerce-landing-page",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外引流落地页设计场景，梳理人群、卖点、证据、优惠、转化路径和追踪指标，输出页面结构建议。",
+    "displayName": "电商落地页规划",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-landing-page",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-landing-page/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "8c2aa0a83625c1140e9242b40cdd57b28ce30c7bdf2b11e790a7954a01ae6e81"
+  },
+  {
+    "id": "ecommerce-marketing-strategy-builder",
+    "name": "ecommerce-marketing-strategy-builder",
+    "version": "0.1.0",
+    "description": "用于 Amazon 全渠道营销规划场景，整合广告、内容、社媒、邮件、促销和预算节奏，输出营销作战方案。",
+    "displayName": "电商营销策略搭建",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-marketing-strategy-builder",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-marketing-strategy-builder/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9593373dc1a210bb7327e628db379b9f81fd51fc38faf33f774fd9bb76286229"
+  },
+  {
+    "id": "ecommerce-personalization",
+    "name": "ecommerce-personalization",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外触点和私域推荐场景，按人群、行为、购买阶段和品类偏好设计差异化内容，输出个性化策略。",
+    "displayName": "电商个性化运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-personalization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-personalization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "f5566b970e7e9123505e97df73f075b67a806707c04d31be2d1d795a20158b2a"
+  },
+  {
+    "id": "ecommerce-ppc-strategy-planner",
+    "name": "ecommerce-ppc-strategy-planner",
+    "version": "0.1.0",
+    "description": "用于 Amazon 付费搜索和展示广告规划场景，设计账户结构、预算、关键词、竞价和否词机制，输出PPC投放计划。",
+    "displayName": "电商PPC策略规划",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth",
+      "shopify"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-ppc-strategy-planner",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-ppc-strategy-planner/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "abef8021cccfb4aa1f4887257e2c5c6b1979ade1182d6286ee3d2c6dbc0d45bb"
+  },
+  {
+    "id": "ecommerce-returns-management",
+    "name": "ecommerce-returns-management",
+    "version": "0.1.0",
+    "description": "用于 Amazon 退货率控制和售后复盘场景，分析退货原因、品控、页面预期、物流和客服问题，输出降退货方案。",
+    "displayName": "电商退货管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-returns-management",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-returns-management/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "6734c157707f70c4cb29a38318171c1a29ebfb6d88047eab6804d2617060f5e3"
+  },
+  {
+    "id": "ecommerce-shipping-rates",
+    "name": "ecommerce-shipping-rates",
+    "version": "0.1.0",
+    "description": "用于 Amazon 配送成本和运费策略评估场景，比较物流方式、区域、时效、价格门槛和毛利影响，输出运费设置建议。",
+    "displayName": "电商运费策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-shipping-rates",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-shipping-rates/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "3a9aaba2bbafb0fa4f457c68624156ac30d7a9618d3a01f7947865a47d8bef71"
+  },
+  {
+    "id": "ecommerce-social-media-marketing",
+    "name": "ecommerce-social-media-marketing",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外社媒种草和引流场景，规划平台、人群、内容主题、素材节奏和转化路径，输出社媒营销计划。",
+    "displayName": "电商社媒营销",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "advertising-growth",
+      "tiktok-shop"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-social-media-marketing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-social-media-marketing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "da439598e25ba6e66c7eb43632d19d66252fe5be117e1692336b841948766e0e"
+  },
+  {
+    "id": "e-commerce-subscription-model",
+    "name": "e-commerce-subscription-model",
+    "version": "0.1.0",
+    "description": "用于 Amazon 复购型商品订阅和会员化设计场景，评估品类适配、价格、履约、留存和利润，输出订阅模式方案。",
+    "displayName": "电商订阅模式",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-subscription-model",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-subscription-model/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "1aea995b39cb99af60177dab13123095cc5f6ae61f91e107419a55da6a152d6a"
+  },
+  {
+    "id": "e-commerce-video-marketing",
+    "name": "e-commerce-video-marketing",
+    "version": "0.1.0",
+    "description": "用于 Amazon 商品视频和站外短视频规划场景，提炼卖点、脚本、场景、证据和投放指标，输出视频内容方案。",
+    "displayName": "电商视频营销",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-ecommerce-video-marketing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "ecommerce-video-marketing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "a3798fbfb4c1f7654570d4dd3601380853723f4de356b996a9260cd3fe9a167c"
+  },
+  {
+    "id": "etsy-advertising",
+    "name": "etsy-advertising",
+    "version": "0.1.0",
+    "description": "用于 Etsy Ads 花费上升、曝光不足或推广档期复盘场景，筛选可投 listing、分配预算并评估搜索词与利润表现，输出投放调整清单和观察指标。",
+    "displayName": "Etsy 广告投放",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-advertising",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-advertising/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b76dda122ef18bcbce0f123861bae96cfa7281235d05d2dc9738823984f7e80b"
+  },
+  {
+    "id": "etsy-competitor-analysis",
+    "name": "etsy-competitor-analysis",
+    "version": "0.1.0",
+    "description": "用于 Etsy 新品进入、类目卡位或爆款复盘场景，拆解竞品 listing、价格带、图片风格、评价痛点和标签线索，输出差异化机会与进入建议。",
+    "displayName": "Etsy 竞品分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-competitor-analysis",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-competitor-analysis/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "462734af3dc6db6bfdb99fe7fd040022b4d02b66c87094322aa0b2843dda62d1"
+  },
+  {
+    "id": "etsy-custom-orders",
+    "name": "etsy-custom-orders",
+    "version": "0.1.0",
+    "description": "用于 Etsy 个性化商品接单、报价或异常沟通场景，明确需求确认、样稿审批、制作周期和变更边界，输出订单执行流程与风险提示。",
+    "displayName": "Etsy 定制订单管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-custom-orders",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-custom-orders/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "cf37a7d9c8311438702ad34b670b9ef075b6e642972c9b1f0675da15eda05d61"
+  },
+  {
+    "id": "etsy-digital-products",
+    "name": "etsy-digital-products",
+    "version": "0.1.0",
+    "description": "用于 Etsy 模板、可打印资料或数字艺术上架与优化场景，规划选题、文件交付、授权条款、预览图和售后边界，输出数字产品运营清单。",
+    "displayName": "Etsy 数字产品运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "customer-voice",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-digital-products",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-digital-products/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "dca0b2d66e07baf00deebc0c95cf407b97ef87e0bbcf7e741248c2b5557db99c"
+  },
+  {
+    "id": "etsy-keyword-research",
+    "name": "etsy-keyword-research",
+    "version": "0.1.0",
+    "description": "用于 Etsy 新品上架、低曝光 listing 或季节词布局场景，分析买家意图、长尾词、标题前置词、标签和属性词，输出关键词组合与验证方案。",
+    "displayName": "Etsy 关键词研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-keyword-research",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-keyword-research/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "f359eb46d17ac807978413ca5cc3bcfee37f8856d0506b0159ba51cca3bb8d47"
+  },
+  {
+    "id": "etsy-listing-photography",
+    "name": "etsy-listing-photography",
+    "version": "0.1.0",
+    "description": "用于 Etsy listing 点击率低、买家疑虑多或移动端展示弱场景，规划首图、生活方式图、材质细节、尺寸参照和定制说明，输出图片拍摄与替换清单。",
+    "displayName": "Etsy 商品摄影优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "customer-voice"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "customer-voice"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-listing-photography",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-listing-photography/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "4c05e66b10f4fad1ad135daa4c20596f63d6f04addf0b4bafc1c208226ff566d"
+  },
+  {
+    "id": "etsy-multi-shop",
+    "name": "etsy-multi-shop",
+    "version": "0.1.0",
+    "description": "用于 Etsy 多店铺定位、扩品或运营协同场景，梳理品牌区隔、账号规则、库存客服流程和重复刊登风险，输出店铺分工与管理规范。",
+    "displayName": "Etsy 多店铺管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-multi-shop",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-multi-shop/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "888f89968bbabeb94d8c6048bd6035d92efa6ec5fccfd48d68eea55fb65324aa"
+  },
+  {
+    "id": "etsy-offsite-ads",
+    "name": "etsy-offsite-ads",
+    "version": "0.1.0",
+    "description": "用于 Etsy Offsite Ads 费用占比高、归因订单不清或利润受压场景，评估费用门槛、价格调整、退出条件和站内广告分工，输出站外广告决策建议。",
+    "displayName": "Etsy 站外广告决策",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "pricing-profit",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-offsite-ads",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-offsite-ads/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "fef5839b9c41218367afbca2302cff3721b70f9e4940c66841ceaf67ef78b3ef"
+  },
+  {
+    "id": "etsy-pricing-strategy",
+    "name": "etsy-pricing-strategy",
+    "version": "0.1.0",
+    "description": "用于 Etsy 新品定价、促销复盘或利润下滑场景，核算材料工时、平台费用、广告、配送、竞品价格和感知价值，输出定价区间与调整动作。",
+    "displayName": "Etsy 定价策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "etsy",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-pricing-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-pricing-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "1391e8ba4968e439aa217282e94e0da77a95d6c072e818f2ea9e26211f6e7e0c"
+  },
+  {
+    "id": "etsy-print-on-demand",
+    "name": "etsy-print-on-demand",
+    "version": "0.1.0",
+    "description": "用于 Etsy POD 选品、供应商评估或质量问题复盘场景，分析利基、样机真实性、利润率、生产时效和侵权风险，输出 POD 上架与运营检查表。",
+    "displayName": "Etsy 按需印刷运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "etsy",
+      "product-research",
+      "pricing-profit",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-print-on-demand",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-print-on-demand/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "357f560e987daa54a7008341ec22b6c0b069480e3c66c8ef9f03b59c904cd1eb"
+  },
+  {
+    "id": "etsy-product-description",
+    "name": "etsy-product-description",
+    "version": "0.1.0",
+    "description": "用于 Etsy 商品描述缺失、转化弱或售前问题重复场景，组织购买理由、尺寸材质、个性化说明、配送退货和 FAQ，输出可发布的描述结构。",
+    "displayName": "Etsy 商品描述撰写",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "etsy",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-product-description",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-product-description/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "48a4b20d3bff3728535fe81ed796e82180e7510a0b9fdba6f0b9dd13d61bcc38"
+  },
+  {
+    "id": "etsy-review-strategy",
+    "name": "etsy-review-strategy",
+    "version": "0.1.0",
+    "description": "用于 Etsy 评价数量不足、差评修复或 Star Seller 维护场景，优化买家体验、发货后跟进、问题补救和合规引导，输出评价提升动作与监控指标。",
+    "displayName": "Etsy 评价策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "etsy",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-review-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-review-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "0a92bdec7727f4f8d6f5522976198f6a7e46519b3924622379dd8767ee1d3def"
+  },
+  {
+    "id": "etsy-seasonal-strategy",
+    "name": "etsy-seasonal-strategy",
+    "version": "0.1.0",
+    "description": "用于 Etsy 节日档期、旺季备货或季节关键词规划场景，安排上新提前量、素材准备、促销节奏、库存产能和履约风险，输出季节运营日历。",
+    "displayName": "Etsy 季节性运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-seasonal-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-seasonal-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "42e4001e84947bb3c735fda2ea5313dce70dfca6623d9aaba2743811c7491859"
+  },
+  {
+    "id": "etsy-seller-guide",
+    "name": "etsy-seller-guide",
+    "version": "0.1.0",
+    "description": "用于 Etsy 新店启动、运营体检或阶段性复盘场景，串联店铺定位、首批 listing、SEO、定价、配送、广告和数据分析，输出完整运营路线图。",
+    "displayName": "Etsy 卖家运营指南",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-seller-guide",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-seller-guide/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "75f7cd518a5c6f786a4b7231ddaa2dd8b26ab7253bdb15f51e118bf39f10f2b3"
+  },
+  {
+    "id": "etsy-seo",
+    "name": "etsy-seo",
+    "version": "0.1.0",
+    "description": "用于 Etsy listing 曝光不足、搜索词不准或自然流量复盘场景，优化标题、标签、属性、类目、描述和季节关键词，输出 SEO 调整清单与验证指标。",
+    "displayName": "Etsy SEO 优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-seo",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-seo/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "62681d6b32d54a06a1fbec9e064afb1e9f74f2ef46d22aea0837313a49ddc5c8"
+  },
+  {
+    "id": "etsy-seo-tags",
+    "name": "etsy-seo-tags",
+    "version": "0.1.0",
+    "description": "用于 Etsy 标签重复浪费、搜索曝光低或礼品场景拓展场景，重组 13 个标签、属性补位、长尾词和季节词，输出标签优化表与复盘指标。",
+    "displayName": "Etsy 标签优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-seo-tags",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-seo-tags/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "d0868118efd7b51bf507dad34125d8931d6e0c68f777b4a860a65df0feb9d2cb"
+  },
+  {
+    "id": "etsy-shipping-strategy",
+    "name": "etsy-shipping-strategy",
+    "version": "0.1.0",
+    "description": "用于 Etsy 运费过高、国际配送复杂或旺季履约压力场景，设计包邮策略、配送配置、处理时间、追踪和退货成本方案，输出配送优化建议。",
+    "displayName": "Etsy 配送策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "etsy",
+      "pricing-profit",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-shipping-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-shipping-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "c82248fac6f8fa0c1ecb05e4f6a5a1daed097ae39847bedfc4e90646da6d1276"
+  },
+  {
+    "id": "etsy-shop-analytics",
+    "name": "etsy-shop-analytics",
+    "version": "0.1.0",
+    "description": "用于 Etsy 店铺流量波动、转化下滑或 SKU 去留决策场景，分析 Shop Stats、来源、搜索词、热门 listing、广告影响和复购，输出数据诊断与行动优先级。",
+    "displayName": "Etsy 店铺数据分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "advertising-growth",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-shop-analytics",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-shop-analytics/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "bbaf2a07357ce2857d317c2c71fcd4bf5529576a20987c6f2d541abec171d2b2"
+  },
+  {
+    "id": "etsy-shop-branding",
+    "name": "etsy-shop-branding",
+    "version": "0.1.0",
+    "description": "用于 Etsy 店铺信任感弱、视觉不统一或复购不足场景，梳理定位、banner、logo、about story、包装体验和政策表达，输出品牌优化清单。",
+    "displayName": "Etsy 店铺品牌塑造",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-shop-branding",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-shop-branding/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "e168268626357dcbfde84ef13c9c8bca98158001ccce445da9348797d3160c38"
+  },
+  {
+    "id": "etsy-shop-setup",
+    "name": "etsy-shop-setup",
+    "version": "0.1.0",
+    "description": "用于 Etsy 新店上线或开店前检查场景，配置店铺定位、政策、付款、配送、首批 listing、SEO 基础和合规项，输出上线检查表与 30 天复盘计划。",
+    "displayName": "Etsy 开店设置",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "listing-content",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-shop-setup",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-shop-setup/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "f33a1ce814f0ffa888677abe3a8f0dfd329f035491eca86ba83a39be4d9c0800"
+  },
+  {
+    "id": "etsy-social-media-marketing",
+    "name": "etsy-social-media-marketing",
+    "version": "0.1.0",
+    "description": "用于 Etsy 店铺在 Pinterest、Instagram 或 TikTok 获取站外流量场景，规划内容主题、商品承接和追踪口径，输出发布节奏、素材清单与订单复盘指标。",
+    "displayName": "Etsy 社交媒体营销",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy",
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "tiktok-shop",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-social-media-marketing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-social-media-marketing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "40f2ccb761b5de2059462611be18de4cd6fe3ae417246f01c3a6eeeadcd59881"
+  },
+  {
+    "id": "etsy-star-seller",
+    "name": "etsy-star-seller",
+    "version": "0.1.0",
+    "description": "用于 Etsy Star Seller 达成、丢标预警或旺季指标维护场景，跟踪消息响应、准时发货、追踪、五星评价和异常订单，输出指标修复计划。",
+    "displayName": "Etsy Star Seller 管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "etsy"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "store-operations"
+    ],
+    "searchTags": [
+      "etsy",
+      "customer-voice",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-etsy-star-seller",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "etsy-star-seller/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "0684fa6f564f6597f11943f210c800d493a54efe38d56f068a5a022f6b3a3f92"
+  },
+  {
+    "id": "file-integrity-monitoring",
+    "name": "file-integrity-monitoring",
+    "version": "0.1.0",
+    "description": "用于 Amazon 运营资料和数据文件安全监控场景，跟踪关键文件变更、缺失、校验失败和异常访问，输出监控规则。",
+    "displayName": "文件完整性监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-file-integrity-monitoring",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "file-integrity-monitoring/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "80d3cbd9283f9c8df6632ed3baee460194f2c850ef69c5b487fea690e2d900b7"
+  },
+  {
+    "id": "google-shopping-optimization",
+    "name": "google-shopping-optimization",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外Google Shopping投放辅助场景，优化商品标题、Feed字段、价格、图片和转化追踪，输出优化清单。",
+    "displayName": "Google Shopping优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-google-shopping-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "google-shopping-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "1f68882caa55f274611141d02158d3ba24bf5445ba570d860cd15cf38789e68e"
+  },
+  {
+    "id": "influencer-outreach",
+    "name": "influencer-outreach",
+    "version": "0.1.0",
+    "description": "用于跨境电商达人合作拓展场景，筛选匹配人选、设计触达话术和合作条件，输出外联名单、邮件或私信模板与回复率复盘表。",
+    "displayName": "达人外联",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "cross-platform"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-influencer-outreach",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "influencer-outreach/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b3fac74ad9ab60fec6dd1b98d2179d9476fdeca53e94ef43e6389119a3d363eb"
+  },
+  {
+    "id": "inventory-tracking-software",
+    "name": "inventory-tracking-software",
+    "version": "0.1.0",
+    "description": "用于 Amazon 库存健康监控场景，跟踪可售天数、补货周期、滞销、断货风险和仓储成本，输出补货与清仓建议。",
+    "displayName": "库存追踪",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-inventory-tracking-software",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "inventory-tracking-software/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "d19c3e960e286d04c64d29769087acba14eedb1a4034245d536f11c0d17b1356"
+  },
+  {
+    "id": "localization-testing",
+    "name": "localization-testing",
+    "version": "0.1.0",
+    "description": "用于 Amazon 多站点本地化上线检查场景，审核语言、单位、尺码、合规词、文化表达和页面一致性，输出本地化问题清单。",
+    "displayName": "本地化测试",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-localization-testing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "localization-testing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "aa53e24295dae023c5ab433dc036eca8ec677492ffdeff060fd998e567165c43"
+  },
+  {
+    "id": "market-gap-analysis",
+    "name": "market-gap-analysis",
+    "version": "0.1.0",
+    "description": "用于 Amazon 新品机会和差异化定位场景，比较需求、竞品覆盖、评价痛点、价格带和供应能力，输出市场缺口报告。",
+    "displayName": "市场缺口分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-market-gap-analysis",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "market-gap-analysis/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "ec9fa45e59d0289689f02645a7afb0ad3930ac1e52aa3dc72f6537624f713e8e"
+  },
+  {
+    "id": "minimum-advertised-price",
+    "name": "minimum-advertised-price",
+    "version": "0.1.0",
+    "description": "用于 Amazon MAP政策和渠道价格治理场景，监控破价、授权卖家、证据截图和处理路径，输出价格治理清单。",
+    "displayName": "最低广告价管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-minimum-advertised-price",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "minimum-advertised-price/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "2aa498b8874998a29cefd682f70832a19c09ce868a91a66c0cdb50e226632f02"
+  },
+  {
+    "id": "multichannel-e-commerce-management",
+    "name": "multichannel-e-commerce-management",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与其他销售渠道协同运营场景，统筹商品、库存、价格、订单和复盘指标，输出多渠道管理方案。",
+    "displayName": "多渠道电商管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-multichannel-ecommerce",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "multichannel-ecommerce/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "3867fa27dfb0352ed7586400318f094f5fea646b7e1eab339d400858c65bc547"
+  },
+  {
+    "id": "omnichannel-e-commerce",
+    "name": "omnichannel-e-commerce",
+    "version": "0.1.0",
+    "description": "用于 Amazon 全渠道触点整合场景，协调广告、内容、社媒、邮件、客服和履约体验，输出统一经营计划。",
+    "displayName": "全渠道电商运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-omnichannel-ecommerce",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "omnichannel-ecommerce/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "045c1d1cb150af0942cdf27306c54d451d6c8269dba7dc682234df53d6a1f218"
+  },
+  {
+    "id": "online-reputation-management",
+    "name": "online-reputation-management",
+    "version": "0.1.0",
+    "description": "用于 Amazon 品牌口碑和站外声量治理场景，监控评论、社媒、搜索结果和风险内容，输出声誉修复与维护计划。",
+    "displayName": "在线声誉管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-online-reputation-management",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "online-reputation-management/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "24c94951bb651c591d22c0b3d5c368ba2d3b71caba922ea4ccf0765572965384"
+  },
+  {
+    "id": "price-optimization-tool",
+    "name": "price-optimization-tool",
+    "version": "0.1.0",
+    "description": "用于跨境商品定价、促销折扣或利润复盘场景，拆解成本、竞品价格、汇率税费、平台佣金和广告费用，输出价格区间、调价动作与贡献毛利验证表。",
+    "displayName": "价格优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "cross-platform"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "cross-platform",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-price-optimization-tool",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "price-optimization-tool/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "4452aef67ed74cb504fde7f886a2371cc91728b22f4d2d4b8f5eb44fefd7acd4"
+  },
+  {
+    "id": "product-description-generator",
+    "name": "product-description-generator",
+    "version": "0.1.0",
+    "description": "用于 Amazon 商品描述和卖点文案准备场景，基于人群、功能、证据和合规边界组织表达，输出可审核描述草案。",
+    "displayName": "商品描述生成",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-description-generator",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-description-generator/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "8e1a51218538bbd882e7aff8cfdeaa5911818c24f28e697b37e4072475226bdf"
+  },
+  {
+    "id": "product-differentiation-amazon",
+    "name": "product-differentiation-amazon",
+    "version": "0.1.0",
+    "description": "用于 Amazon 产品定位和卖点升级场景，分析竞品同质化、评价痛点、功能缺口和价格带，输出差异化方案。",
+    "displayName": "Amazon产品差异化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-differentiation-amazon",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-differentiation/product-differentiation-amazon/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "7598fe99bce8974fd38b6fcb79911d62998b135f3b073d72b310f378df28459d"
+  },
+  {
+    "id": "product-differentiation-ebay",
+    "name": "product-differentiation-ebay",
+    "version": "0.1.0",
+    "description": "用于 eBay 同质化竞争、低价压力或新品定位场景，基于 sold listings、feedback、condition、兼容性和物流承诺设计卖点，输出差异化方案与测试指标。",
+    "displayName": "eBay 产品差异化",
+    "collection": "ecosystem",
+    "platforms": [
+      "ebay"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "customer-voice",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "ebay",
+      "listing-content",
+      "customer-voice",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-differentiation-ebay",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-differentiation/product-differentiation-ebay/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "0b717d942771857e534055cf87e5be89eeb325f3ef876068075f09daef9d8435"
+  },
+  {
+    "id": "product-differentiation-shopify",
+    "name": "product-differentiation-shopify",
+    "version": "0.1.0",
+    "description": "用于 Shopify 商品同质化、价格战或广告承诺不清场景，梳理竞品差异、买家痛点和可验证证据，输出价值主张、页面卖点与素材验证清单。",
+    "displayName": "Shopify 产品差异化",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-differentiation-shopify",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-differentiation/product-differentiation-shopify/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "919aeaa7b3e55e350bce98a68caebc734fc739f12cb9058814840710d96766f7"
+  },
+  {
+    "id": "product-differentiation-tiktok",
+    "name": "product-differentiation-tiktok",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 选品同质化、内容卖点不清或价格缺乏支撑场景，分析竞品、评论痛点和可演示优势，输出差异化定位、内容证据与商品页承接建议。",
+    "displayName": "TikTok Shop 产品差异化",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-differentiation-tiktok",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-differentiation/product-differentiation-tiktok/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "68dd92ffdaa4011284541e916b1772cdfcc825769e3fb5cfadeaa8862dde45e2"
+  },
+  {
+    "id": "product-launch-strategy",
+    "name": "product-launch-strategy",
+    "version": "0.1.0",
+    "description": "用于 Amazon 新品上市规划场景，设计内容、广告、价格、库存、评价积累和复盘节奏，输出上市执行计划。",
+    "displayName": "产品首发策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-launch-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-launch-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "533b1b0f82d82f14722aaceccc43c8bde7eedf87713a66e3513511ce7c300f8d"
+  },
+  {
+    "id": "product-page-seo",
+    "name": "product-page-seo",
+    "version": "0.1.0",
+    "description": "用于 Amazon 商品页自然搜索优化场景，分析关键词覆盖、标题、五点、A+、图片和转化信号，输出SEO改版建议。",
+    "displayName": "商品页SEO",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-page-seo",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-page-seo/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "07790065c15e80107f6bb4728403fb52301c618038f94f197a229af091e0c179"
+  },
+  {
+    "id": "product-review-analysis",
+    "name": "product-review-analysis",
+    "version": "0.1.0",
+    "description": "用于 Amazon 产品评价复盘场景，拆解星级、主题、差评原因、竞品反馈和功能需求，输出产品改进优先级。",
+    "displayName": "商品评价分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-review-analysis",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-review-analysis/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9c13f9fac5ae81a1d78429c540f1b670e57b64e0de7c50da2df156d893a894be"
+  },
+  {
+    "id": "product-title-optimization",
+    "name": "product-title-optimization",
+    "version": "0.1.0",
+    "description": "用于 Amazon 标题改写和搜索匹配提升场景，平衡核心关键词、卖点、规格、可读性和合规要求，输出标题候选方案。",
+    "displayName": "商品标题优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-product-title-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "product-title-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "1874250dbb975b99a022d454b095a550d0ac82db630cd3a813b0c17ccffd2682"
+  },
+  {
+    "id": "profit-margin-calculator-amazon",
+    "name": "profit-margin-calculator-amazon",
+    "version": "0.1.0",
+    "description": "用于 Amazon 价格和利润评估场景，计算采购、头程、FBA、广告、退货和平台费用，输出利润模型与盈亏警戒线。",
+    "displayName": "Amazon利润测算",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-profit-margin-calculator-amazon",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "profit-margin-calculator/profit-margin-calculator-amazon/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "a3c9eea48afc858e5f4edd0d1dace986af8d47369343cc76db138daf7dc74eac"
+  },
+  {
+    "id": "profit-margin-calculator-shopify",
+    "name": "profit-margin-calculator-shopify",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与Shopify渠道利润对比场景，核算履约、支付、广告、退货和服务成本，输出渠道利润对照表。",
+    "displayName": "Shopify利润对标测算",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "shopify",
+      "pricing-profit",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-profit-margin-calculator-shopify",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "profit-margin-calculator/profit-margin-calculator-shopify/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "69a94e8185d76d2f1518c6421e9ecae9e7b01d6766baeddf6b8f689c43230d1d"
+  },
+  {
+    "id": "profit-margin-calculator-tiktok",
+    "name": "profit-margin-calculator-tiktok",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与TikTok Shop渠道利润对比场景，核算佣金、广告、履约、退货和达人费用，输出利润对照建议。",
+    "displayName": "TikTok渠道利润对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "tiktok-shop",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-profit-margin-calculator-tiktok",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "profit-margin-calculator/profit-margin-calculator-tiktok/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "04454cf7cd08a48bade02c6a4f1168eccb7bd1a2a423f208a0f016889f6b42f0"
+  },
+  {
+    "id": "profit-margin-calculator-walmart",
+    "name": "profit-margin-calculator-walmart",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与Walmart渠道利润对比场景，核算平台费、配送、广告、退货和价格约束，输出渠道利润对照表。",
+    "displayName": "Walmart渠道利润对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "walmart"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "walmart",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-profit-margin-calculator-walmart",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "profit-margin-calculator/profit-margin-calculator-walmart/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "5c99370d2cf81e40928b8b3da54dbad603886c6017c6b620499ecd566864da2e"
+  },
+  {
+    "id": "public-status-page",
+    "name": "public-status-page",
+    "version": "0.1.0",
+    "description": "用于 Amazon 相关服务状态沟通场景，整理系统可用性、故障影响、更新时间和恢复进度，输出对外状态说明。",
+    "displayName": "公开状态页",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-public-status-page",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "public-status-page/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "739470069ecac3b509f3fddcf805d106be2ef740408d332e7f52be07425c0172"
+  },
+  {
+    "id": "restock-alert",
+    "name": "restock-alert",
+    "version": "0.1.0",
+    "description": "用于 Amazon 库存预警和补货计划场景，监控可售天数、销量速度、生产周期、头程和仓储限制，输出补货提醒。",
+    "displayName": "补货提醒",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-restock-alert",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "restock-alert/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9534b8351cda049530a2da447672b4b4e7b3fb1a16ad52148e15de12f5c79b9c"
+  },
+  {
+    "id": "review-monitoring",
+    "name": "review-monitoring",
+    "version": "0.1.0",
+    "description": "用于 Amazon 评论和评分持续监控场景，跟踪新增差评、主题变化、星级波动和异常信号，输出口碑预警摘要。",
+    "displayName": "评价监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-review-monitoring",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "review-monitoring/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "cb755efe502b25230c40fd50074df9dfec397d8d2cfa023a71c3bf39dcd9cc98"
+  },
+  {
+    "id": "sales-tracking-tool",
+    "name": "sales-tracking-tool",
+    "version": "0.1.0",
+    "description": "用于 Amazon 销售表现跟踪场景，监测销量、收入、订单、促销、广告贡献和利润变化，输出销售复盘表。",
+    "displayName": "销售追踪",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "advertising-growth",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-sales-tracking-tool",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "sales-tracking-tool/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "a64cea97d8ebac9e5a348fe39feaa4ea43f50cac694ac57e224e59cdbcf1948c"
+  },
+  {
+    "id": "share-of-shelf",
+    "name": "share-of-shelf",
+    "version": "0.1.0",
+    "description": "用于 Amazon 搜索结果和类目页面占位复盘场景，评估品牌露出、竞品排名、广告位和自然位，输出货架份额报告。",
+    "displayName": "货架份额分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-share-of-shelf",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "share-of-shelf/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "8170bf033f39681ede5b27e46efcb04e56dde9baf8a34ffe48d8abd021a9fae3"
+  },
+  {
+    "id": "shopify-a-b-testing",
+    "name": "shopify-a-b-testing",
+    "version": "0.1.0",
+    "description": "用于 Shopify 页面、价格、优惠或结账路径需要实验验证的场景，设计假设、样本、指标和停止条件，输出 A/B 测试方案与结果判读口径。",
+    "displayName": "Shopify A/B 测试",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "store-operations"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-ab-testing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-ab-testing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b9a6926c593aa3792ddc0c571c0a730ca1603e01146765f29d2b46cf4fce180e"
+  },
+  {
+    "id": "shopify-analytics-guide",
+    "name": "shopify-analytics-guide",
+    "version": "0.1.0",
+    "description": "用于 Shopify 经营数据复盘、渠道归因或漏斗异常诊断场景，整合 Shopify Analytics、GA4、订单和退款数据，输出指标看板、问题定位与行动优先级。",
+    "displayName": "Shopify 数据分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-analytics-guide",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-analytics-guide/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "57782d9bfdbea86c25a4644a6a70e5477bd13911ba965ddf908aff974f5a6282"
+  },
+  {
+    "id": "shopify-app-recommendations",
+    "name": "shopify-app-recommendations",
+    "version": "0.1.0",
+    "description": "用于 Shopify 功能扩展、插件冗余或工具替换决策场景，评估需求、权限、性能、成本和迁移风险，输出应用候选对比、试用计划与回滚方案。",
+    "displayName": "Shopify 应用选型",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-app-recommendations",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-app-recommendations/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "da68700ee3a6fd0a6d36358b89f8b60122cd77bb955c5d390d6d74c8b6007f67"
+  },
+  {
+    "id": "shopify-blog-strategy",
+    "name": "shopify-blog-strategy",
+    "version": "0.1.0",
+    "description": "用于 Shopify 内容获客、SEO 长尾增长或商品教育场景，规划关键词集群、内容主题、内链和转化路径，输出博客选题表、内容结构与复盘指标。",
+    "displayName": "Shopify 博客策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "shopify",
+      "listing-content",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-blog-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-blog-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "8dbda8acd14a38aef599f7fc449e656bacbebb7d93a62fa8a5a0aaf4e9163f32"
+  },
+  {
+    "id": "shopify-cart-abandonment",
+    "name": "shopify-cart-abandonment",
+    "version": "0.1.0",
+    "description": "用于 Shopify 弃购率偏高、结账流失或恢复收入复盘场景，分析购物车/结账阻力、触达流程和优惠策略，输出挽回方案与验证指标。",
+    "displayName": "Shopify 弃购挽回",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-cart-abandonment",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-cart-abandonment/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "98811bb4915448d950edb1374a21c6c1d35293367ef10d6e743a1ad17360bd87"
+  },
+  {
+    "id": "shopify-checkout-customization",
+    "name": "shopify-checkout-customization",
+    "version": "0.1.0",
+    "description": "用于 Shopify 结账转化、支付/配送展示或 B2B/订阅结账体验优化场景，评估可定制范围、信任信息和合规限制，输出结账调整方案、测试清单与转化指标。",
+    "displayName": "Shopify 结账定制",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "shopify",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-checkout-customization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-checkout-customization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9371426bfe82191449d69725e06578d7405a15f800293e98437692bc1bf765dc"
+  },
+  {
+    "id": "shopify-conversion-optimization",
+    "name": "shopify-conversion-optimization",
+    "version": "0.1.0",
+    "description": "用于 Shopify 流量充足但购买转化偏低场景，诊断商品页、集合页、购物车、信任资产和移动端阻力，输出转化优化清单、实验优先级与复盘指标。",
+    "displayName": "Shopify 转化优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "shopify",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-conversion-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-conversion-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "54c892b31c2dd236789ff40fad191257d0fc1cf0f2fde41e4e2e6a753b755f7c"
+  },
+  {
+    "id": "shopify-dropshipping",
+    "name": "shopify-dropshipping",
+    "version": "0.1.0",
+    "description": "用于 Shopify 代发货选品、供应商验证或履约风险控制场景，核查样品、交付时效、售后承诺和利润结构，输出供应商评估、商品上架要求与风险预案。",
+    "displayName": "Shopify 代发货运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "shopify",
+      "product-research",
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-dropshipping",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-dropshipping/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "d8120473479437e8a32f334c5d57c28284811dcd4ad3c47372e11622d9d7abfa"
+  },
+  {
+    "id": "shopify-email-flows",
+    "name": "shopify-email-flows",
+    "version": "0.1.0",
+    "description": "用于 Shopify 邮件/SMS 自动化搭建、弃购挽回或复购提升场景，设计欢迎、浏览放弃、购买后、赢回和分群流程，输出触达地图、文案要点与收入复盘指标。",
+    "displayName": "Shopify 邮件自动化",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "listing-content",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-email-flows",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-email-flows/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "5ef61dd25c5d19da015c01449d46300af4a5af36f2773b8467f8e46e07f3ff69"
+  },
+  {
+    "id": "shopify-facebook-instagram-shop",
+    "name": "shopify-facebook-instagram-shop",
+    "version": "0.1.0",
+    "description": "用于 Shopify 对接 Facebook/Instagram Shop、商品目录审核或社交购物承接场景，检查 catalog、像素/CAPI、商品状态和广告链路，输出配置清单、问题修复与数据一致性指标。",
+    "displayName": "Shopify Facebook/Instagram 商店",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-facebook-instagram-shop",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-facebook-instagram-shop/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "62fd1865f76de74ec7acc0424d0cba45743d4c266c879d142fd6c74d443cf42b"
+  },
+  {
+    "id": "shopify-google-channel",
+    "name": "shopify-google-channel",
+    "version": "0.1.0",
+    "description": "用于 Shopify 接入 Google Merchant Center、Shopping Ads 或免费商品列表场景，检查 feed 字段、GTIN、审核错误、价格库存同步和转化追踪，输出修复清单与投放准备表。",
+    "displayName": "Shopify Google 渠道",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-google-channel",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-google-channel/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "00ff52fdd160ef23a73359cff5a9cda85458312de1a4483c477f0dfc43626800"
+  },
+  {
+    "id": "shopify-international",
+    "name": "shopify-international",
+    "version": "0.1.0",
+    "description": "用于 Shopify 多国家销售、本地化或 Markets 配置场景，评估货币、语言、配送、税费、支付和国家级利润，输出国际化配置方案、上线检查与市场复盘指标。",
+    "displayName": "Shopify 国际化",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-international",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-international/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "1578026e87bba8b844dc48b610997b22d433a18605b432767895c4cf4765a086"
+  },
+  {
+    "id": "shopify-inventory-management",
+    "name": "shopify-inventory-management",
+    "version": "0.1.0",
+    "description": "用于 Shopify 多仓库存、补货预警、预售或 3PL/ERP 同步场景，分析销量预测、批次、退货回库和缺货风险，输出库存策略、补货计划与异常监控指标。",
+    "displayName": "Shopify 库存管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-inventory-management",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-inventory-management/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "82e264aaedccfcb79529512c9749857b8c4c82bb535054d5cfd140599acd9c6b"
+  },
+  {
+    "id": "shopify-landing-page-builder",
+    "name": "shopify-landing-page-builder",
+    "version": "0.1.0",
+    "description": "用于 Shopify 广告落地页承接、活动页搭建或单品转化提升场景，规划首屏价值、证据模块、FAQ、埋点和速度要求，输出页面结构、素材清单与测试计划。",
+    "displayName": "Shopify 落地页搭建",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "shopify",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-landing-page-builder",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-landing-page-builder/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "34c5771b6e152ae9d61e37250098e548c5169d7bf8bfea8145490c119e59f39c"
+  },
+  {
+    "id": "shopify-loyalty-program",
+    "name": "shopify-loyalty-program",
+    "version": "0.1.0",
+    "description": "用于 Shopify 会员、积分、推荐或复购激励设计场景，评估客户分层、奖励成本、LTV 和滥用风险，输出忠诚度机制、触达规则与效果复盘表。",
+    "displayName": "Shopify 会员忠诚度",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "customer-voice",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-loyalty-program",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-loyalty-program/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "5bc19b227f3e6fa7af4c468d1682313aee4a8356e1b6c4ed45d8f97062c2cd20"
+  },
+  {
+    "id": "shopify-marketing",
+    "name": "shopify-marketing",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与Shopify站外营销协同场景，比较流量渠道、内容资产、转化路径和复购机制，输出渠道协同建议。",
+    "displayName": "Shopify营销对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "shopify"
+    ],
+    "sceneTags": [
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "shopify",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-marketing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-marketing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "98f1f9832724be75641c4e5a9dbad7a4401b6d6ea6e4c7c6edd8fccb8ba3aa4c"
+  },
+  {
+    "id": "shopify-migration",
+    "name": "shopify-migration",
+    "version": "0.1.0",
+    "description": "用于迁移到 Shopify 或重建店铺数据与 SEO 资产场景，梳理商品、客户、订单、URL、主题和测试订单风险，输出迁移计划、校验清单与上线回滚方案。",
+    "displayName": "Shopify 迁移",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "listing-content",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-migration",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-migration/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "cadbf5114c445d671db8924068fad56f9769aa35d42fc8fa280250c8c5f7be36"
+  },
+  {
+    "id": "shopify-page-speed",
+    "name": "shopify-page-speed",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外独立站承接页速度优化场景，检查加载时间、图片、脚本和移动端体验，输出性能修复建议。",
+    "displayName": "Shopify页面速度对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "shopify"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "amazon",
+      "shopify",
+      "listing-content",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-page-speed",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-page-speed/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "6e134ded1588ef5f016a832b745603739049bf0facae65472f1d312c9926306c"
+  },
+  {
+    "id": "shopify-product-photography-guide",
+    "name": "shopify-product-photography-guide",
+    "version": "0.1.0",
+    "description": "用于 Shopify 商品图、生活方式图或跨渠道素材缺口场景，规划主图顺序、细节/尺寸展示、UGC、视频和品牌一致性，输出拍摄清单、素材规格与转化验证指标。",
+    "displayName": "Shopify 商品摄影",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "shopify",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-product-photography-guide",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-product-photography-guide/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "d680f4920f9d3175b95c61a19e02281e750d39cacf2603897a7735ffec08f122"
+  },
+  {
+    "id": "shopify-seo",
+    "name": "shopify-seo",
+    "version": "0.1.0",
+    "description": "用于 Shopify 自然搜索增长、集合页/商品页关键词布局或技术 SEO 诊断场景，分析索引、结构化数据、内链、速度和内容机会，输出 SEO 优化清单与 Search Console 复盘指标。",
+    "displayName": "Shopify 搜索优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "listing-content",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-seo",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-seo/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "5e24c763521ca2fba129daf654fc8ad559056fc6628133e5d853c4316a3f2e18"
+  },
+  {
+    "id": "shopify-speed-optimization",
+    "name": "shopify-speed-optimization",
+    "version": "0.1.0",
+    "description": "用于 Shopify 页面速度、Core Web Vitals 或移动端体验拖累转化场景，排查主题代码、图片、字体、脚本和第三方应用负载，输出性能修复优先级与转化监测方案。",
+    "displayName": "Shopify 速度优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "listing-content"
+    ],
+    "searchTags": [
+      "shopify",
+      "listing-content"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-speed-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-speed-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b33084404bd2b4e734ca8aa0ce70b3f631a3de5ba845930c9e7d542517efbb8f"
+  },
+  {
+    "id": "shopify-store-setup",
+    "name": "shopify-store-setup",
+    "version": "0.1.0",
+    "description": "用于 Shopify 新店搭建、上线前检查或基础经营配置场景，梳理定位、主题、商品结构、支付配送、政策页、SEO 和埋点，输出开店配置清单与上线验收表。",
+    "displayName": "Shopify 开店设置",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "shopify",
+      "listing-content",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-store-setup",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-store-setup/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b03f391b081efdeadb94990ebd7c8d7fdd268ec22859737a96d1c3fd9a7ad74d"
+  },
+  {
+    "id": "shopify-subscription-setup",
+    "name": "shopify-subscription-setup",
+    "version": "0.1.0",
+    "description": "用于 Shopify 订阅商品、补货周期或会员续费业务设计场景，规划订阅权益、价格、取消/跳过流程、通知和条款，输出订阅配置方案、留存指标与风险清单。",
+    "displayName": "Shopify 订阅业务设置",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-subscription-setup",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-subscription-setup/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "e652a02833e359a51003e7af21e552fae165d7cd0da89fb7fb19ed5a5b251fbe"
+  },
+  {
+    "id": "shopify-tax-compliance",
+    "name": "shopify-tax-compliance",
+    "version": "0.1.0",
+    "description": "用于 Shopify 跨州/跨国销售、VAT/GST 或税费显示异常场景，梳理销售地区、税号、商品税类、发票和报表流程，输出税务配置检查、待确认事项与月度核对清单。",
+    "displayName": "Shopify 税务合规",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-tax-compliance",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-tax-compliance/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "d6d852a45a44c4f41c9734578bd98896389715c29e2493cab28d130d84e0208f"
+  },
+  {
+    "id": "shopify-theme-optimization",
+    "name": "shopify-theme-optimization",
+    "version": "0.1.0",
+    "description": "用于 Shopify 主题升级、模板优化、移动端体验或 app 冲突处理场景，审查 section 结构、PDP/集合页、残留代码和上线风险，输出主题调整方案、QA 清单与回滚步骤。",
+    "displayName": "Shopify 主题优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "shopify",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-theme-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-theme-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "e5d8b92081092a44fad758fe73f590b5c8f0a861ff78e4a13771e7a4d523d731"
+  },
+  {
+    "id": "shopify-upsell-cross-sell",
+    "name": "shopify-upsell-cross-sell",
+    "version": "0.1.0",
+    "description": "用于 Shopify 提升 AOV、组合销售或购买后推荐场景，分析互补品、触发位置、包邮门槛、库存和毛利，输出推荐矩阵、bundle 方案与利润复盘指标。",
+    "displayName": "Shopify 加购与交叉销售",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-upsell-cross-sell",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-upsell-cross-sell/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "f9930522aba66d48f4c948ba2b2d0a378a14d4262b137a3a5031c2ea4334671d"
+  },
+  {
+    "id": "shopify-wholesale-channel",
+    "name": "shopify-wholesale-channel",
+    "version": "0.1.0",
+    "description": "用于 Shopify 批发、经销商、企业采购或 B2B 渠道搭建场景，设计客户准入、价格表、MOQ、账期、税免和库存规则，输出批发政策、订单流程与渠道复盘指标。",
+    "displayName": "Shopify 批发/B2B 渠道",
+    "collection": "ecosystem",
+    "platforms": [
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "shopify",
+      "pricing-profit",
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shopify-wholesale-channel",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shopify-wholesale-channel/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "78cee84e02d52f26e6c13fdc9b38ad9a4686c4ae20a9cdca51a8abe84475d3a5"
+  },
+  {
+    "id": "shoppable-video",
+    "name": "shoppable-video",
+    "version": "0.1.0",
+    "description": "用于 Amazon 商品视频和站外可购物内容场景，设计脚本、卖点、商品卡、转化入口和复盘指标，输出视频转化方案。",
+    "displayName": "可购物视频",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-shoppable-video",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "shoppable-video/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "4a860d2904855b3a8ad5fcf78d06fb3f55185183dbb596728da5bf781e2ba765"
+  },
+  {
+    "id": "social-media-monitor",
+    "name": "social-media-monitor",
+    "version": "0.1.0",
+    "description": "用于 Amazon 品牌站外舆情和趋势监控场景，追踪话题、竞品、达人内容、风险评论和需求信号，输出社媒监测摘要。",
+    "displayName": "社媒监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation",
+      "tiktok-shop"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-social-media-monitor",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "social-media-monitor/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "0548a5b1c2fbb9ebe37cc211a93f0496281cde286747cd629ffd564b186b9936"
+  },
+  {
+    "id": "supply-chain-optimization-amazon-lite",
+    "name": "supply-chain-optimization-amazon-lite",
+    "version": "0.1.0",
+    "description": "用于 Amazon 供应链轻量优化场景，分析补货、库存、供应商、交期、成本和断货风险，输出供应链改进清单。",
+    "displayName": "Amazon供应链优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-supply-chain-optimization-amazon",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "supply-chain-optimization/supply-chain-optimization-amazon/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "e8d79b247e10d2f8efe26d45c0af82a092132b8159620890d22020c5fa014e55"
+  },
+  {
+    "id": "supply-chain-optimization-shopify",
+    "name": "supply-chain-optimization-shopify",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与Shopify履约链路对比场景，分析库存分配、发货时效、成本和退货影响，输出供应链协调建议。",
+    "displayName": "Shopify供应链对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "shopify"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "shopify",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-supply-chain-optimization-shopify",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "supply-chain-optimization/supply-chain-optimization-shopify/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "d2f889c876823c9a332c8cb0f017ef664f18a93d973d4bdfce24c12a637103b1"
+  },
+  {
+    "id": "supply-chain-optimization-tiktok",
+    "name": "supply-chain-optimization-tiktok",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与TikTok Shop爆品履约对比场景，评估库存弹性、发货时效、退货和内容带货波动，输出备货建议。",
+    "displayName": "TikTok供应链对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "tiktok-shop",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-supply-chain-optimization-tiktok",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "supply-chain-optimization/supply-chain-optimization-tiktok/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9d264bf0045fae8c39dc04ae0c3432e0277c920eb7e3da11bd96d005529c8f5f"
+  },
+  {
+    "id": "supply-chain-optimization-walmart",
+    "name": "supply-chain-optimization-walmart",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与Walmart渠道履约对比场景，分析补货周期、仓配规则、库存风险和成本差异，输出渠道供应链建议。",
+    "displayName": "Walmart供应链对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "walmart"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "walmart",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-supply-chain-optimization-walmart",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "supply-chain-optimization/supply-chain-optimization-walmart/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b961d5baa0d8dd0ea35d4787f903818ead12021a2444e0fd083d2c1560cbf577"
+  },
+  {
+    "id": "synthetic-monitoring",
+    "name": "synthetic-monitoring",
+    "version": "0.1.0",
+    "description": "用于 Amazon 相关页面和关键流程可用性巡检场景，模拟访问、搜索、下单链路和接口响应，输出可用性报告。",
+    "displayName": "合成监控",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-synthetic-monitoring",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "synthetic-monitoring/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "82420f476880b3d2fe24dfb46e476c5fee6ae9cf1650336165aff5679e8fdb69"
+  },
+  {
+    "id": "tiktok-creator-marketplace",
+    "name": "tiktok-creator-marketplace",
+    "version": "0.1.0",
+    "description": "用于 TikTok Creator Marketplace 达人招募和合作评估场景，匹配受众、报价、brief 和授权条件，输出达人短名单、合作方案与效果复盘指标。",
+    "displayName": "TikTok 达人市场合作",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-creator-marketplace",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-creator-marketplace/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "46efd13faaa72708db2c0a4b7a269ccd37a7012cb51f28921638f7c63f6f46c2"
+  },
+  {
+    "id": "tiktok-influencer-marketing",
+    "name": "tiktok-influencer-marketing",
+    "version": "0.1.0",
+    "description": "用于 TikTok 达人种草、UGC 授权或带货增长场景，规划达人画像、脚本要求、样品和费用结构，输出合作排期、内容审核标准与销售复盘表。",
+    "displayName": "TikTok 达人营销",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-influencer-marketing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-influencer-marketing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "569fffac0c9b68ff39f721ab271cc1b6ec40c0c5f46c1f05ea9c03686157722a"
+  },
+  {
+    "id": "tiktok-live-selling",
+    "name": "tiktok-live-selling",
+    "version": "0.1.0",
+    "description": "用于 TikTok 直播带货开播、放量或复盘场景，设计选品排品、主播话术、福利节奏和场控流程，输出直播脚本、风险提示与转化复盘指标。",
+    "displayName": "TikTok 直播带货",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "product-research",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "product-research",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-live-selling",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-live-selling/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "a6182e78cf1eeff8bf4cb886783dddd81e445e8a5b4b7dde242890c6c1a334c2"
+  },
+  {
+    "id": "tiktok-shop-ads",
+    "name": "tiktok-shop-ads",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 广告冷启动、放量或利润复盘场景，分析素材、商品卡、预算分层和转化漏斗，输出投放计划、停放规则与优化验证指标。",
+    "displayName": "TikTok Shop 广告投放",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "pricing-profit",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-ads",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-ads/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "2c56598defa5f744c0a3264cad569d27aa15920501c660b14cf8195a50e7870e"
+  },
+  {
+    "id": "tiktok-shop-affiliate-program",
+    "name": "tiktok-shop-affiliate-program",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 联盟带货搭建和达人规模化管理场景，设计佣金、样品、内容审核和归因规则，输出联盟策略、达人分层与作弊风险清单。",
+    "displayName": "TikTok Shop 联盟计划",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-affiliate-program",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-affiliate-program/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "cd2c72cbc953f97d024a159eb43c226af263307e7fb4f2b821b5530edc79272c"
+  },
+  {
+    "id": "tiktok-shop-analytics",
+    "name": "tiktok-shop-analytics",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 经营复盘、增长瓶颈定位或渠道归因场景，拆解商品、内容、达人、直播、广告和履约数据，输出看板结论、优先动作与验证指标。",
+    "displayName": "TikTok Shop 数据分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "advertising-growth",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-analytics",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-analytics/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "80302d78a5c6c3ef1293772c3e0b83ffa0efa52697ff14f6a17567655a83496a"
+  },
+  {
+    "id": "tiktok-shop-branding",
+    "name": "tiktok-shop-branding",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 建立品牌识别、提升信任和统一内容风格场景，梳理账号人设、视觉、卖点、达人表达和包装体验，输出品牌规范与落地检查表。",
+    "displayName": "TikTok Shop 品牌建设",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-branding",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-branding/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "7cc6f8a048fb7a7063e416c6957b3e371a54df3695ddbf71c0c838d50b285e00"
+  },
+  {
+    "id": "tiktok-shop-compliance",
+    "name": "tiktok-shop-compliance",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 上架、内容投放、达人话术或违规申诉场景，核查类目资质、禁限售、商品声明和履约要求，输出合规风险清单与整改动作。",
+    "displayName": "TikTok Shop 合规",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "advertising-growth",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-compliance",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-compliance/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "7c248621ff1a6929a99aa3bfeba3c85fa8eed0692d595df5a8e750674a9a2d91"
+  },
+  {
+    "id": "tiktok-shop-content-strategy",
+    "name": "tiktok-shop-content-strategy",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外短视频种草策略场景，规划内容主题、卖点演示、达人素材和转化路径，输出内容策略方案。",
+    "displayName": "TikTok内容策略对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "amazon",
+      "tiktok-shop",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-content-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-content-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "f39725e14e2b287fa74915f5d69579ad35118747ea9a20e5697f1e1c3e19f86f"
+  },
+  {
+    "id": "tiktok-shop-conversion",
+    "name": "tiktok-shop-conversion",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 商品点击高但下单弱、结账阻力大或承诺不一致场景，诊断商品卡、主图、价格、评价和优惠链路，输出转化优化动作与测试指标。",
+    "displayName": "TikTok Shop 转化优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "store-operations"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "pricing-profit",
+      "customer-voice",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-conversion",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-conversion/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9472305a706333aae949d3ae41e985ebe3250fba0125927b925e4577a62e35d1"
+  },
+  {
+    "id": "tiktok-shop-creator-management",
+    "name": "tiktok-shop-creator-management",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 达人矩阵运营和长期合作管理场景，建立达人分层、样品、佣金、内容审核和绩效规则，输出管理 SOP、排名表与续约建议。",
+    "displayName": "TikTok Shop 达人管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-creator-management",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-creator-management/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "8c657fb94c594d1ebdab2579f7ca9186fa8d32704c749331b55e8b4526de74fc"
+  },
+  {
+    "id": "tiktok-shop-cross-border",
+    "name": "tiktok-shop-cross-border",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 跨境入驻、市场拓展或本地化经营场景，评估物流、税费、语言、达人内容、售后和合规风险，输出运营方案与落地优先级。",
+    "displayName": "TikTok Shop 跨境运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-cross-border",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-cross-border/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "6c5644d17847a8873ff440b89ed0679b3964b4968da79781546e044a169b0ee1"
+  },
+  {
+    "id": "tiktok-shop-customer-service",
+    "name": "tiktok-shop-customer-service",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 售前转化、订单问题、差评补救或直播评论处理场景，梳理响应流程和话术边界，输出客服 SOP、升级规则与质量复盘指标。",
+    "displayName": "TikTok Shop 客服",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "store-operations"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "customer-voice",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-customer-service",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-customer-service/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "effcc334f29f77cdb73b30d8e087e0fd4ce5dbb2265790068769ea31c6e3a63f"
+  },
+  {
+    "id": "tiktok-shop-fulfillment",
+    "name": "tiktok-shop-fulfillment",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 发货 SLA、仓配容量或延迟风险管理场景，检查仓配作业、物流追踪、取消率和包材质检，输出履约改进清单与旺季保障计划。",
+    "displayName": "TikTok Shop 履约",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-fulfillment",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-fulfillment/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "dd875f7f5253e61f571393e06b093c9bc24f44e0a361cd794e9973a8b59a3f1d"
+  },
+  {
+    "id": "tiktok-shop-inventory",
+    "name": "tiktok-shop-inventory",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 爆款备货、缺货降流或库存积压处理场景，预测内容和直播需求、校准安全库存和多仓同步，输出补货计划与清库存动作。",
+    "displayName": "TikTok Shop 库存管理",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-inventory",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-inventory/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "80fef941af714dfe2ef5e079955a4aa7fafe8a7ed6cc94acf4f79bd3f2226819"
+  },
+  {
+    "id": "tiktok-shop-listing-optimization",
+    "name": "tiktok-shop-listing-optimization",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 商品页搜索曝光、推荐点击或内容承接不足场景，优化标题、主图、卖点、属性、变体、价格和评价，输出刊登修复清单与转化测试方案。",
+    "displayName": "TikTok Shop 商品刊登优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "pricing-profit",
+      "customer-voice"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "listing-content",
+      "pricing-profit",
+      "customer-voice"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-listing-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-listing-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "6c93d5f566aee05998c012dec1c423fba73dab317e63fe3c2008edce7571714b"
+  },
+  {
+    "id": "tiktok-shop-pricing",
+    "name": "tiktok-shop-pricing",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 定价、促销叠加或达人佣金测算场景，评估价格锚点、平台补贴、包邮、优惠和贡献毛利，输出定价方案与利润校验表。",
+    "displayName": "TikTok Shop 定价",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "pricing-profit",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-pricing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-pricing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "3f8ff7ac228f0cfe1d3c620faacb5b2534332db039cf67b70d1f41d11e34f0d3"
+  },
+  {
+    "id": "tiktok-shop-product-research",
+    "name": "tiktok-shop-product-research",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 新品筛选、试销或爆品储备场景，分析内容传播性、价格带、供应链、竞品视频、达人适配和合规门槛，输出候选品评分与验证计划。",
+    "displayName": "TikTok Shop 选品研究",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "product-research",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "product-research",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-product-research",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-product-research/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "7559756142c22ab5ed2c35fd7aa00decfa58b52796b2a5fa87b0557174f75adb"
+  },
+  {
+    "id": "tiktok-shop-promotions",
+    "name": "tiktok-shop-promotions",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 大促、闪促、直播福利或优惠券组合场景，规划活动机制、补贴叠加、库存和利润边界，输出促销日历、执行清单与复盘指标。",
+    "displayName": "TikTok Shop 促销活动",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "pricing-profit",
+      "advertising-growth",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-promotions",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-promotions/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "ebbbd38cb560a9fe0222e35680845b12961bac64054d8545e93d5f0832089c8a"
+  },
+  {
+    "id": "tiktok-shop-returns",
+    "name": "tiktok-shop-returns",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 退货率偏高、退款争议或买家预期偏差场景，分析退货原因、质量问题、物流损坏和评价反馈，输出降退货动作与商品页修复建议。",
+    "displayName": "TikTok Shop 退货退款",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "customer-voice",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-returns",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-returns/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "2f6ec9cb2fce55a6e6f5a2f398ab34c38e9b5154049799c5b8549fd6678f42c6"
+  },
+  {
+    "id": "tiktok-shop-reviews",
+    "name": "tiktok-shop-reviews",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 评价不足、差评集中或内容承诺引发投诉场景，分析真实反馈、图片视频评价和客服补救空间，输出评价增长动作与风险边界。",
+    "displayName": "TikTok Shop 评价运营",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "listing-content",
+      "advertising-growth",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-reviews",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-reviews/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "a20ab4b039efe298562f13a68c82279471adda6d2f5324128dee90795b666adc"
+  },
+  {
+    "id": "tiktok-shop-seller-guide",
+    "name": "tiktok-shop-seller-guide",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 新卖家入驻、基础运营搭建或账号健康复盘场景，串联上架、内容、直播、联盟、广告、履约和售后，输出运营路线图与检查清单。",
+    "displayName": "TikTok Shop 卖家运营指南",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "customer-voice",
+      "store-operations"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "advertising-growth",
+      "customer-voice",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-seller-guide",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-seller-guide/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "353655687e6234b2b50743b2e74fa37c1eb78e4393c50e14f03c226cdcc36445"
+  },
+  {
+    "id": "tiktok-shop-shipping",
+    "name": "tiktok-shop-shipping",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 配送时效、包邮门槛、跨境物流或买家预期管理场景，评估物流方式、tracking、成本和履约指标，输出配送策略与异常处理清单。",
+    "displayName": "TikTok Shop 配送策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "customer-voice",
+      "inventory-supply-chain",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "pricing-profit",
+      "customer-voice",
+      "inventory-supply-chain",
+      "cross-platform"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-shipping",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-shipping/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "b5850667a0b7cf347e0fe991a01a28199ac323e743a1551d0525d5b8a6a4330b"
+  },
+  {
+    "id": "tiktok-shop-trending-products",
+    "name": "tiktok-shop-trending-products",
+    "version": "0.1.0",
+    "description": "用于 TikTok Shop 热门趋势品发现、跟进或试销节奏规划场景，识别热视频信号、搜索热词、达人动作和供应链可行性，输出趋势品清单与验证优先级。",
+    "displayName": "TikTok Shop 趋势品发现",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-tiktok-shop-trending-products",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "tiktok-shop-trending-products/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "dd2e99cd36acdbd91ee5b5c77f158496929474212dddc19dbdd8d80247001cb4"
+  },
+  {
+    "id": "visual-regression-testing",
+    "name": "visual-regression-testing",
+    "version": "0.1.0",
+    "description": "用于 Amazon 相关页面和营销素材改版验收场景，对比布局、图片、文字和移动端展示差异，输出视觉异常清单。",
+    "displayName": "视觉回归测试",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-visual-regression-testing",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "visual-regression-testing/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "47c80273c1d479dee1dfbee591d713820a6a0065c37f4ef3ed8c0c05ecaa3c6f"
+  },
+  {
+    "id": "walmart-advertising-strategy",
+    "name": "walmart-advertising-strategy",
+    "version": "0.1.0",
+    "description": "用于 Walmart Connect 广告冷启动、放量或 ROAS 复盘场景，结合 Buy Box、内容质量、关键词、预算和出价信号，输出投放结构、调价动作与验证指标。",
+    "displayName": "Walmart 广告策略",
+    "collection": "ecosystem",
+    "platforms": [
+      "walmart"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth"
+    ],
+    "searchTags": [
+      "walmart",
+      "listing-content",
+      "advertising-growth"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-walmart-advertising-strategy",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "walmart-advertising-strategy/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "9e08c11cd7cfd085ff0c660609749fd5e66b422bf3800b2ded32cb88a39fb7cb"
+  },
+  {
+    "id": "walmart-listing-optimization",
+    "name": "walmart-listing-optimization",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与Walmart商品页对标优化场景，比较标题、图片、属性、关键词和转化证据，输出跨平台页面建议。",
+    "displayName": "Walmart页面优化对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "walmart"
+    ],
+    "sceneTags": [
+      "listing-content"
+    ],
+    "searchTags": [
+      "amazon",
+      "walmart",
+      "listing-content"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-walmart-listing-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "walmart-listing-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "845028ebf1a3527cbc19ec468cb519fea9e256059cab2256af0c5d3a670e07be"
+  },
+  {
+    "id": "walmart-price-tracker",
+    "name": "walmart-price-tracker",
+    "version": "0.1.0",
+    "description": "用于 Amazon 与Walmart竞品价格对比场景，跟踪售价、优惠、库存和价格波动，输出渠道价格观察表。",
+    "displayName": "Walmart价格追踪对标",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon",
+      "walmart"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "walmart",
+      "pricing-profit",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-walmart-price-tracker",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "walmart-price-tracker/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "23d6714d22dc21d29c9b9f6c401e08c6cb49acf1bedc2545b7e97485c40d080d"
+  },
+  {
+    "id": "walmart-review-checker",
+    "name": "walmart-review-checker",
+    "version": "0.1.0",
+    "description": "用于 Walmart 商品口碑、Review Accelerator 合规使用或差评修复场景，分析评分分布、退货原因、竞品评价和主题信号，输出问题优先级、修复计划与监控指标。",
+    "displayName": "Walmart 评论与声誉检查",
+    "collection": "ecosystem",
+    "platforms": [
+      "walmart"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "walmart",
+      "customer-voice",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-walmart-review-checker",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "review-checker/walmart-review-checker/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "1786db749d42f3a8b6eb81158c893272f7386367c76da553e5a337cf810e7135"
+  },
+  {
+    "id": "walmart-seller-guide",
+    "name": "walmart-seller-guide",
+    "version": "0.1.0",
+    "description": "用于 Walmart Marketplace 入驻、运营提效或账号健康复盘场景，梳理 Item Setup、内容质量、Buy Box、WFS、广告和履约绩效，输出运营路线、风险点与关键指标。",
+    "displayName": "Walmart 卖家运营指南",
+    "collection": "ecosystem",
+    "platforms": [
+      "walmart"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "searchTags": [
+      "walmart",
+      "advertising-growth",
+      "brand-compliance",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-walmart-seller-guide",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "walmart-seller-guide/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "8b7ffd117b528ef7266e130b95f80075e41fdbccf358e7bfcda34f3ffb90f477"
+  },
+  {
+    "id": "walmart-seller-tools",
+    "name": "walmart-seller-tools",
+    "version": "0.1.0",
+    "description": "用于 Walmart 卖家工具选型、多渠道集成或流程升级场景，评估商品设置、库存、WFS、调价、广告、评论、客服和报表能力，输出工具短名单、适配风险与采购建议。",
+    "displayName": "Walmart 卖家工具选型",
+    "collection": "ecosystem",
+    "platforms": [
+      "walmart"
+    ],
+    "sceneTags": [
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "walmart",
+      "advertising-growth",
+      "customer-voice",
+      "inventory-supply-chain",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-walmart-seller-tools",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "walmart-seller-tools/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "763d39f699a90a70de7895be85f28760948de9b9a06f50eb399beb34820625db"
+  },
+  {
+    "id": "warehouse-optimization",
+    "name": "warehouse-optimization",
+    "version": "0.1.0",
+    "description": "用于 Amazon 仓储成本和库存周转优化场景，分析库龄、体积、销量、补货节奏和清仓策略，输出仓储优化建议。",
+    "displayName": "仓储优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "pricing-profit",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "pricing-profit",
+      "inventory-supply-chain",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-warehouse-optimization",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "warehouse-optimization/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "f3cc229a56fd5c68793e8d707c0ccebf3527aefe9dbbcd39012b14af0381dd91"
+  },
+  {
+    "id": "woocommerce-seo",
+    "name": "woocommerce-seo",
+    "version": "0.1.0",
+    "description": "用于 WooCommerce 自然流量增长、商品页收录或技术 SEO 诊断场景，优化分类页、结构化数据、Core Web Vitals、插件风险和 Search Console 信号，输出修复清单、内容动作与验证指标。",
+    "displayName": "WooCommerce 搜索优化",
+    "collection": "ecosystem",
+    "platforms": [
+      "woocommerce"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "woocommerce",
+      "listing-content",
+      "advertising-growth",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "nexscope-ai-ecommerce-skills-woocommerce-seo",
+    "originKind": "template",
+    "sourceRepository": "nexscope-ai/eCommerce-Skills",
+    "sourcePath": "woocommerce-seo/SKILL.md",
+    "sourceLicense": "MIT",
+    "distributionStatus": "redistributable",
+    "contentHash": "49a75c6cb69f4ebbdf9922bef9cbbd2a11edc6758d6b5358ce38992a169335f6"
+  },
+  {
+    "id": "backlink-kol-extractor",
+    "name": "backlink-kol-extractor",
+    "version": "0.1.0",
+    "description": "用于外链建设、KOL 合作或竞品 PR 线索挖掘场景，从反链、测评文章、联盟站和媒体页面筛选相关主体，输出线索评分、联系字段与外联角度。",
+    "displayName": "反链与 KOL 线索提取",
+    "collection": "ecosystem",
+    "platforms": [
+      "cross-platform"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "cross-platform",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-backlink-kol-extractor",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "tools/backlink-kol-extractor/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "b08c2a82041fa7f1f1e0b644f43fa5a075a46b297b1eb8dc246865f8838b2e89"
+  },
+  {
+    "id": "contact-extractor",
+    "name": "contact-extractor",
+    "version": "0.1.0",
+    "description": "用于媒体、KOL 或合作伙伴外联准备场景，从公开页面提取并校验商务联系邮箱，输出去重后的邮箱候选、置信度、来源 URL 与不建议触达原因。",
+    "displayName": "联系邮箱提取",
+    "collection": "ecosystem",
+    "platforms": [
+      "cross-platform"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "cross-platform",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-contact-extractor",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "tools/contact-extractor/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "d2323ae4e5545ff675bc9938d70e0954ed11d1f5df7be9ebf969d5246a5156c2"
+  },
+  {
+    "id": "google-whatsapp-prospecting",
+    "name": "google-whatsapp-prospecting",
+    "version": "0.1.0",
+    "description": "用于 Amazon B2B采购、分销或合作线索拓展场景，检索公开联系人并整理沟通入口，输出潜在线索清单。",
+    "displayName": "Google与WhatsApp获客",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain"
+    ],
+    "searchTags": [
+      "amazon",
+      "inventory-supply-chain"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-google-whatsapp-prospecting",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "outbound-prospecting/google-whatsapp-prospecting/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "f0d17f697628df00c44d2f899fb3f136ab825b651f53d892d61ed54c0a5b309d"
+  },
+  {
+    "id": "linkedin-prospecting",
+    "name": "linkedin-prospecting",
+    "version": "0.1.0",
+    "description": "用于 Amazon 品牌合作、分销和供应链线索开发场景，筛选目标公司、联系人、职位和触达理由，输出拓客名单。",
+    "displayName": "LinkedIn线索开发",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "amazon",
+      "inventory-supply-chain",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-linkedin-prospecting",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "outbound-prospecting/linkedin-prospecting/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "72063afa89245deb802c46f2a9736f8e59a2a46ee937bbd48945eed289528c8b"
+  },
+  {
+    "id": "linktree-expander",
+    "name": "linktree-expander",
+    "version": "0.1.0",
+    "description": "用于 KOL 或品牌多链接页线索扩展场景，解析官网、社媒、邮箱和合作入口并去重标注，输出可触达联系人清单与外联合规检查结果。",
+    "displayName": "Linktree 线索扩展",
+    "collection": "ecosystem",
+    "platforms": [
+      "tiktok-shop"
+    ],
+    "sceneTags": [
+      "brand-compliance"
+    ],
+    "searchTags": [
+      "tiktok-shop",
+      "brand-compliance"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-linktree-expander",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "tools/linktree-expander/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "63c28825dbcb7e2a51c7afbaffd524504d7a1253131d4f84402eace0da07415e"
+  },
+  {
+    "id": "media-press-discovery",
+    "name": "media-press-discovery",
+    "version": "0.1.0",
+    "description": "用于新品发布、测评邀约或 PR 传播前的媒体线索发现，按品类相关性、近期活跃度、栏目匹配和合作价值筛选目标，输出媒体清单、联系人线索与 pitch 角度。",
+    "displayName": "媒体与新闻线索发现",
+    "collection": "ecosystem",
+    "platforms": [
+      "cross-platform"
+    ],
+    "sceneTags": [
+      "store-operations"
+    ],
+    "searchTags": [
+      "cross-platform",
+      "store-operations"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-media-press-discovery",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "outbound-prospecting/media-press-discovery/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "4b88a79fb37f1df192bb9ffd834eb93bb235795530e4981727bf20000c922c26"
+  },
+  {
+    "id": "reddit-voc",
+    "name": "reddit-voc",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外社区需求和痛点研究场景，提取Reddit讨论主题、使用场景、抱怨和购买动机，输出VOC洞察。",
+    "displayName": "Reddit用户声音分析",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "customer-voice",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-reddit-voc",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "voc-tools/reddit-voc/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "6ba871065d7f66a3dbc81597872bcccda3e95deb6988833be0ddadd8bfe4fd16"
+  },
+  {
+    "id": "security-precommit-check",
+    "name": "security-precommit-check",
+    "version": "0.1.0",
+    "description": "用于跨境电商系统变更提交前的安全把关场景，检查密钥、客户数据、支付配置、Webhook、平台凭据和日志暴露，输出 P0/P1/P2 风险清单与修复动作。",
+    "displayName": "提交前安全检查",
+    "collection": "ecosystem",
+    "platforms": [
+      "cross-platform"
+    ],
+    "sceneTags": [
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation",
+      "cross-platform"
+    ],
+    "searchTags": [
+      "cross-platform",
+      "customer-voice",
+      "brand-compliance",
+      "store-operations",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-security-precommit-check",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "tools/security-precommit-check/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "d8cd4a7b4ff6469e8a635311c4621046236cbda11763e18e7dea0f0f5d079985"
+  },
+  {
+    "id": "serp-content-teardown",
+    "name": "serp-content-teardown",
+    "version": "0.1.0",
+    "description": "用于 Amazon 站外搜索结果和内容竞品拆解场景，分析SERP意图、标题、结构、证据和差异化，输出内容优化提纲。",
+    "displayName": "搜索结果内容拆解",
+    "collection": "ecosystem",
+    "platforms": [
+      "amazon"
+    ],
+    "sceneTags": [
+      "listing-content",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "searchTags": [
+      "amazon",
+      "listing-content",
+      "brand-compliance",
+      "analytics-automation"
+    ],
+    "legacyEcosystemId": "noique-cross-border-ecommerce-skills-serp-content-teardown",
+    "originKind": "template",
+    "sourceRepository": "noique/cross-border-ecommerce-skills",
+    "sourcePath": "brand-strategy/serp-content-teardown/SKILL.md",
+    "sourceLicense": "CC-BY-NC-4.0",
+    "distributionStatus": "review-required",
+    "contentHash": "c64bd584ff9e8b5575ba757d6d6b003aefa6266751997b7e88554a5d07464a04"
+  }
+]

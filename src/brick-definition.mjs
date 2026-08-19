@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.9.3";
+const BRICK_VERSION = "0.10.0";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -38,6 +38,13 @@ const builtinCatalogCapability = createBrickCapability({
   name: "Agent Skill Builtin Catalog",
   type: "config",
   description: "提供随 SDK 与 runtime artifact 发布的预制 skill，并只在产品按名称选择后受控安装到托管目录。"
+});
+
+const unifiedCatalogCapability = createBrickCapability({
+  id: "agent-skill.catalog",
+  name: "Agent Skill Catalog",
+  type: "config",
+  description: "提供 core 与 ecosystem 离线共享目录、分类检索、旧生态 ID 映射和受管安装来源。"
 });
 
 export const brickDefinition = createBrickDefinition({
@@ -63,6 +70,16 @@ export const brickDefinition = createBrickDefinition({
       description: "列出当前 artifact 随附、可由产品按名称选择的预制 skill。"
     },
     {
+      name: "listSkillCatalog",
+      type: "api",
+      description: "按集合、平台、场景和关键词分页查询当前 artifact 随附的统一 Skill 目录。"
+    },
+    {
+      name: "createCatalogSkillSource",
+      type: "api",
+      description: "将目录 Skill 或旧生态 ID 转换为受管离线安装来源。"
+    },
+    {
       name: "createAgentSkillIndex",
       type: "api",
       description: "用于生成 agent-skill.index.v1 索引的 SDK helper。"
@@ -86,7 +103,8 @@ export const brickDefinition = createBrickDefinition({
   capabilities: [
     registryCapability,
     installCapability,
-    builtinCatalogCapability
+    builtinCatalogCapability,
+    unifiedCatalogCapability
   ],
   configSchema: {
     type: "object",

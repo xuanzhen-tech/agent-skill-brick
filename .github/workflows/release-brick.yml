@@ -72,6 +72,9 @@ jobs:
           node --check src/scripts/smoke-skill.mjs
           node --check src/scripts/validate-self-service-skills.mjs
           node --check src/scripts/validate-self-service-release.mjs
+          node --check src/scripts/import-ecosystem-skills.mjs
+          node --check src/scripts/validate-ecosystem-skills.mjs
+          node --check src/scripts/validate-ecosystem-package.mjs
           node --check src/scripts/verify.mjs
 
       - name: Smoke tests
@@ -80,6 +83,8 @@ jobs:
           npm run smoke:contract
           npm run smoke:skill
           npm run validate:self-service-skills
+          npm run validate:ecosystem-skills
+          npm run validate:ecosystem-package
 
       - name: Validate automatic self-service release
         if: ${{ github.event_name == 'push' }}

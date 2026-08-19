@@ -13,9 +13,12 @@ import path from "node:path";
 
 import { brickDefinition } from "../brick-definition.mjs";
 import {
+  createCatalogSkillSource,
   createBuiltinSkillSource,
+  getSkillCatalogEntry,
   isBuiltinSkillName,
-  listBuiltinSkills
+  listBuiltinSkills,
+  listSkillCatalog
 } from "./builtin-skill-catalog.mjs";
 import { createDiagnosticsReport } from "./diagnostics.mjs";
 import { resolveSkillConfig } from "./launch-config.mjs";
@@ -77,6 +80,14 @@ export class AgentSkill {
     return listBuiltinSkills();
   }
 
+  listSkillCatalog(input = {}) {
+    return listSkillCatalog(input);
+  }
+
+  getSkillCatalogEntry(nameOrLegacyId) {
+    return getSkillCatalogEntry(nameOrLegacyId);
+  }
+
   /**
    * 返回当前对象采用的 skill 可见性选择。
    *
@@ -136,6 +147,9 @@ export class AgentSkill {
     const query = stringField(filter.query)?.toLowerCase();
     const capability = stringField(filter.capability);
     const requiredTool = stringField(filter.requiredTool ?? filter.tool);
+    const collection = stringField(filter.collection)?.toLowerCase();
+    const platform = stringField(filter.platform)?.toLowerCase();
+    const sceneTag = stringField(filter.sceneTag)?.toLowerCase();
     const includeDisabled = filter.includeDisabled === true;
     const limit = clampLimit(filter.limit);
 
@@ -144,6 +158,9 @@ export class AgentSkill {
       .filter((skill) => !query || matchesQuery(skill, query))
       .filter((skill) => !capability || listIncludes(skill.capabilities, capability))
       .filter((skill) => !requiredTool || listIncludes([...toList(skill.requiredTools), ...toList(skill.optionalTools)], requiredTool))
+      .filter((skill) => !collection || skill.collection === collection)
+      .filter((skill) => !platform || listIncludes(skill.platforms, platform))
+      .filter((skill) => !sceneTag || listIncludes(skill.sceneTags, sceneTag))
       .slice(0, limit)
       .map(toSkillFindItem);
 
@@ -256,6 +273,10 @@ export class AgentSkill {
     });
     if (result.status !== "conflict") await this.refresh();
     return result;
+  }
+
+  async installCatalogSkill(nameOrLegacyId, options = {}) {
+    return await this.install(createCatalogSkillSource(nameOrLegacyId), options);
   }
 
   async listInstallations() {
@@ -576,6 +597,13 @@ function toSkillDefinition(skill) {
     requiredTools: toList(skill.requiredTools),
     optionalTools: toList(skill.optionalTools),
     requiredEnv: toList(skill.requiredEnv),
+    ...(skill.collection ? { collection: skill.collection } : {}),
+    ...(skill.displayName ? { displayName: skill.displayName } : {}),
+    platforms: toList(skill.platforms),
+    sceneTags: toList(skill.sceneTags),
+    searchTags: toList(skill.searchTags),
+    ...(skill.legacyEcosystemId ? { legacyEcosystemId: skill.legacyEcosystemId } : {}),
+    ...(skill.originKind ? { originKind: skill.originKind } : {}),
     enabled: skill.enabled !== false,
     ...(skill.disabledReason ? { disabledReason: skill.disabledReason } : {})
   };
@@ -605,6 +633,12 @@ function matchesQuery(skill, query) {
     skill.id,
     skill.name,
     skill.description,
+    skill.displayName,
+    skill.collection,
+    ...toList(skill.platforms),
+    ...toList(skill.sceneTags),
+    ...toList(skill.searchTags),
+    skill.legacyEcosystemId,
     ...toList(skill.capabilities),
     ...toList(skill.requiredTools),
     ...toList(skill.optionalTools)

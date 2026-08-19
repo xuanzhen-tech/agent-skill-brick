@@ -33,6 +33,7 @@ const ALLOWED_ROOT_DIRS = new Set(["references", "scripts", "assets"]);
 const INLINE_SKILL_SOURCE_KIND = "agent-skill.inline.v1";
 const BUNDLED_SKILL_SOURCE_KIND = "agent-skill.bundled.v1";
 const TRANSACTION_PREFIX = ".agent-skill-transaction-";
+const MANAGED_ROOT_MUTATION_QUEUES = new Map();
 // bundled skill 已随受控 npm SDK 落盘，不是网络下载包。它仍禁止 symlink 和任意顶层
 // 目录，只放宽文件数量与许可/依赖说明文件，适配大型组件库而不降低普通安装来源的限制。
 const BUNDLED_PACKAGE_POLICY = Object.freeze({
@@ -101,7 +102,14 @@ export async function validateSkillPackage(skillDir, policy = undefined) {
   };
 }
 
-export async function installSkillPackage({ source, managedRoot, conflict } = {}) {
+export async function installSkillPackage(input = {}) {
+  const root = path.resolve(input.managedRoot);
+  return await withManagedRootMutationLock(root, async () => (
+    await installSkillPackageUnlocked({ ...input, managedRoot: root })
+  ));
+}
+
+async function installSkillPackageUnlocked({ source, managedRoot, conflict }) {
   const root = path.resolve(managedRoot);
   await recoverManagedSkillTransactions(root);
   const resolvedSource = await resolveInstallSource(source);
@@ -207,7 +215,14 @@ export async function installSkillPackage({ source, managedRoot, conflict } = {}
   }
 }
 
-export async function removeManagedSkill({ skill, managedRoot } = {}) {
+export async function removeManagedSkill(input = {}) {
+  const root = path.resolve(input.managedRoot);
+  return await withManagedRootMutationLock(root, async () => (
+    await removeManagedSkillUnlocked({ ...input, managedRoot: root })
+  ));
+}
+
+async function removeManagedSkillUnlocked({ skill, managedRoot }) {
   const skillName = normalizeSkillName(skill);
   const root = path.resolve(managedRoot);
   await recoverManagedSkillTransactions(root);
@@ -223,6 +238,25 @@ export async function removeManagedSkill({ skill, managedRoot } = {}) {
     path: destination,
     installation
   };
+}
+
+async function withManagedRootMutationLock(root, operation) {
+  const previous = MANAGED_ROOT_MUTATION_QUEUES.get(root) ?? Promise.resolve();
+  let release;
+  const current = new Promise((resolve) => {
+    release = resolve;
+  });
+  const tail = previous.catch(() => {}).then(() => current);
+  MANAGED_ROOT_MUTATION_QUEUES.set(root, tail);
+  await previous.catch(() => {});
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (MANAGED_ROOT_MUTATION_QUEUES.get(root) === tail) {
+      MANAGED_ROOT_MUTATION_QUEUES.delete(root);
+    }
+  }
 }
 
 async function resolveInstallSource(source) {

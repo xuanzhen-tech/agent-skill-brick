@@ -1,6 +1,6 @@
 {
   "name": "@xuanzhen-tech/agent-skill-brick",
-  "version": "0.9.3",
+  "version": "0.10.0",
   "description": "Agent skill 注册管理和 skills-index 积木。",
   "type": "module",
   "repository": {
@@ -20,7 +20,8 @@
     "src/index.mjs",
     "src/brick-definition.mjs",
     "src/main",
-    "src/builtin-skills"
+    "src/builtin-skills",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -32,12 +33,15 @@
     "publish:artifact": "node src/scripts/publish-artifact.mjs",
     "publish:artifact:placeholder": "node src/scripts/publish-artifact-placeholder.mjs",
     "publish:npm": "npm publish",
-    "release:local": "npm run smoke:cli && npm run smoke:contract && npm run smoke:skill && npm run validate:self-service-skills && npm run build:artifact && npm run create:descriptor && npm run publish:artifact:placeholder && npm run verify && npm run pack:dry-run",
+    "import:ecosystem-skills": "node src/scripts/import-ecosystem-skills.mjs",
+    "release:local": "npm run smoke:cli && npm run smoke:contract && npm run smoke:skill && npm run validate:self-service-skills && npm run validate:ecosystem-skills && npm run validate:ecosystem-package && npm run build:artifact && npm run create:descriptor && npm run publish:artifact:placeholder && npm run verify && npm run pack:dry-run",
     "smoke:cli": "node src/cli.mjs version && node src/cli.mjs diagnostics --json && node src/cli.mjs roots --json && node src/cli.mjs manifest --json",
     "smoke:contract": "node src/scripts/smoke-contract.mjs",
     "smoke:skill": "node src/scripts/smoke-skill.mjs",
     "validate:self-service-skills": "node src/scripts/validate-self-service-skills.mjs",
     "validate:self-service-release": "node src/scripts/validate-self-service-release.mjs",
+    "validate:ecosystem-skills": "node src/scripts/validate-ecosystem-skills.mjs",
+    "validate:ecosystem-package": "node src/scripts/validate-ecosystem-package.mjs",
     "verify": "node src/scripts/verify.mjs"
   },
   "keywords": [],

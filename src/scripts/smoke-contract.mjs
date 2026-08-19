@@ -13,10 +13,13 @@ import { validateBrickDefinition } from "@xuanzhen-tech/agent-release-foundation
 import {
   AgentSkill,
   brickDefinition,
+  createCatalogSkillSource,
   createAgentSkillIndex,
   createAgentSkillLaunchConfig,
   createAgentSkillRuntimeContract,
+  getSkillCatalogEntry,
   listBuiltinSkills,
+  listSkillCatalog,
   resolveSkillConfig,
   resolveSkillRoots,
   validateAgentSkillIndex,
@@ -33,6 +36,7 @@ assert.equal(brickDefinition.runtimeDependencies.some((item) => item.type === "n
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.registry"), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.install"), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.builtin-catalog"), true);
+assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.catalog"), true);
 assert.equal(brickDefinition.configSchema.properties.skills.type, "array");
 
 const builtinSkills = listBuiltinSkills();
@@ -52,6 +56,16 @@ assert.equal(builtinSkills.some((skill) => skill.name === "amazon-account-health
 assert.equal(builtinSkills.some((skill) => skill.name === "amazon-working-capital-action-control"), true);
 assert.equal(builtinSkills.some((skill) => skill.name === "amazon-sellersprite-asin-research-orchestrator"), true);
 assert.equal(builtinSkills.filter((skill) => skill.name.startsWith("amazon-sellersprite-")).length, 6);
+
+const ecosystemPage = listSkillCatalog({ collections: ["ecosystem"], limit: 10 });
+assert.equal(ecosystemPage.total, 203);
+assert.equal(ecosystemPage.items.length, 10);
+assert.equal(typeof ecosystemPage.nextCursor, "string");
+assert.equal(getSkillCatalogEntry("nexscope-ai-ecommerce-skills-price-optimization-tool")?.name, "price-optimization-tool");
+assert.deepEqual(createCatalogSkillSource("nexscope-ai-ecommerce-skills-price-optimization-tool"), {
+  kind: "agent-skill.builtin.v1",
+  skillName: "price-optimization-tool"
+});
 
 const launchConfig = createAgentSkillLaunchConfig({
   skillsPath: `${process.cwd()}\\skills`,
@@ -123,6 +137,9 @@ assert.equal(typeof agentSkill.buildPrompt, "function");
 assert.equal(typeof agentSkill.find, "function");
 assert.equal(typeof agentSkill.activate, "function");
 assert.equal(typeof agentSkill.setSkillNames, "function");
+assert.equal(typeof agentSkill.listSkillCatalog, "function");
+assert.equal(typeof agentSkill.getSkillCatalogEntry, "function");
+assert.equal(typeof agentSkill.installCatalogSkill, "function");
 assert.deepEqual(agentSkill.builtinSkills, builtinSkills);
 
 const selectedSkill = new AgentSkill(["amazon-sku-profit-summary"]);
