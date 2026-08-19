@@ -541,7 +541,11 @@ try {
     "amazon-product-image-generation",
     "ecommerce-product-video-generation",
     // skill-management 是通用元 Skill，不属于十四位业务专家的 64 项能力。
-    "skill-management"
+    "skill-management",
+    // 运营复盘自助链路由 Product 按需组合，不属于十四位专家的固定能力集。
+    "amazon-monitoring-data-fetch",
+    "amazon-operation-review",
+    "amazon-report-generate"
   ]);
   const expertBuiltinCatalog = listBuiltinSkills()
     .filter((skill) => !legacyBuiltinNames.has(skill.name))

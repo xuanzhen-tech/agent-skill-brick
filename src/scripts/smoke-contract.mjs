@@ -36,7 +36,7 @@ assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skil
 assert.equal(brickDefinition.configSchema.properties.skills.type, "array");
 
 const builtinSkills = listBuiltinSkills();
-assert.equal(builtinSkills.length, 76);
+assert.equal(builtinSkills.length, 79);
 assert.equal(builtinSkills.some((skill) => skill.name === "skill-management"), true);
 assert.equal(builtinSkills.some((skill) => skill.name === "skill-creator"), false);
 assert.deepEqual(builtinSkills.slice(0, 5).map((skill) => skill.name), [
