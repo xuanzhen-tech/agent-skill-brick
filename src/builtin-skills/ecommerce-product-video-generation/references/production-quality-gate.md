@@ -6,6 +6,7 @@
 - 必须存在 `kind: "video"`、`mimeType: "video/mp4"` 的 artifact。
 - artifact 路径必须是 workspace 相对路径；不得把 Provider URL 当作长期产物。
 - `failed`、`interrupted`、`queued`、`running` 都不是完成。
+- 工具调用本身 `status=completed` 只说明提交或查询执行成功；必须继续检查 `details.job.status` 与 `deliveryReady`。
 
 ## 视觉检查
 
@@ -26,4 +27,3 @@
 - 不在没有用户确认时连续重新生成，因为每次生成都可能计费。
 - 包装文字或 Logo 不稳定时，优先减少镜头幅度和主体运动，不要用更多风格词掩盖问题。
 - 商品结构发生变化时，加强 Product identity lock，并改用商品静止、相机缓慢运动的方案。
-

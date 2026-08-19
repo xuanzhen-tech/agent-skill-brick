@@ -435,6 +435,9 @@ try {
   assert.equal(selectedBuiltinSkill.definitions[0].version, "0.1.0");
   assert.deepEqual(selectedBuiltinSkill.definitions[0].requiredTools, [
     "ecommerce_video_generate",
+    "ecommerce_video_status",
+    "ecommerce_video_cancel",
+    "ecommerce_video_retry",
     "ecommerce_video_list"
   ]);
   const videoSkillActivated = await selectedBuiltinSkill.activate("ecommerce-product-video-generation");

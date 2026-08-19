@@ -14,7 +14,25 @@
 }
 ```
 
-只有返回结果同时满足以下条件才可交付：
+首次提交的正常结果是：
+
+```text
+status=completed              # 工具调用成功
+details.job.status=queued     # 视频任务已受理
+details.deliveryReady=false
+details.accepted=true
+```
+
+这时只能告诉用户视频正在生成，不能报告完成。后续按本地 `jobId` 查询：
+
+```json
+{
+  "jobId": "video-job-...",
+  "waitMs": 30000
+}
+```
+
+只有状态结果同时满足以下条件才可交付：
 
 ```text
 status=completed
@@ -23,7 +41,28 @@ artifacts[0].kind=video
 artifacts[0].mimeType=video/mp4
 ```
 
-## 查询任务
+## 取消任务
+
+只有用户明确要求停止时：
+
+```json
+{
+  "jobId": "video-job-..."
+}
+```
+
+## 恢复或重试
+
+用户明确同意可能创建新的计费任务后：
+
+```json
+{
+  "jobId": "video-job-...",
+  "confirm": true
+}
+```
+
+## 查询历史
 
 等待被中断或用户询问历史时：
 
@@ -42,5 +81,4 @@ artifacts[0].mimeType=video/mp4
 }
 ```
 
-不要通过再次调用 `ecommerce_video_generate` 查询同一个任务，也不要自行构造 Gateway taskId。
-
+不要通过再次调用 `ecommerce_video_generate` 查询同一个任务，也不要自行构造或向用户暴露 Gateway taskId。

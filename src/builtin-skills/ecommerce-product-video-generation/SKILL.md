@@ -3,14 +3,14 @@ name: ecommerce-product-video-generation
 displayChineseName: 商品照片生视频
 version: 0.1.0
 description: 把一张真实商品照片和简单意图扩写为高质量商品视频提示词，并调用 Seedance 生成可交付 MP4；适用于电商商品展示、广告素材、详情页动态演示和社媒短视频，不处理真人或数字人视频。
-requiredTools: [ecommerce_video_generate, ecommerce_video_list]
+requiredTools: [ecommerce_video_generate, ecommerce_video_status, ecommerce_video_cancel, ecommerce_video_retry, ecommerce_video_list]
 ---
 
 # 商品照片生视频
 
 ## 目标
 
-从一张真实商品照片出发，把用户的简单描述转化为可控、可信的商品短视频。只调用 `ecommerce_video_generate` 和 `ecommerce_video_list`，不直接接触 Provider、API key、任务轮询或下载地址。
+从一张真实商品照片出发，把用户的简单描述转化为可控、可信的商品短视频。只调用 `ecommerce_video_*` 工具，不直接接触 Provider、API key、Provider taskId 或下载地址。
 
 ## 工作流
 
@@ -20,9 +20,12 @@ requiredTools: [ecommerce_video_generate, ecommerce_video_list]
 4. 需要编写提示词时读取 `references/prompt-playbook.md`；需要工具参数实例时读取 `references/tool-examples.md`；实际交付前读取 `references/production-quality-gate.md`。
 5. 一次视频只设计一个清晰镜头主线。优先使用缓慢推近、轻微环绕、平移或克制的场景动效，避免在 4-15 秒内塞入多个跳切、复杂剧情和互相冲突的机位。
 6. 提示词必须包含：商品身份锁定、镜头与运动、主体允许的动作、场景与光线、节奏、真实性约束和禁止项。禁止改变 Logo、包装文字、颜色、结构、数量、比例和配件关系。
-7. 调用一次 `ecommerce_video_generate` 并等待工具收束。不要自行轮询 Provider，不要因为等待较久而重复提交计费任务。
-8. 只有 `deliveryReady=true` 且存在 `kind: "video"` artifact 时才能报告完成。失败或中断时返回稳定错误，不假造视频路径。
-9. 用户问历史任务或工具等待被打断时，调用 `ecommerce_video_list`；它只读取本地状态，不会重新计费。
+7. 调用一次 `ecommerce_video_generate`。它会可靠记录本地任务后立即返回；`queued` 只表示已受理，不代表完成。向用户说明任务正在后台生成，并保留返回的本地 `jobId`。
+8. 用户主动询问进度时调用 `ecommerce_video_status`。不要在同一轮里连续高频轮询，也不要因为等待较久而再次调用 generate。
+9. 只有状态结果 `deliveryReady=true` 且存在 `kind: "video"` artifact 时才能报告完成。失败、中断、排队和运行都不是完成，不假造视频路径。
+10. 用户明确要求停止时调用 `ecommerce_video_cancel`。取消结果不确定时明确说明 Provider 仍可能继续执行和计费。
+11. `interrupted` 且已有上游任务时，`ecommerce_video_retry` 会续查原任务；其它失败或取消任务的 retry 会新建计费任务，必须先得到用户明确同意并传 `confirm=true`。
+12. 用户查看历史任务时调用 `ecommerce_video_list`；它只读取本地状态，不会重新计费。
 
 ## 选择原则
 
@@ -37,5 +40,4 @@ requiredTools: [ecommerce_video_generate, ecommerce_video_list]
 - 不承诺平台审核、广告合规、文字完全准确或商品物理行为绝对真实。
 - 不把静态照片里不存在的卖点变成视频事实。
 - 不为“更有创意”牺牲商品身份准确性。商品真实性优先于镜头炫技。
-- 不自动重试完整生成。只有工具内部安全轮询与恢复可继续同一 Provider 任务。
-
+- 不自动重试完整生成。续查同一个 Provider 任务不重复计费；创建新任务必须由用户明确确认。
