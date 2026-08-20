@@ -24,6 +24,7 @@ import {
   validateSkillPackage,
   writeSkillIndex
 } from "../index.mjs";
+import { createDefaultSkillFindClient } from "../main/skill-finder.mjs";
 
 const CRC32_TABLE = createCrc32Table();
 const ASIN_RESEARCH_SKILL_NAMES = [
@@ -322,6 +323,105 @@ try {
   assert.equal(activatedRemote.loadedSkill.name, "remote-writer");
   assert.match(activatedRemote.loadedSkill.content, /Installed from remote provider/);
   await assert.rejects(() => agentSkill.activate("missing-skill"), /Unknown skill/);
+
+  // 默认远端安装器必须使用与 install() 相同的事务和 installation registry。
+  // fixture 刻意使用与 canonical name 不同的下载目录，并携带 OpenAI/Anthropic
+  // Skill 常见的 LICENSE、agents 与 eval-viewer，防止再次只测最小 SKILL.md。
+  const discoveredRoot = path.join(tempRoot, "discovered-managed");
+  const discoveredClient = createDefaultSkillFindClient({
+    providers: [{ id: "skills-sh", kind: "skills-cli" }],
+    runProcess: createSkillsCliInstallFixture("downloaded-skill-creator")
+  });
+  const selectedDiscoveredSkill = new AgentSkill({ skillsPath: discoveredRoot, skills: [] });
+  const discoveredInstall = await selectedDiscoveredSkill.find({
+    action: "install",
+    source: "skills-sh",
+    package: "publisher/skill-library@skill-creator"
+  }, { skillFindClient: discoveredClient });
+  assert.equal(discoveredInstall.status, "installed");
+  assert.equal(discoveredInstall.name, "skill-creator");
+  assert.equal(discoveredInstall.installed[0].name, "skill-creator");
+  assert.equal(discoveredInstall.skills.length, 0);
+  assert.equal(discoveredInstall.diagnostics.some((item) => item.code === "skill_not_selected"), true);
+  assert.equal((await selectedDiscoveredSkill.listInstallations())
+    .some((record) => record.skillName === "skill-creator" && record.sourceKind === "skills-sh"), true);
+  assert.equal(await exists(path.join(discoveredRoot, "skill-creator", "LICENSE.txt")), true);
+  assert.equal(await exists(path.join(discoveredRoot, "skill-creator", "agents", "openai.yaml")), true);
+  assert.equal(await exists(path.join(discoveredRoot, "skill-creator", "eval-viewer", "viewer.html")), true);
+  const unchangedDiscoveredInstall = await selectedDiscoveredSkill.find({
+    action: "install",
+    source: "skills-sh",
+    package: "publisher/skill-library@skill-creator"
+  }, { skillFindClient: discoveredClient });
+  assert.equal(unchangedDiscoveredInstall.status, "unchanged");
+  assert.equal(unchangedDiscoveredInstall.installed.length, 0);
+
+  const changedResourceInstall = await selectedDiscoveredSkill.find({
+    action: "install",
+    source: "skills-sh",
+    package: "publisher/skill-library@skill-creator"
+  }, {
+    skillFindClient: createDefaultSkillFindClient({
+      providers: [{ id: "skills-sh", kind: "skills-cli" }],
+      runProcess: createSkillsCliInstallFixture("downloaded-skill-creator", "changed")
+    })
+  });
+  assert.equal(changedResourceInstall.status, "conflict");
+  assert.equal(changedResourceInstall.installed.length, 0);
+  assert.doesNotMatch(
+    await fs.readFile(path.join(discoveredRoot, "skill-creator", "eval-viewer", "viewer.html"), "utf8"),
+    /changed/
+  );
+  await selectedDiscoveredSkill.setSkillNames(["skill-creator"]);
+  assert.equal((await selectedDiscoveredSkill.activate("skill-creator")).loadedSkill.name, "skill-creator");
+
+  // 兼容旧版“目录已移动、Product 随后因 canonical name 缺失而失败”的状态。
+  // 内容完全相同时补写登记；任何内容差异都不得被静默覆盖。
+  const recoveredRoot = path.join(tempRoot, "recovered-managed");
+  await fs.mkdir(recoveredRoot, { recursive: true });
+  await fs.cp(
+    path.join(discoveredRoot, "skill-creator"),
+    path.join(recoveredRoot, "skill-creator"),
+    { recursive: true }
+  );
+  const recoveredSkill = new AgentSkill({ skillsPath: recoveredRoot, skills: [] });
+  const recoveredInstall = await recoveredSkill.find({
+    action: "install",
+    source: "skills-sh",
+    package: "publisher/skill-library@skill-creator"
+  }, {
+    skillFindClient: createDefaultSkillFindClient({
+      providers: [{ id: "skills-sh", kind: "skills-cli" }],
+      runProcess: createSkillsCliInstallFixture("downloaded-skill-creator")
+    })
+  });
+  assert.equal(recoveredInstall.status, "installed");
+  assert.equal(recoveredInstall.name, "skill-creator");
+  assert.equal((await recoveredSkill.listInstallations())
+    .some((record) => record.skillName === "skill-creator"), true);
+
+  const conflictingRoot = path.join(tempRoot, "conflicting-managed");
+  await fs.mkdir(conflictingRoot, { recursive: true });
+  await fs.cp(
+    path.join(discoveredRoot, "skill-creator"),
+    path.join(conflictingRoot, "skill-creator"),
+    { recursive: true }
+  );
+  await fs.appendFile(path.join(conflictingRoot, "skill-creator", "SKILL.md"), "\nLocal change.\n", "utf8");
+  const conflictingSkill = new AgentSkill({ skillsPath: conflictingRoot, skills: [] });
+  const conflictingInstall = await conflictingSkill.find({
+    action: "install",
+    source: "skills-sh",
+    package: "publisher/skill-library@skill-creator"
+  }, {
+    skillFindClient: createDefaultSkillFindClient({
+      providers: [{ id: "skills-sh", kind: "skills-cli" }],
+      runProcess: createSkillsCliInstallFixture("downloaded-skill-creator")
+    })
+  });
+  assert.equal(conflictingInstall.status, "conflict");
+  assert.equal(conflictingInstall.installed.length, 0);
+  assert.match(await fs.readFile(path.join(conflictingRoot, "skill-creator", "SKILL.md"), "utf8"), /Local change/);
 
   const removedInline = await agentSkill.remove("ecosystem-writer");
   assert.equal(removedInline.removed, true);
@@ -652,6 +752,25 @@ try {
 async function writeSkill(skillDir, metadata) {
   await fs.mkdir(skillDir, { recursive: true });
   await fs.writeFile(path.join(skillDir, "SKILL.md"), skillMarkdown(metadata), "utf8");
+}
+
+function createSkillsCliInstallFixture(directoryName, variant = "original") {
+  return async (executable, args, options = {}) => {
+    assert.equal(executable, "npx");
+    assert.deepEqual(args.slice(0, 3), ["--yes", "skills", "add"]);
+    const outputRoot = path.join(options.env.HOME, ".agents", "skills", directoryName);
+    await writeSkill(outputRoot, {
+      name: "skill-creator",
+      description: "Create and improve reusable Skills"
+    });
+    await fs.mkdir(path.join(outputRoot, "agents"), { recursive: true });
+    await fs.mkdir(path.join(outputRoot, "eval-viewer"), { recursive: true });
+    await fs.writeFile(path.join(outputRoot, "LICENSE.txt"), "Test license\n", "utf8");
+    await fs.writeFile(path.join(outputRoot, "agents", "openai.yaml"), "name: skill-creator\n", "utf8");
+    await fs.writeFile(path.join(outputRoot, "eval-viewer", "viewer.html"), `<html>${variant}</html>\n`, "utf8");
+    await fs.writeFile(path.join(outputRoot, "eval-viewer", "generate_review.py"), "print('ok')\n", "utf8");
+    return { exitCode: 0, stdout: "installed\n", stderr: "" };
+  };
 }
 
 async function exists(filePath) {

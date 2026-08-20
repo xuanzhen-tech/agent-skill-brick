@@ -224,6 +224,12 @@ const activated = await agentSkill.activate("github");
 
 `find({ query })` 的返回值中，`skills` 表示已经安装在 `~/.agent-cli/skills` 下并进入索引的 skill；`candidates` 表示远端可安装候选。`skill_find` 搜索阶段不会把远端 skill 当成已激活上下文，也不会读取候选的完整 `SKILL.md`。
 
+`find({ action: "install", ... })` 安装一个远端候选时会返回稳定的顶层
+`status` 与 canonical `name`，同时保留 `installed` 数组。成功写盘必须与
+`install()` 共用替换事务和 `.agent-skill-installations.json` 登记；宿主可以用
+`listInstallations().skillName` 对账，不能从远端 slug 或下载目录名猜测 Skill 名称。
+重复安装相同版本返回 `unchanged`，已有不同内容返回 `conflict`，不会静默覆盖。
+
 ## 受控安装来源与更新
 
 生态目录等上游可以把已规范化的安装来源交给 `AgentSkill`，但产品层不应自行
@@ -284,6 +290,12 @@ C:\Users\you\.agent-cli\skills
   scripts/
   assets/
 ```
+
+普通本地目录、zip 和 URL 安装继续使用上述最小结构。`skill_find` 已选中的远端
+生态包还可以携带受体积和文件数量限制的常见附属内容，例如 `LICENSE*`、
+`README*`、`agents/`、`evals/`、`eval-viewer/`、`examples/`、`templates/` 与
+`workflows/`。所有来源仍拒绝 symlink、路径逃逸、缺少 frontmatter 和超限文件；
+AgentSkill 不会因为这些文件被安装就自动执行其中的脚本。
 
 `SKILL.md` 必须包含 frontmatter，至少声明 `name` 和 `description`。
 

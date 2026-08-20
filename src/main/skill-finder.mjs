@@ -6,12 +6,18 @@
  * 调 skill_find 时再由这里负责远端候选、临时暂存和安全落盘。
  */
 
+import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { validateSkillPackage } from "./skill-package.mjs";
+import { createSkillError, normalizeSkillError } from "./skill-error.mjs";
+import {
+  getDiscoveredSkillPackagePolicy,
+  installDiscoveredSkillPackage,
+  validateSkillPackage
+} from "./skill-package.mjs";
 
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 20;
@@ -165,7 +171,6 @@ async function searchSkillHub(input, runProcess) {
 
 async function installFromProvider(provider, input, dependencies) {
   const destinationRoot = await ensureRealDirectory(input.skillRoot);
-  const before = await listSkillDirs(destinationRoot);
   const stagingRoot = await fs.mkdtemp(path.join(path.dirname(destinationRoot), ".skill-install-"));
   try {
     const stagedInput = { ...input, skillRoot: stagingRoot };
@@ -191,9 +196,48 @@ async function installFromProvider(provider, input, dependencies) {
       await installSkillHubPackage(stagedInput, dependencies.runProcess);
     }
 
-    await moveStagedSkillDirs(stagingRoot, destinationRoot);
-    const after = await listSkillDirs(destinationRoot);
-    return { installed: await describeNewSkills(destinationRoot, provider.id, before, after), diagnostics: [] };
+    const stagedSkill = await resolveSingleStagedSkill(stagingRoot);
+    const sourceRevision = await skillPackageFingerprint(stagedSkill);
+    let installation = await installDiscoveredSkillPackage({
+      sourceDirectory: stagedSkill,
+      managedRoot: destinationRoot,
+      providerId: provider.id,
+      ...describeRemoteSource(provider, input),
+      revision: sourceRevision,
+      conflict: "check"
+    });
+
+    // 旧版 skill_find 在写入目录后才由 Product 发现 canonical name 缺失，可能留下
+    // “文件完整但没有安装登记”的半安装状态。只有逐文件完全一致时才安全收养；
+    // 内容不同仍返回 conflict，绝不覆盖用户修改。
+    if (
+      installation.status === "conflict"
+      && !installation.existingInstallation
+      && await sameSkillPackage(stagedSkill, installation.path)
+    ) {
+      installation = await installDiscoveredSkillPackage({
+        sourceDirectory: stagedSkill,
+        managedRoot: destinationRoot,
+        providerId: provider.id,
+        ...describeRemoteSource(provider, input),
+        revision: sourceRevision,
+        conflict: "replace"
+      });
+    }
+
+    const mutated = installation.installed === true;
+    return {
+      // 保留既有数组合同，同时公开 Product 可稳定消费的顶层 status/name。
+      installed: mutated
+        ? [{ name: installation.name, path: path.join(installation.path, "SKILL.md"), source: provider.id }]
+        : [],
+      status: mutated ? "installed" : installation.status,
+      name: installation.name,
+      ...(installation.installation ? { installation: installation.installation } : {}),
+      diagnostics: []
+    };
+  } catch (error) {
+    throw normalizeSkillError(error, "skill_install_failed", "Skill installation failed.");
   } finally {
     await fs.rm(stagingRoot, { recursive: true, force: true });
   }
@@ -226,7 +270,7 @@ async function installGithubSkill(input) {
     ]);
     await runRequired(input.runProcess, "git", ["-C", repoDir, "sparse-checkout", "set", input.skillPath]);
     const source = path.join(repoDir, input.skillPath);
-    await assertValidSkillDirectory(source);
+    await assertValidSkillDirectory(source, getDiscoveredSkillPackagePolicy());
     await fs.cp(source, destination, { recursive: true, errorOnExist: true });
   } finally {
     await fs.rm(tempRoot, { recursive: true, force: true });
@@ -254,7 +298,11 @@ async function installSkillsShPackage(input, runProcess) {
         USERPROFILE: tempHome
       }
     });
-    await copyInstalledSkillDirs(path.join(tempHome, ".agents", "skills"), destinationRoot);
+    await copyInstalledSkillDirs(
+      path.join(tempHome, ".agents", "skills"),
+      destinationRoot,
+      getDiscoveredSkillPackagePolicy()
+    );
   } finally {
     await fs.rm(tempRoot, { recursive: true, force: true });
   }
@@ -266,7 +314,7 @@ async function installSkillHubPackage(input, runProcess) {
   await runRequired(runProcess, "npx", ["--yes", "@skill-hub/cli", "install", slug, "--dir", destinationRoot, "-y"]);
 }
 
-async function copyInstalledSkillDirs(sourceRoot, destinationRoot) {
+async function copyInstalledSkillDirs(sourceRoot, destinationRoot, packagePolicy) {
   if (!(await pathExists(sourceRoot))) throw new Error("No skills were installed by skills.sh.");
   const entries = await fs.readdir(sourceRoot, { withFileTypes: true });
   const dirs = entries.filter((entry) => entry.isDirectory());
@@ -275,7 +323,7 @@ async function copyInstalledSkillDirs(sourceRoot, destinationRoot) {
   for (const dir of dirs) {
     validateSkillDirectoryName(dir.name);
     const source = path.join(sourceRoot, dir.name);
-    await assertValidSkillDirectory(source);
+    await assertValidSkillDirectory(source, packagePolicy);
     const destination = path.join(destinationRoot, dir.name);
     ensureInside(destination, destinationRoot);
     if (await pathExists(destination)) throw new Error(`Destination already exists: ${destination}`);
@@ -283,37 +331,30 @@ async function copyInstalledSkillDirs(sourceRoot, destinationRoot) {
   }
 }
 
-async function moveStagedSkillDirs(stagingRoot, destinationRoot) {
+async function resolveSingleStagedSkill(stagingRoot) {
   const entries = await fs.readdir(stagingRoot, { withFileTypes: true });
   const dirs = entries.filter((entry) => entry.isDirectory());
   if (!dirs.length) throw new Error("No skill directories were staged for install.");
-
-  const moves = [];
-  for (const dir of dirs) {
-    validateSkillDirectoryName(dir.name);
-    const source = path.join(stagingRoot, dir.name);
-    await assertValidSkillDirectory(source);
-    const destination = path.join(destinationRoot, dir.name);
-    ensureInside(destination, destinationRoot);
-    if (await pathExists(destination)) throw new Error(`Destination already exists: ${destination}`);
-    moves.push({ source, destination });
+  if (dirs.length !== 1) {
+    throw createSkillError(
+      "skill_install_ambiguous",
+      `Remote candidate installed ${dirs.length} Skill directories; exactly one is required.`
+    );
   }
-
-  const moved = [];
-  try {
-    for (const move of moves) {
-      await fs.rename(move.source, move.destination);
-      moved.push(move.destination);
-    }
-  } catch (error) {
-    await Promise.all(moved.map((destination) => fs.rm(destination, { recursive: true, force: true })));
-    throw error;
-  }
+  validateSkillDirectoryName(dirs[0].name);
+  const source = path.join(stagingRoot, dirs[0].name);
+  await assertValidSkillDirectory(source, getDiscoveredSkillPackagePolicy());
+  return source;
 }
 
-async function assertValidSkillDirectory(dir) {
-  const validation = await validateSkillPackage(dir);
-  if (!validation.valid) throw new Error(`Invalid skill package: ${validation.diagnostics.join("; ")}`);
+async function assertValidSkillDirectory(dir, packagePolicy) {
+  const validation = await validateSkillPackage(dir, packagePolicy);
+  if (!validation.valid) {
+    throw createSkillError(
+      "skill_package_invalid",
+      `Invalid skill package: ${validation.diagnostics.join("; ")}`
+    );
+  }
 }
 
 async function runRequired(runProcess, executable, args, options) {
@@ -368,15 +409,69 @@ function quoteWindowsCommandArg(value) {
   return `"${value.replace(/(["^&|<>()%])/g, "^$1")}"`;
 }
 
-async function describeNewSkills(skillRoot, source, before, after) {
-  const names = [...after].filter((name) => !before.has(name)).sort();
-  return names.map((name) => ({ name, path: path.join(skillRoot, name, "SKILL.md"), source }));
+function describeRemoteSource(provider, input) {
+  if (provider.kind === "skills-cli") {
+    return {
+      remoteId: requireInstallName(input.packageName),
+      sourceRepository: input.packageName?.split("@")[0],
+      sourcePath: input.packageName?.split("@")[1]
+    };
+  }
+  if (provider.kind === "github-tree") {
+    const source = input.url
+      ? parseGithubSkillUrl(input.url)
+      : {
+          repo: requireProviderRepo(provider),
+          path: `${provider.repoPath}/${requireInstallName(input.name)}`
+        };
+    return {
+      remoteId: `${source.repo}@${source.path}`,
+      sourceRepository: source.repo,
+      sourcePath: source.path
+    };
+  }
+  return {
+    remoteId: requireInstallName(input.slug),
+    sourcePath: input.slug
+  };
 }
 
-async function listSkillDirs(skillRoot) {
-  await fs.mkdir(skillRoot, { recursive: true });
-  const entries = await fs.readdir(skillRoot, { withFileTypes: true });
-  return new Set(entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name));
+async function sameSkillPackage(leftRoot, rightRoot) {
+  if (!(await pathExists(rightRoot))) return false;
+  const validation = await validateSkillPackage(rightRoot, getDiscoveredSkillPackagePolicy());
+  if (!validation.valid) return false;
+  return await skillPackageFingerprint(leftRoot) === await skillPackageFingerprint(rightRoot);
+}
+
+async function skillPackageFingerprint(root) {
+  const files = await listRegularFiles(root);
+  const hash = crypto.createHash("sha256");
+  for (const file of files) {
+    const relativePath = path.relative(root, file).split(path.sep).join("/");
+    hash.update(relativePath);
+    hash.update("\0");
+    hash.update(await fs.readFile(file));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
+}
+
+async function listRegularFiles(root) {
+  const output = [];
+  async function visit(directory) {
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    entries.sort((left, right) => left.name.localeCompare(right.name, "en"));
+    for (const entry of entries) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isSymbolicLink()) {
+        throw createSkillError("skill_package_invalid", "Skill package changed to contain a symlink during installation.");
+      }
+      if (entry.isDirectory()) await visit(entryPath);
+      else if (entry.isFile()) output.push(entryPath);
+    }
+  }
+  await visit(root);
+  return output;
 }
 
 async function ensureRealDirectory(dir) {
