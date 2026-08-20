@@ -21,6 +21,10 @@ export const BUILTIN_SKILL_SOURCE_KIND = "agent-skill.builtin.v1";
 const MODULE_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 const BUILTIN_SKILL_ROOT = path.resolve(MODULE_DIRECTORY, "../builtin-skills");
 const SELF_SERVICE_CATALOG_PATH = path.resolve(MODULE_DIRECTORY, "self-service-builtin-skill-catalog.json");
+const ECOSYSTEM_CATALOG_PATH = path.resolve(MODULE_DIRECTORY, "ecosystem-skill-catalog.json");
+const CATALOG_CURSOR_VERSION = 1;
+const DEFAULT_CATALOG_LIMIT = 50;
+const MAX_CATALOG_LIMIT = 200;
 
 // 这里是积木随版本发布的预制目录清单。描述只用于产品选择和诊断，完整说明
 // 仍以安装后的 SKILL.md 为准。
@@ -68,12 +72,27 @@ const BASE_BUILTIN_SKILLS = [
 // 自助上传只维护独立 JSON 数据文件，不需要解析或改写本模块源码。相同名称的
 // 自助条目覆盖历史静态条目，因此既能新增 skill，也能升级早期内置 skill。
 const SELF_SERVICE_BUILTIN_SKILLS = readSelfServiceCatalog();
-const BUILTIN_SKILLS = Object.freeze(Array.from(new Map([
+const CORE_BUILTIN_SKILLS = Object.freeze(Array.from(new Map([
   ...BASE_BUILTIN_SKILLS,
   ...SELF_SERVICE_BUILTIN_SKILLS
-].map((skill) => [skill.name, Object.freeze(normalizeCatalogEntry(skill))])).values()));
+].map((skill) => [skill.name, Object.freeze(normalizeCatalogEntry({ ...skill, collection: "core" }))])).values()));
+const ECOSYSTEM_BUILTIN_SKILLS = Object.freeze(readEcosystemCatalog()
+  .map((skill) => Object.freeze(normalizeCatalogEntry({ ...skill, collection: "ecosystem" }))));
+const BUILTIN_SKILLS = Object.freeze([...CORE_BUILTIN_SKILLS, ...ECOSYSTEM_BUILTIN_SKILLS]);
 
 const BUILTIN_SKILL_BY_NAME = new Map(BUILTIN_SKILLS.map((skill) => [skill.name, skill]));
+const BUILTIN_SKILL_BY_LEGACY_ID = new Map(BUILTIN_SKILLS
+  .filter((skill) => skill.legacyEcosystemId)
+  .map((skill) => [skill.legacyEcosystemId, skill]));
+if (BUILTIN_SKILL_BY_NAME.size !== BUILTIN_SKILLS.length) {
+  throw new Error("builtin and ecosystem skill catalogs contain duplicate names");
+}
+if (BUILTIN_SKILL_BY_LEGACY_ID.size !== BUILTIN_SKILLS.filter((skill) => skill.legacyEcosystemId).length) {
+  throw new Error("ecosystem skill catalog contains duplicate legacy ids");
+}
+const CATALOG_REVISION = crypto.createHash("sha256")
+  .update(JSON.stringify(BUILTIN_SKILLS.map((skill) => [skill.name, skill.version, skill.contentHash ?? ""])))
+  .digest("hex");
 
 /**
  * 返回可供产品选择的内置 skill 元数据副本。
@@ -81,7 +100,52 @@ const BUILTIN_SKILL_BY_NAME = new Map(BUILTIN_SKILLS.map((skill) => [skill.name,
  * 返回副本而不是内部数组，避免调用方意外修改运行时 catalog。
  */
 export function listBuiltinSkills() {
-  return BUILTIN_SKILLS.map((skill) => ({ ...skill }));
+  return CORE_BUILTIN_SKILLS.map(toLegacyBuiltinEntry);
+}
+
+/**
+ * 查询随当前 artifact 发布的统一 Skill 目录。
+ *
+ * 目录仅表示可安装资源，不会安装、启用或注入任何 Skill。cursor 与筛选条件
+ * 及当前 artifact revision 绑定，避免调用方误用其它查询或版本的游标。
+ */
+export function listSkillCatalog(input = {}) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw catalogError("skill_catalog_query_invalid", "skill catalog query must be an object");
+  }
+  const filters = normalizeCatalogFilters(input);
+  const fingerprint = catalogFingerprint(filters);
+  const offset = input.cursor ? decodeCatalogCursor(input.cursor, fingerprint) : 0;
+  const matches = BUILTIN_SKILLS.filter((skill) => matchesCatalogFilters(skill, filters));
+  if (offset > matches.length) {
+    throw catalogError("skill_catalog_cursor_invalid", "skill catalog cursor is outside the result set");
+  }
+  const items = matches.slice(offset, offset + filters.limit).map(cloneCatalogEntry);
+  const nextOffset = offset + items.length;
+  return {
+    items,
+    total: matches.length,
+    filters: {
+      collections: [...filters.collections],
+      platforms: [...filters.platforms],
+      sceneTags: [...filters.sceneTags],
+      ...(filters.query ? { query: filters.query } : {})
+    },
+    ...(nextOffset < matches.length
+      ? { nextCursor: encodeCatalogCursor({ offset: nextOffset, fingerprint }) }
+      : {})
+  };
+}
+
+export function getSkillCatalogEntry(nameOrLegacyId) {
+  const skill = resolveCatalogEntry(nameOrLegacyId);
+  return skill ? cloneCatalogEntry(skill) : undefined;
+}
+
+export function createCatalogSkillSource(nameOrLegacyId) {
+  const skill = resolveCatalogEntry(nameOrLegacyId);
+  if (!skill) throw catalogError("skill_catalog_entry_not_found", `Unknown catalog skill: ${nameOrLegacyId}`);
+  return createBuiltinSkillSource(skill.name);
 }
 
 /**
@@ -201,6 +265,14 @@ function readSelfServiceCatalog() {
   return parsed;
 }
 
+function readEcosystemCatalog() {
+  const parsed = JSON.parse(fsSync.readFileSync(ECOSYSTEM_CATALOG_PATH, "utf8"));
+  if (!Array.isArray(parsed)) {
+    throw new Error("ecosystem skill catalog must be an array");
+  }
+  return parsed;
+}
+
 function normalizeCatalogEntry(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new Error("builtin skill catalog entry must be an object");
@@ -212,5 +284,147 @@ function normalizeCatalogEntry(input) {
     throw new Error(`Builtin skill ${name} version must use x.y.z.`);
   }
   if (!description) throw new Error(`Builtin skill ${name} description is required.`);
-  return { id: name, name, version, description };
+  const collection = input.collection === "ecosystem" ? "ecosystem" : "core";
+  const displayName = optionalString(input.displayName ?? input.displayChineseName);
+  const legacyEcosystemId = optionalString(input.legacyEcosystemId);
+  const originKind = optionalString(input.originKind);
+  const contentHash = optionalString(input.contentHash);
+  const sourceRepository = optionalString(input.sourceRepository);
+  const sourcePath = optionalString(input.sourcePath);
+  const sourceLicense = optionalString(input.sourceLicense);
+  const distributionStatus = optionalString(input.distributionStatus);
+  return {
+    id: name,
+    name,
+    version,
+    description,
+    collection,
+    platforms: normalizeStringList(input.platforms),
+    sceneTags: normalizeStringList(input.sceneTags),
+    searchTags: normalizeStringList(input.searchTags),
+    ...(displayName ? { displayName } : {}),
+    ...(legacyEcosystemId ? { legacyEcosystemId } : {}),
+    ...(originKind ? { originKind } : {}),
+    ...(contentHash ? { contentHash } : {}),
+    ...(sourceRepository ? { sourceRepository } : {}),
+    ...(sourcePath ? { sourcePath } : {}),
+    ...(sourceLicense ? { sourceLicense } : {}),
+    ...(distributionStatus ? { distributionStatus } : {})
+  };
+}
+
+function toLegacyBuiltinEntry(skill) {
+  return {
+    id: skill.id,
+    name: skill.name,
+    version: skill.version,
+    description: skill.description
+  };
+}
+
+function cloneCatalogEntry(skill) {
+  return {
+    ...skill,
+    platforms: [...skill.platforms],
+    sceneTags: [...skill.sceneTags],
+    searchTags: [...skill.searchTags]
+  };
+}
+
+function resolveCatalogEntry(nameOrLegacyId) {
+  const raw = optionalString(nameOrLegacyId);
+  if (!raw) return undefined;
+  const legacyMatch = BUILTIN_SKILL_BY_LEGACY_ID.get(raw);
+  if (legacyMatch) return legacyMatch;
+  try {
+    return BUILTIN_SKILL_BY_NAME.get(normalizeSkillName(raw));
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeCatalogFilters(input) {
+  const collections = normalizeFilterList(input.collections, ["core", "ecosystem"], "collections");
+  if (collections.some((collection) => collection !== "core" && collection !== "ecosystem")) {
+    throw catalogError("skill_catalog_query_invalid", "collections only supports core and ecosystem");
+  }
+  const platforms = normalizeFilterList(input.platforms, undefined, "platforms");
+  const sceneTags = normalizeFilterList(input.sceneTags, undefined, "sceneTags");
+  const query = optionalString(input.query)?.toLowerCase();
+  const limit = input.limit === undefined ? DEFAULT_CATALOG_LIMIT : Number(input.limit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_CATALOG_LIMIT) {
+    throw catalogError("skill_catalog_limit_invalid", `skill catalog limit must be between 1 and ${MAX_CATALOG_LIMIT}`);
+  }
+  return { collections, platforms, sceneTags, query, limit };
+}
+
+function normalizeFilterList(value, fallback, field) {
+  if (value === undefined) return fallback ? [...fallback] : [];
+  if (!Array.isArray(value)) {
+    throw catalogError("skill_catalog_query_invalid", `${field} must be an array`);
+  }
+  return [...new Set(value.map((item) => String(item).trim().toLowerCase()).filter(Boolean))];
+}
+
+function matchesCatalogFilters(skill, filters) {
+  if (!filters.collections.includes(skill.collection)) return false;
+  if (filters.platforms.length && !filters.platforms.some((value) => skill.platforms.includes(value))) return false;
+  if (filters.sceneTags.length && !filters.sceneTags.some((value) => skill.sceneTags.includes(value))) return false;
+  if (!filters.query) return true;
+  return [
+    skill.id,
+    skill.name,
+    skill.displayName,
+    skill.description,
+    skill.legacyEcosystemId,
+    ...skill.platforms,
+    ...skill.sceneTags,
+    ...skill.searchTags
+  ].filter(Boolean).join("\n").toLowerCase().includes(filters.query);
+}
+
+function catalogFingerprint(filters) {
+  return crypto.createHash("sha256").update(JSON.stringify({
+    revision: CATALOG_REVISION,
+    collections: filters.collections,
+    platforms: filters.platforms,
+    sceneTags: filters.sceneTags,
+    query: filters.query ?? ""
+  })).digest("hex");
+}
+
+function encodeCatalogCursor({ offset, fingerprint }) {
+  return Buffer.from(JSON.stringify({ v: CATALOG_CURSOR_VERSION, offset, fingerprint }), "utf8").toString("base64url");
+}
+
+function decodeCatalogCursor(cursor, fingerprint) {
+  try {
+    const decoded = JSON.parse(Buffer.from(String(cursor), "base64url").toString("utf8"));
+    if (
+      decoded.v !== CATALOG_CURSOR_VERSION
+      || !Number.isInteger(decoded.offset)
+      || decoded.offset < 0
+      || decoded.fingerprint !== fingerprint
+    ) {
+      throw new Error("invalid cursor payload");
+    }
+    return decoded.offset;
+  } catch {
+    throw catalogError("skill_catalog_cursor_invalid", "skill catalog cursor is invalid or belongs to another query");
+  }
+}
+
+function normalizeStringList(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map((item) => String(item).trim().toLowerCase()).filter(Boolean))];
+}
+
+function optionalString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function catalogError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
 }

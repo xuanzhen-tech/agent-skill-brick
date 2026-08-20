@@ -9,9 +9,12 @@ export { brickDefinition } from "./brick-definition.mjs";
 export { AgentSkill } from "./main/agent-skill.mjs";
 export {
   BUILTIN_SKILL_SOURCE_KIND,
+  createCatalogSkillSource,
   createBuiltinSkillSource,
+  getSkillCatalogEntry,
   isBuiltinSkillName,
-  listBuiltinSkills
+  listBuiltinSkills,
+  listSkillCatalog
 } from "./main/builtin-skill-catalog.mjs";
 export {
   createAgentSkillLaunchConfig,

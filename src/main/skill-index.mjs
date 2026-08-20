@@ -12,7 +12,7 @@ import path from "node:path";
 
 const INDEX_SCHEMA_VERSION = "agent-skill.index.v1";
 const MAX_SKILL_FILE_BYTES = 256 * 1024;
-const MAX_SKILLS_PER_ROOT = 300;
+const MAX_SKILLS_PER_ROOT = 1000;
 
 export function createAgentSkillIndex({ roots = [], generatedAt = new Date().toISOString() } = {}) {
   const merged = new Map();
@@ -143,6 +143,13 @@ async function readSkillPackage({ skillDir, source }) {
         requiredTools: parseListField(frontmatter.requiredTools),
         optionalTools: parseListField(frontmatter.optionalTools),
         requiredEnv: parseListField(frontmatter.requiredEnv),
+        collection: optionalString(frontmatter.collection),
+        displayName: optionalString(frontmatter.displayName),
+        platforms: parseListField(frontmatter.platforms),
+        sceneTags: parseListField(frontmatter.sceneTags),
+        searchTags: parseListField(frontmatter.searchTags),
+        legacyEcosystemId: optionalString(frontmatter.legacyEcosystemId),
+        originKind: optionalString(frontmatter.originKind),
         enabled: true,
         contentHash: sha256(content),
         bytes: Buffer.byteLength(content, "utf8")
@@ -164,6 +171,14 @@ function validateSkillRecord(skill, pathLabel, errors) {
   }
   for (const field of ["capabilities", "requiredTools", "optionalTools", "requiredEnv"]) {
     if (!Array.isArray(skill[field])) errors.push(`${pathLabel}.${field} must be an array`);
+  }
+  for (const field of ["platforms", "sceneTags", "searchTags"]) {
+    if (skill[field] !== undefined && !Array.isArray(skill[field])) errors.push(`${pathLabel}.${field} must be an array`);
+  }
+  for (const field of ["collection", "displayName", "legacyEcosystemId", "originKind"]) {
+    if (skill[field] !== undefined && (typeof skill[field] !== "string" || !skill[field].trim())) {
+      errors.push(`${pathLabel}.${field} must be a non-empty string`);
+    }
   }
   if (typeof skill.enabled !== "boolean") errors.push(`${pathLabel}.enabled must be boolean`);
   if (!Number.isInteger(skill.bytes) || skill.bytes < 0) errors.push(`${pathLabel}.bytes must be a non-negative integer`);
@@ -191,6 +206,10 @@ function parseListField(value) {
     .split(",")
     .map((item) => item.trim().replace(/^['"]|['"]$/g, ""))
     .filter(Boolean);
+}
+
+function optionalString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
 export function normalizeSkillName(input) {

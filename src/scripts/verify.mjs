@@ -17,7 +17,7 @@ import {
 } from "@xuanzhen-tech/agent-release-foundation";
 
 import { brickDefinition } from "../brick-definition.mjs";
-import { listBuiltinSkills } from "../main/builtin-skill-catalog.mjs";
+import { listBuiltinSkills, listSkillCatalog } from "../main/builtin-skill-catalog.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "../..");
@@ -120,6 +120,7 @@ async function validateRuntimeArtifactIfPresent() {
     "runtime-contract.json",
     "package.json",
     "brick-definition.snapshot.json",
+    "THIRD_PARTY_NOTICES.md",
     "src/cli.mjs",
     "src/index.mjs",
     "src/brick-definition.mjs",
@@ -128,6 +129,7 @@ async function validateRuntimeArtifactIfPresent() {
     "src/main/installation-registry.mjs",
     "src/main/asin-research-builtin-skill-catalog.mjs",
     "src/main/builtin-skill-catalog.mjs",
+    "src/main/ecosystem-skill-catalog.json",
     "src/main/expert-builtin-skill-catalog.mjs",
     "src/main/launch-config.mjs",
     "src/main/skill-index.mjs",
@@ -144,6 +146,9 @@ async function validateRuntimeArtifactIfPresent() {
     "src/builtin-skills/amazon-product-image-generation/references/production-quality-gate.md"
   ];
   requiredFiles.push(...listBuiltinSkills().map(
+    (skill) => `src/builtin-skills/${skill.name}/SKILL.md`
+  ));
+  requiredFiles.push(...readAllEcosystemCatalog().map(
     (skill) => `src/builtin-skills/${skill.name}/SKILL.md`
   ));
   for (const requiredFile of requiredFiles) {
@@ -187,6 +192,21 @@ async function validateRuntimeArtifactIfPresent() {
 
   await assertRuntimeFilesDoNotContainSecrets(runtimeFiles);
   console.log("[verify] runtime artifact ok", metadata.artifactFileName);
+}
+
+function readAllEcosystemCatalog() {
+  const items = [];
+  let cursor;
+  do {
+    const page = listSkillCatalog({
+      collections: ["ecosystem"],
+      limit: 200,
+      ...(cursor ? { cursor } : {})
+    });
+    items.push(...page.items);
+    cursor = page.nextCursor;
+  } while (cursor);
+  return items;
 }
 
 async function assertRuntimeFilesDoNotContainSecrets(runtimeFiles) {
