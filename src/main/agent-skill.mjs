@@ -28,11 +28,24 @@ import {
   normalizeSkillFindSource
 } from "./skill-finder.mjs";
 import {
+  createManagedSkillInstallation,
   getManagedSkillInstallation,
-  listManagedSkillInstallations
+  listManagedSkillInstallations,
+  setManagedSkillInstallation
 } from "./installation-registry.mjs";
 import { installSkillPackage, removeManagedSkill } from "./skill-package.mjs";
 import { normalizeSkillName, scanSkillRoots } from "./skill-index.mjs";
+import {
+  createSkillSourceIdentity,
+  getManagedSkillSourceConflict,
+  getManagedSkillSourceConflictRecord,
+  isOfficialSkillInstallation,
+  listManagedSkillSourceConflicts,
+  reconcileManagedSkillSourceConflicts,
+  recordManagedSkillSourceConflict,
+  setManagedSkillSourceConflictState,
+  sourceConflictError
+} from "./source-conflict-registry.mjs";
 import {
   listSkillResources,
   readSkillReference,
@@ -44,6 +57,7 @@ const DEFAULT_FIND_LIMIT = 20;
 const MAX_FIND_LIMIT = 100;
 const DEFAULT_PROMPT_SKILL_LIMIT = 80;
 const DEFAULT_PROMPT_BYTES = 24 * 1024;
+const SOURCE_RESOLUTION_QUEUES = new Map();
 
 export class AgentSkill {
   constructor(input = {}) {
@@ -111,6 +125,10 @@ export class AgentSkill {
 
   async refresh(context = {}) {
     const provisioning = await this.provisionSelectedBuiltinSkills();
+    await reconcileManagedSkillSourceConflicts({
+      managedRoot: this.config.skillsPath,
+      installations: await listManagedSkillInstallations({ managedRoot: this.config.skillsPath })
+    });
     const scannedIndex = await scanSkillRoots(this.contextConfig(context));
     this.index = createVisibleSkillIndex(scannedIndex, {
       visibilityMode: this.visibilityMode,
@@ -271,6 +289,10 @@ export class AgentSkill {
       managedRoot: this.config.skillsPath,
       conflict: options.conflict
     });
+    if (result.status === "conflict" && isOfficialSkillInstallation(result.incomingInstallation)) {
+      const sourceConflict = await this.recordOfficialSourceConflict(result, source);
+      return { ...result, sourceConflict };
+    }
     if (result.status !== "conflict") await this.refresh();
     return result;
   }
@@ -282,6 +304,140 @@ export class AgentSkill {
   async listInstallations() {
     return await listManagedSkillInstallations({
       managedRoot: this.config.skillsPath
+    });
+  }
+
+  /**
+   * 返回用户来源与官方来源之间的结构化冲突。
+   *
+   * 调用前先 refresh，确保新版本刚引入的同名 builtin 能在 Product 启动后立即
+   * 出现在公开列表中；持久记录不包含本地绝对路径或 incoming Skill 正文。
+   */
+  async listSourceConflicts(input = {}) {
+    await this.refresh();
+    return await listManagedSkillSourceConflicts({
+      managedRoot: this.config.skillsPath,
+      status: input.status ?? "all"
+    });
+  }
+
+  async getSourceConflict(conflictId) {
+    await this.refresh();
+    return await getManagedSkillSourceConflict({
+      managedRoot: this.config.skillsPath,
+      conflictId
+    });
+  }
+
+  async resolveSourceConflict(conflictId, input = {}) {
+    const decision = input?.decision;
+    if (decision !== "keep-local" && decision !== "use-official") {
+      throw sourceConflictError(
+        "skill_source_decision_invalid",
+        "source conflict decision must be keep-local or use-official"
+      );
+    }
+
+    return await withSourceResolutionLock(this.config.skillsPath, async () => {
+      await this.refresh();
+      let conflict = await getManagedSkillSourceConflictRecord({
+        managedRoot: this.config.skillsPath,
+        conflictId
+      });
+      if (!conflict) {
+        throw sourceConflictError("skill_source_conflict_not_found", `Unknown source conflict: ${conflictId}`);
+      }
+      if (conflict.status === "stale") {
+        throw sourceConflictError("skill_source_conflict_stale", `Source conflict is stale: ${conflictId}`);
+      }
+      if (conflict.status === "resolved") {
+        if (conflict.decision === decision) {
+          return toResolutionResult(conflict, await getManagedSkillInstallation({
+            managedRoot: this.config.skillsPath,
+            skillName: conflict.skillName
+          }));
+        }
+        throw sourceConflictError(
+          "skill_source_decision_conflict",
+          `Source conflict was already resolved with ${conflict.decision}`
+        );
+      }
+
+      const currentInstallation = await getManagedSkillInstallation({
+        managedRoot: this.config.skillsPath,
+        skillName: conflict.skillName
+      });
+      if (currentInstallation?.installationId !== conflict.existingSource.installationId) {
+        await setManagedSkillSourceConflictState({
+          managedRoot: this.config.skillsPath,
+          conflictId,
+          status: "stale"
+        });
+        throw sourceConflictError("skill_source_conflict_stale", `Source conflict is stale: ${conflictId}`);
+      }
+
+      if (decision === "keep-local") {
+        const resolved = await setManagedSkillSourceConflictState({
+          managedRoot: this.config.skillsPath,
+          conflictId,
+          status: "resolved",
+          decision,
+          resolvedInstallationId: currentInstallation.installationId
+        });
+        await this.refresh();
+        return { resolved: true, conflict: resolved, installation: currentInstallation };
+      }
+
+      await setManagedSkillSourceConflictState({
+        managedRoot: this.config.skillsPath,
+        conflictId,
+        status: "resolving",
+        decision
+      });
+      try {
+        const installed = await installSkillPackage({
+          source: conflict.incomingSourceRef,
+          managedRoot: this.config.skillsPath,
+          conflict: "replace"
+        });
+        const resolved = await setManagedSkillSourceConflictState({
+          managedRoot: this.config.skillsPath,
+          conflictId,
+          status: "resolved",
+          decision,
+          resolvedInstallationId: installed.installation.installationId
+        });
+        await this.refresh();
+        return { resolved: true, conflict: resolved, installation: installed.installation };
+      } catch (error) {
+        const afterFailure = await getManagedSkillInstallation({
+          managedRoot: this.config.skillsPath,
+          skillName: conflict.skillName
+        });
+        if (afterFailure
+          && createSkillSourceIdentity(afterFailure) === conflict.incomingSource.sourceIdentity) {
+          const resolved = await setManagedSkillSourceConflictState({
+            managedRoot: this.config.skillsPath,
+            conflictId,
+            status: "resolved",
+            decision,
+            resolvedInstallationId: afterFailure.installationId
+          });
+          await this.refresh();
+          return { resolved: true, conflict: resolved, installation: afterFailure };
+        }
+        await setManagedSkillSourceConflictState({
+          managedRoot: this.config.skillsPath,
+          conflictId,
+          status: "pending",
+          clearDecision: true
+        });
+        throw sourceConflictError(
+          "skill_source_resolution_failed",
+          `Unable to resolve source conflict: ${conflictId}`,
+          error
+        );
+      }
     });
   }
 
@@ -429,13 +585,26 @@ export class AgentSkill {
         }
 
         if (result.status === "conflict") {
-          blockedSkillNames.push(skillName);
-          diagnostics.push({
-            level: "warn",
-            code: "builtin_skill_conflict",
-            skillName,
-            message: `Builtin skill was not installed because a local skill already owns the name: ${skillName}`
-          });
+          const sourceConflict = await this.recordOfficialSourceConflict(result, source);
+          if (sourceConflict.status === "resolved" && sourceConflict.decision === "keep-local") {
+            diagnostics.push({
+              level: "info",
+              code: "builtin_skill_local_source_selected",
+              skillName,
+              conflictId: sourceConflict.conflictId,
+              message: `Local skill remains selected instead of the official builtin: ${skillName}`
+            });
+          } else {
+            blockedSkillNames.push(skillName);
+            diagnostics.push({
+              level: "warn",
+              code: "builtin_skill_conflict",
+              skillName,
+              conflictId: sourceConflict.conflictId,
+              reason: sourceConflict.reason,
+              message: `Builtin skill requires a source decision because a local skill owns the name: ${skillName}`
+            });
+          }
         }
       } catch (error) {
         blockedSkillNames.push(skillName);
@@ -468,6 +637,37 @@ export class AgentSkill {
     } catch {
       return false;
     }
+  }
+
+  async recordOfficialSourceConflict(result, source) {
+    const existingInstallation = result.existingInstallation
+      ?? await this.registerUnmanagedConflictInstallation(result);
+    return await recordManagedSkillSourceConflict({
+      managedRoot: this.config.skillsPath,
+      skillName: result.name,
+      existingInstallation,
+      incomingInstallation: result.incomingInstallation,
+      incomingSourceRef: source
+    });
+  }
+
+  async registerUnmanagedConflictInstallation(result) {
+    const skillFilePath = path.join(result.path, "SKILL.md");
+    const content = await fs.readFile(skillFilePath, "utf8");
+    const stat = await fs.stat(skillFilePath);
+    const installedAt = (stat.birthtimeMs > 0 ? stat.birthtime : stat.mtime).toISOString();
+    return await setManagedSkillInstallation({
+      managedRoot: this.config.skillsPath,
+      record: createManagedSkillInstallation({
+        skillName: result.name,
+        version: parseSkillVersion(content),
+        contentHash: sha256(content),
+        sourceKind: "directory",
+        provenance: { type: "directory" },
+        installedAt,
+        updatedAt: stat.mtime.toISOString()
+      })
+    });
   }
 }
 
@@ -504,6 +704,42 @@ function normalizeConstructorInput(input) {
           ? "all"
           : "all"
   };
+}
+
+async function withSourceResolutionLock(managedRoot, operation) {
+  const root = path.resolve(managedRoot);
+  const previous = SOURCE_RESOLUTION_QUEUES.get(root) ?? Promise.resolve();
+  let release;
+  const current = new Promise((resolve) => { release = resolve; });
+  const tail = previous.catch(() => {}).then(() => current);
+  SOURCE_RESOLUTION_QUEUES.set(root, tail);
+  await previous.catch(() => {});
+  try {
+    return await operation();
+  } finally {
+    release();
+    if (SOURCE_RESOLUTION_QUEUES.get(root) === tail) SOURCE_RESOLUTION_QUEUES.delete(root);
+  }
+}
+
+function toResolutionResult(conflict, installation) {
+  const { incomingSourceRef: _privateSource, ...publicConflict } = conflict;
+  return {
+    resolved: true,
+    conflict: JSON.parse(JSON.stringify(publicConflict)),
+    ...(installation ? { installation } : {})
+  };
+}
+
+function parseSkillVersion(content) {
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content)?.[1] ?? "";
+  for (const line of frontmatter.split(/\r?\n/)) {
+    const separator = line.indexOf(":");
+    if (separator <= 0 || line.slice(0, separator).trim() !== "version") continue;
+    const value = line.slice(separator + 1).trim().replace(/^['"]|['"]$/g, "");
+    if (value) return value;
+  }
+  return "0.1.0";
 }
 
 function normalizeSkillNames(value) {

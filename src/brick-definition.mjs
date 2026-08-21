@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const BRICK_ID = "agent-skill";
 const BRICK_NAME = "Agent Skill";
-const BRICK_VERSION = "0.10.0";
+const BRICK_VERSION = "0.11.0";
 const BRICK_KIND = "config";
 
 const registryCapability = createBrickCapability({
@@ -45,6 +45,13 @@ const unifiedCatalogCapability = createBrickCapability({
   name: "Agent Skill Catalog",
   type: "config",
   description: "提供 core 与 ecosystem 离线共享目录、分类检索、旧生态 ID 映射和受管安装来源。"
+});
+
+const sourceConflictCapability = createBrickCapability({
+  id: "agent-skill.source-conflict",
+  name: "Agent Skill Source Conflict",
+  type: "config",
+  description: "查询并原子解决用户来源与官方来源的同名 Skill 冲突，持久执行来源选择。"
 });
 
 export const brickDefinition = createBrickDefinition({
@@ -80,6 +87,16 @@ export const brickDefinition = createBrickDefinition({
       description: "将目录 Skill 或旧生态 ID 转换为受管离线安装来源。"
     },
     {
+      name: "AgentSkill.listSourceConflicts",
+      type: "api",
+      description: "读取用户来源与官方来源之间尚待处理或已经解决的结构化冲突。"
+    },
+    {
+      name: "AgentSkill.resolveSourceConflict",
+      type: "api",
+      description: "幂等执行 keep-local 或 use-official，并持久化来源选择。"
+    },
+    {
       name: "createAgentSkillIndex",
       type: "api",
       description: "用于生成 agent-skill.index.v1 索引的 SDK helper。"
@@ -104,7 +121,8 @@ export const brickDefinition = createBrickDefinition({
     registryCapability,
     installCapability,
     builtinCatalogCapability,
-    unifiedCatalogCapability
+    unifiedCatalogCapability,
+    sourceConflictCapability
   ],
   configSchema: {
     type: "object",

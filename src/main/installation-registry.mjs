@@ -41,14 +41,17 @@ export async function removeManagedSkillInstallation({ managedRoot, skillName })
 }
 
 export function createManagedSkillInstallation(input = {}) {
+  const installedAt = input.installedAt ?? new Date().toISOString();
   return normalizeInstallationRecord({
+    installationId: input.installationId ?? `installation-${crypto.randomUUID()}`,
     skillName: input.skillName,
     version: input.version,
     contentHash: input.contentHash,
     revision: input.revision ?? input.contentHash,
     sourceKind: input.sourceKind,
     provenance: input.provenance,
-    installedAt: input.installedAt ?? new Date().toISOString()
+    installedAt,
+    updatedAt: input.updatedAt ?? installedAt
   });
 }
 
@@ -99,21 +102,39 @@ async function writeInstallationRegistry(managedRoot, registry) {
 function normalizeInstallationRecord(input) {
   if (!isPlainObject(input)) throw new Error("安装记录必须是对象");
   const skillName = requiredString(input.skillName, "skillName");
+  const installationId = optionalString(input.installationId)
+    ?? legacyInstallationId(input, skillName);
   const version = requiredString(input.version, "version");
   const contentHash = requiredSha256(input.contentHash, "contentHash");
   const revision = requiredString(input.revision, "revision");
   const sourceKind = requiredString(input.sourceKind, "sourceKind");
   const installedAt = requiredString(input.installedAt, "installedAt");
+  const updatedAt = optionalString(input.updatedAt) ?? installedAt;
   const provenance = normalizeProvenance(input.provenance);
   return {
+    installationId,
     skillName,
     version,
     contentHash,
     revision,
     sourceKind,
     provenance,
-    installedAt
+    installedAt,
+    updatedAt
   };
+}
+
+// 0.10.x 及更早安装记录没有 installationId。这里由既有不可变登记字段生成稳定
+// 身份，使旧安装无需迁移即可参与来源决策；同名 Skill 被删除后重新安装时会得到
+// 新 UUID，因此不会继承旧来源选择。
+function legacyInstallationId(input, skillName) {
+  const fingerprint = JSON.stringify({
+    skillName,
+    installedAt: input.installedAt,
+    sourceKind: input.sourceKind,
+    provenance: input.provenance
+  });
+  return `installation-legacy-${crypto.createHash("sha256").update(fingerprint).digest("hex").slice(0, 32)}`;
 }
 
 function normalizeProvenance(input) {

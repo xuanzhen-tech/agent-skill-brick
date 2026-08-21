@@ -80,7 +80,7 @@ async function validateInstalledPackage() {
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { AgentSkill, getSkillCatalogEntry, listSkillCatalog } from "./src/index.mjs";
+import { AgentSkill, getSkillCatalogEntry, installSkillPackage, listSkillCatalog } from "./src/index.mjs";
 
 globalThis.fetch = async () => { throw new Error("package smoke must remain offline"); };
 const page = listSkillCatalog({ collections: ["ecosystem"], query: "价格优化" });
@@ -94,6 +94,29 @@ assert.match(prompt, /price-optimization-tool/);
 const activated = await runtime.activate(entry.name);
 assert.match(activated.loadedSkill.content, /Price Optimization Tool/);
 assert.equal((await fs.readdir(skillsPath)).includes(entry.name), true);
+
+const conflictRoot = path.join(process.cwd(), "source-conflict-smoke");
+const localSource = path.join(process.cwd(), "local-builtin-collision");
+await fs.mkdir(localSource, { recursive: true });
+await fs.writeFile(path.join(localSource, "SKILL.md"), [
+  "---",
+  "name: amazon-sku-profit-summary",
+  "description: Package-root local collision",
+  "version: 0.1.0",
+  "---",
+  "",
+  "Package-root local collision"
+].join("\\n"), "utf8");
+await installSkillPackage({ source: localSource, managedRoot: conflictRoot });
+const conflictRuntime = new AgentSkill({
+  skillsPath: conflictRoot,
+  skills: ["amazon-sku-profit-summary"]
+});
+const [sourceConflict] = await conflictRuntime.listSourceConflicts({ status: "pending" });
+assert.equal(sourceConflict.reason, "user_source_conflicts_with_official");
+await conflictRuntime.resolveSourceConflict(sourceConflict.conflictId, { decision: "keep-local" });
+assert.match((await conflictRuntime.activate("amazon-sku-profit-summary")).loadedSkill.content,
+  /Package-root local collision/);
 console.log("[package-root-smoke] ok");
 `, "utf8");
 

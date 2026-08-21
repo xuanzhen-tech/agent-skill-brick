@@ -133,16 +133,20 @@ async function installSkillPackageUnlocked({ source, managedRoot, conflict }) {
 
     const skillContent = await fs.readFile(path.join(skillDir, "SKILL.md"), "utf8");
     const contentHash = sha256Buffer(Buffer.from(skillContent, "utf8"));
+    const existingInstallation = await getManagedSkillInstallation({ managedRoot: root, skillName });
+    const destinationExists = await pathExists(destination);
+    const preserveOfficialIdentity = hasSameOfficialSourceIdentity(existingInstallation, resolvedSource);
     const incomingInstallation = createManagedSkillInstallation({
+      installationId: preserveOfficialIdentity ? existingInstallation.installationId : undefined,
       skillName,
       version: validation.metadata.version ?? "0.1.0",
       contentHash,
       revision: resolvedSource.provenance?.revision ?? contentHash,
       sourceKind: resolvedSource.kind,
-      provenance: resolvedSource.provenance
+      provenance: resolvedSource.provenance,
+      installedAt: preserveOfficialIdentity ? existingInstallation.installedAt : undefined,
+      updatedAt: new Date().toISOString()
     });
-    const existingInstallation = await getManagedSkillInstallation({ managedRoot: root, skillName });
-    const destinationExists = await pathExists(destination);
 
     // 生态市场等远端目录使用 check 时，冲突是正常业务结果而不是异常。产品层
     // 可据此展示升级确认，不会在用户确认前触碰本地文件。
@@ -578,6 +582,14 @@ function sameInstallation(existing, incoming) {
     return existingRemoteId === incomingRemoteId && existing.revision === incoming.revision;
   }
   return existing.contentHash === incoming.contentHash;
+}
+
+function hasSameOfficialSourceIdentity(existing, incomingSource) {
+  const existingRemoteId = existing?.provenance?.remoteId;
+  const incomingRemoteId = incomingSource?.provenance?.remoteId;
+  if (!existingRemoteId || !incomingRemoteId) return false;
+  return existingRemoteId === incomingRemoteId
+    && existing.provenance?.type === incomingSource.provenance?.type;
 }
 
 function isInlineSkillSource(source) {
