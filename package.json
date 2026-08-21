@@ -1,6 +1,6 @@
 {
   "name": "@xuanzhen-tech/agent-skill-brick",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Agent skill 注册管理和 skills-index 积木。",
   "type": "module",
   "repository": {
@@ -21,6 +21,7 @@
     "src/brick-definition.mjs",
     "src/main",
     "src/builtin-skills",
+    "docs",
     "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
@@ -34,10 +35,11 @@
     "publish:artifact:placeholder": "node src/scripts/publish-artifact-placeholder.mjs",
     "publish:npm": "npm publish",
     "import:ecosystem-skills": "node src/scripts/import-ecosystem-skills.mjs",
-    "release:local": "npm run smoke:cli && npm run smoke:contract && npm run smoke:skill && npm run validate:self-service-skills && npm run validate:ecosystem-skills && npm run validate:ecosystem-package && npm run build:artifact && npm run create:descriptor && npm run publish:artifact:placeholder && npm run verify && npm run pack:dry-run",
+    "release:local": "npm run smoke:cli && npm run smoke:contract && npm run smoke:skill && npm run smoke:source-conflict && npm run validate:self-service-skills && npm run validate:ecosystem-skills && npm run validate:ecosystem-package && npm run build:artifact && npm run create:descriptor && npm run publish:artifact:placeholder && npm run verify && npm run pack:dry-run",
     "smoke:cli": "node src/cli.mjs version && node src/cli.mjs diagnostics --json && node src/cli.mjs roots --json && node src/cli.mjs manifest --json",
     "smoke:contract": "node src/scripts/smoke-contract.mjs",
     "smoke:skill": "node src/scripts/smoke-skill.mjs",
+    "smoke:source-conflict": "node src/scripts/smoke-source-conflict.mjs",
     "validate:self-service-skills": "node src/scripts/validate-self-service-skills.mjs",
     "validate:self-service-release": "node src/scripts/validate-self-service-release.mjs",
     "validate:ecosystem-skills": "node src/scripts/validate-ecosystem-skills.mjs",

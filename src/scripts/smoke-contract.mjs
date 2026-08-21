@@ -37,6 +37,7 @@ assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skil
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.install"), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.builtin-catalog"), true);
 assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.catalog"), true);
+assert.equal(brickDefinition.capabilities.some((item) => item.id === "agent-skill.source-conflict"), true);
 assert.equal(brickDefinition.configSchema.properties.skills.type, "array");
 
 const builtinSkills = listBuiltinSkills();
@@ -140,6 +141,9 @@ assert.equal(typeof agentSkill.setSkillNames, "function");
 assert.equal(typeof agentSkill.listSkillCatalog, "function");
 assert.equal(typeof agentSkill.getSkillCatalogEntry, "function");
 assert.equal(typeof agentSkill.installCatalogSkill, "function");
+assert.equal(typeof agentSkill.listSourceConflicts, "function");
+assert.equal(typeof agentSkill.getSourceConflict, "function");
+assert.equal(typeof agentSkill.resolveSourceConflict, "function");
 assert.deepEqual(agentSkill.builtinSkills, builtinSkills);
 
 const selectedSkill = new AgentSkill(["amazon-sku-profit-summary"]);

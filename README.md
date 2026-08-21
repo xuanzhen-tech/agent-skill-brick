@@ -147,6 +147,47 @@ await runtime.setSkillNames([legacy.name]);
 安装不访问生态服务器、GitHub API 或 GitHub Raw；`legacyEcosystemId` 只用于旧记录
 映射，不会触发远端下载。
 
+### 同名来源冲突
+
+用户先安装或创建本地 Skill、随后 SDK 发布同名官方 Skill 时，AgentSkill 不会按名称
+静默覆盖。冲突只阻止这一项进入当前可见索引，其它 Skill、目录查询、安装状态和
+`refresh()` 继续可用。Product 可以通过公开 API 获取并解决冲突：
+
+```js
+const pending = await agentSkill.listSourceConflicts({ status: "pending" });
+const conflict = await agentSkill.getSourceConflict(pending[0].conflictId);
+
+await agentSkill.resolveSourceConflict(conflict.conflictId, {
+  decision: "keep-local"
+});
+
+// 或在用户明确确认后原子替换为官方来源：
+await agentSkill.resolveSourceConflict(conflict.conflictId, {
+  decision: "use-official"
+});
+```
+
+`keep-local` 让现有本地来源恢复可见并抑制同名官方 provisioning；`use-official`
+复用受管安装事务替换目录和登记，失败时保留原安装。决定由 AgentSkill 持久化，
+Product 不应读取隐藏登记、直接删除目录或自行保存平行来源选择。
+
+来源决定绑定 canonical name、本地 installation identity 和官方 source identity，
+不绑定具体官方版本或内容 hash。官方升级和本地正常编辑不会重复询问；本地安装被
+删除后重新创建、或任一来源身份实质变化时，旧冲突会变成 `stale` 并产生新冲突。
+
+稳定错误码包括：
+
+```text
+skill_source_conflict_not_found
+skill_source_conflict_stale
+skill_source_conflict_status_invalid
+skill_source_decision_invalid
+skill_source_decision_conflict
+skill_source_resolution_failed
+```
+
+完整字段和生命周期见 [`docs/source-conflict-resolution.md`](docs/source-conflict-resolution.md)。
+
 core 预制目录包含 14 类跨境经营专家能力、SellerSprite ASIN 深度研究、既有经营
 分析和生图能力，以及通用 `skill-management` 元 Skill。
 ASIN 研究总控和五个研究模块均可独立选择，每个包都携带完整共享研究合同，安装
