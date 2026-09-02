@@ -1,6 +1,7 @@
 ---
 name: amazon-ad-performance-diagnosis
 description: 对用户或可信上游提供的真实 Amazon 广告报表执行报告生命周期、范围、完整性、粒度、稳定 ID 联接、指标重算和驱动诊断，并可按职责组合 SIF 广告可见流量、SellerSprite PPC/广告排名与 Sorftime 自然排名趋势作外部对照。适用于广告表现复盘、异常定位、预算与搜索词决策前的数据验收；不适用于调用 Ads API、拉取或下载报表、用供应商观察替代曝光点击花费归因数据、自动调账或把外部观察写成因果。
+requiredTools: [spreadsheet_inspect, spreadsheet_compute, spreadsheet_validate]
 ---
 
 <!--
@@ -56,6 +57,17 @@ Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword
 - `temp/advertising/<case-id>/02-performance-diagnosis/` 存放报告清单、标准化、联接、重算和诊断草稿；
 - `outputs/advertising/<case-id>/02-performance-diagnosis/` 存放唯一正式诊断；
 - 原始文件和原字段值不覆盖，所有转换创建新记录。
+
+### 表格计算与数据闭环
+
+合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，必须按以下顺序处理：
+
+1. 先调用 `spreadsheet_inspect`，根据返回的候选区域明确选择 `tableId`；不得根据 sheet 名或首行自行猜测数据表；
+2. 所有正式金额、比率、汇总、分组和联接均由 `spreadsheet_compute` 完成；不得使用模型心算、图表读数、旧报告摘要或工作簿公式缓存作为数据真值；
+3. 正式交付前必须调用 `spreadsheet_validate`，金额对账默认使用 `0.01` 绝对容差，并检查实体 ID、关键词集合、字段覆盖和联接基数；
+4. 正文、表格、图表和看板必须引用同一分析下返回的 `analysisId/resultId`，可视化使用对应 `dataRef`，不得复制数字后重新计算；
+5. 必需检查失败时，只交付差异、可用范围和补数清单，不继续生成正式诊断或经营策略；
+6. MCP 数据始终作为独立供应商观察，不得并入第一方广告金额的计算结果。
 
 ### 证据与判断
 

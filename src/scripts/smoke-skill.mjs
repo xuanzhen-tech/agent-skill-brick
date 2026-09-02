@@ -626,6 +626,36 @@ try {
   );
   assert.equal(opportunityAsset.asset.path, "assets/templates/discovery-report-template.md");
 
+  // 五个广告数据 Skill 必须把确定性表格链路作为公开依赖，并在完整正文中明确
+  // inspect -> compute -> validate、canonical result 和失败关闭语义。
+  const spreadsheetSkillNames = [
+    "amazon-ad-performance-diagnosis",
+    "amazon-ad-budget-and-acos-planning",
+    "amazon-ad-portfolio-planning",
+    "amazon-ad-search-term-optimization",
+    "amazon-kpi-reporting-system"
+  ];
+  const spreadsheetSkillRoot = path.join(tempRoot, "spreadsheet-skills-managed");
+  const spreadsheetSkills = new AgentSkill({
+    skillsPath: spreadsheetSkillRoot,
+    skills: spreadsheetSkillNames
+  });
+  await spreadsheetSkills.refresh();
+  assert.deepEqual(spreadsheetSkills.definitions.map((skill) => skill.name).sort(), [...spreadsheetSkillNames].sort());
+  for (const definition of spreadsheetSkills.definitions) {
+    assert.deepEqual(definition.requiredTools, [
+      "spreadsheet_inspect",
+      "spreadsheet_compute",
+      "spreadsheet_validate"
+    ]);
+    const activated = await spreadsheetSkills.activate(definition.name);
+    assert.match(activated.loadedSkill.content, /spreadsheet_inspect/);
+    assert.match(activated.loadedSkill.content, /spreadsheet_compute/);
+    assert.match(activated.loadedSkill.content, /spreadsheet_validate/);
+    assert.match(activated.loadedSkill.content, /analysisId\/resultId/);
+    assert.match(activated.loadedSkill.content, /补数清单/);
+  }
+
   // 同名目录若不是由 builtin 安装记录管理，不能被预制 catalog 覆盖或误暴露。
   const collisionRoot = path.join(tempRoot, "builtin-collision");
   await writeSkill(path.join(collisionRoot, "amazon-sku-profit-summary"), {

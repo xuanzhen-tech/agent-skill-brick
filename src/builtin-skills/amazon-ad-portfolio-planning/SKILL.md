@@ -1,6 +1,7 @@
 ---
 name: amazon-ad-portfolio-planning
 description: 基于商品目标、站点、账户范围、预算边界、上游关键词和已验证利润约束，设计可供人工实施的 Amazon 广告 Portfolio、Campaign、Ad Group、Target 与 Ad 结构规格，并可按职责组合 SIF 广告可见结构、SellerSprite PPC/广告排名与 Sorftime 自然排名趋势作外部观察。适用于新建广告架构、重组计划、命名治理和上线前就绪检查；不适用于调用 Ads API、创建或修改广告、自动调价、预算执行或用供应商观察冒充广告账户数据。
+requiredTools: [spreadsheet_inspect, spreadsheet_compute, spreadsheet_validate]
 ---
 
 <!--
@@ -55,6 +56,12 @@ Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword
 - `temp/advertising/<case-id>/01-portfolio-planning/` 存放实体草图、目标映射、冲突和实施清单；
 - `outputs/advertising/<case-id>/01-portfolio-planning/` 存放唯一正式规划；
 - 人工执行后的 ID 回填作为新版本输入，不覆盖原计划。
+
+### 表格计算与数据闭环
+
+合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，先用 `spreadsheet_inspect` 明确候选区域和 `tableId`。预算汇总、实体数量、组合分配、ID 联接及比例由 `spreadsheet_compute` 形成，禁止模型心算、读取图表数值或复用未经验证的旧摘要。
+
+正式规格交付前必须执行 `spreadsheet_validate`，货币对账默认使用 `0.01` 绝对容差，并检查实体集合、字段覆盖、唯一键与联接基数。正文、表格、图表和看板引用同一分析下的 `analysisId/resultId`。必需检查失败时，只提交差异、可用范围和补数清单，不继续给出正式 Portfolio 或预算策略；MCP 观察不得并入第一方金额。
 
 ### 证据与判断
 
