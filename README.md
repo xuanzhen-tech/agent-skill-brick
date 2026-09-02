@@ -196,6 +196,13 @@ SIF、SellerSprite 和 Sorftime MCP，但不保存连接配置或密钥。专家
 以及“专家对应哪些 skill”的映射仍由产品管理；本积木只按名称选择、安装和
 开放 skill，不在 SDK 内部创建专家角色或固定工作流。
 
+其中广告绩效诊断、预算与 ACoS、Portfolio、搜索词优化和 KPI 报表五个 Skill
+在存在 XLSX/XLSM/CSV/TSV 输入时，要求按
+`spreadsheet_inspect -> spreadsheet_compute -> spreadsheet_validate` 完成确定性计算和
+数据闭环。它们只声明所需工具与交付规则；解析、Decimal 运算、对账和 canonical
+`dataRef` 由 AgentTool 执行，产品端不重复实现计算逻辑。产品启用这些 Skill 时应在
+同一个 AgentTool 白名单中选择三个表格工具和所需可视化工具。
+
 `skill-management` 说明 Skill 的发现、远端安装、激活、资源读取、创建、更新、
 删除、冲突、可见性和受管路径机制。`skill_find`、`skill_activate`、`skill_resource`、
 `skill_create` 与 `skill_remove` 各自承担一个清晰阶段；其中创建和删除能力仍要求产品显式选择

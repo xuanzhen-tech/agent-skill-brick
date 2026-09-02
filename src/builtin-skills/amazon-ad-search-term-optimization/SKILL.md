@@ -1,6 +1,7 @@
 ---
 name: amazon-ad-search-term-optimization
 description: 将真实 Search Term、Target 与实体报表同第02专家关键词证据联接，并可按职责组合 SIF 关键词/流量贡献、SellerSprite PPC/广告排名与 Sorftime 自然排名趋势作独立外部对照，形成收割、迁移、否定候选、观察和人工复核行动账本。适用于搜索词治理、目标迁移和否定准备；不适用于重新做市场关键词研究、用供应商观察推断广告查询或替代真实报表、自动添加或否定关键词、修改匹配类型或提交广告账户变更。
+requiredTools: [spreadsheet_inspect, spreadsheet_compute, spreadsheet_validate]
 ---
 
 <!--
@@ -57,6 +58,12 @@ Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword
 - `temp/advertising/<case-id>/03-search-term-optimization/` 存放联接、分类、冲突和行动草稿；
 - `outputs/advertising/<case-id>/03-search-term-optimization/` 存放唯一正式行动账本；
 - 人工执行回执作为新版本证据，不覆盖建议。
+
+### 表格计算与数据闭环
+
+合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，必须先调用 `spreadsheet_inspect` 并明确 `tableId`。花费、销售额、点击、订单、转化率及搜索词与实体联接只能由 `spreadsheet_compute` 形成，不得由模型心算，也不得把 ASIN、图表读数或旧报告摘要当作关键词事实。
+
+正式行动账本前必须调用 `spreadsheet_validate`，货币对账默认使用 `0.01` 绝对容差，并检查字段覆盖、稳定 ID、搜索词集合和联接基数。正文、表格、图表与看板引用同一分析下的 `analysisId/resultId`。必需检查失败时，只交付差异说明、可用范围和补数清单，不输出正式收割、迁移或否定策略；MCP 观察保持独立。
 
 ### 证据与判断
 

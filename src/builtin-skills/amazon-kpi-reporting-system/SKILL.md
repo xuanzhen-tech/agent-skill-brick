@@ -1,6 +1,7 @@
 ---
 name: amazon-kpi-reporting-system
 description: 基于用户一方输入与可信上游结果定义版本化 KPI 口径，并可将 SIF、SellerSprite、Sorftime 的关键词、ASIN、流量、销量、广告和市场趋势作为独立外部观察。适用于指标定义、按需报表、周期对比和数据就绪度；不适用于重建利润/库存、后台任务、自动推送，或用供应商观察替代第一方 KPI。
+requiredTools: [spreadsheet_inspect, spreadsheet_compute, spreadsheet_validate]
 ---
 
 <!--
@@ -30,6 +31,12 @@ description: 基于用户一方输入与可信上游结果定义版本化 KPI �
 没有第一方 KPI 材料时，可交数据准备清单和外部市场附录，不能生成看似正式的经营 KPI。
 
 `uploads/` 只读；过程材料写入 `temp/data-analysis/<run-id>/04-kpi/`，正式结果写入 `outputs/data-analysis/<run-id>/04-kpi/`。
+
+## 表格计算与数据闭环
+
+合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，必须先调用 `spreadsheet_inspect` 并明确 `tableId`。KPI 分子、分母、汇总、周期差额和比率只能由 `spreadsheet_compute` 的 Decimal 结果形成，不得使用模型心算、图表读数、旧报告摘要或工作簿公式缓存。
+
+正式 KPI 报表前必须调用 `spreadsheet_validate`，货币对账默认使用 `0.01` 绝对容差，并检查字段覆盖、唯一性、期间实体集合和指标恒等式。正文、表格、图表和看板引用同一分析下的 `analysisId/resultId`，可视化使用对应 `dataRef`。必需检查失败时，只交付差异、可用范围和补数清单，不输出正式 KPI 判断或策略。MCP 数据始终作为独立外部观察，不进入第一方 KPI 分子或分母。
 
 ## 执行流程
 

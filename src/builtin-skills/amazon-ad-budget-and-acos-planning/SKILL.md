@@ -1,6 +1,7 @@
 ---
 name: amazon-ad-budget-and-acos-planning
 description: 区分实际、目标和保本 ACoS 以及 TACoS，消费真实广告报表与第14专家已验证经济边界，并可按职责组合 SIF、SellerSprite 与 Sorftime 的关键词推广、PPC 或自然趋势作为外部供应商观察，形成透明预算情景和人工决策护栏。适用于预算规划、花费节奏复核和盈亏边界评估；不适用于固定预算比例、行业阈值、自动改预算/竞价、预测必然销量或用供应商观察代替一方销售与广告报表。
+requiredTools: [spreadsheet_inspect, spreadsheet_compute, spreadsheet_validate]
 ---
 
 <!--
@@ -58,6 +59,12 @@ Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword
 - `temp/advertising/<case-id>/04-budget-acos-planning/` 存放口径对齐、公式、情景和决策草稿；
 - `outputs/advertising/<case-id>/04-budget-acos-planning/` 存放唯一正式规划；
 - 上游利润版本或归因数据变化时创建新版本。
+
+### 表格计算与数据闭环
+
+合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，必须先 `spreadsheet_inspect` 并明确 `tableId`。实际 ACoS/TACoS、预算合计、差额、比例和情景运算全部通过 `spreadsheet_compute` 的 Decimal 结果形成，不得心算、复制旧报告数值或信任公式缓存。
+
+正式规划前必须调用 `spreadsheet_validate`：货币对账默认使用 `0.01` 绝对容差，同时检查期间、实体集合、预算恒等式和字段覆盖。正文、表格、图表与看板引用同一分析下的 `analysisId/resultId`，可视化使用对应 `dataRef`。任一必需检查失败时，只交付差异说明、可用范围和补数清单，不输出正式预算策略。MCP 供应商观察不得混入第一方花费、销售额或预算结果。
 
 ### 证据与判断
 
