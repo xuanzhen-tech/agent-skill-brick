@@ -59,6 +59,8 @@ Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword
 
 ### 表格计算与数据闭环
 
+若输入为 ZIP，先使用 `run_shell` 解压到本次任务的 `temp/` 目录并列出实际 XLSX、XLSM、CSV、TSV；不要把 ZIP 传给表格工具。存在多个表格文件时，必须通过一次 `spreadsheet_inspect({ sources })` 纳入同一个 `analysisId`，先处理 `failedSources`、重复来源和日期重叠，再显式记录 `sourceDecisions`。同类报表通过 `from.type=union` 与明确 `columnMap` 纵向合并，不同粒度数据仍使用声明了基数的 `joins`；不得逐文件心算或用临时脚本拼接最终金额。正式交付需包含必需的 `source_coverage` 校验，证明每个来源已被使用或有证据地排除。
+
 合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，先用 `spreadsheet_inspect` 明确候选区域和 `tableId`。预算汇总、实体数量、组合分配、ID 联接及比例由 `spreadsheet_compute` 形成，禁止模型心算、读取图表数值或复用未经验证的旧摘要。
 
 正式规格交付前必须执行 `spreadsheet_validate`，货币对账默认使用 `0.01` 绝对容差，并检查实体集合、字段覆盖、唯一键与联接基数。正文、表格、图表和看板引用同一分析下的 `analysisId/resultId`。必需检查失败时，只提交差异、可用范围和补数清单，不继续给出正式 Portfolio 或预算策略；MCP 观察不得并入第一方金额。

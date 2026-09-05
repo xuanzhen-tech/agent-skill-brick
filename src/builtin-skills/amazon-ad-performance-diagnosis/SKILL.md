@@ -60,6 +60,8 @@ Sorftime 精确写工具黑名单为 `favorite_keyword | change_favorite_keyword
 
 ### 表格计算与数据闭环
 
+若输入为 ZIP，先使用 `run_shell` 解压到本次任务的 `temp/` 目录并列出实际 XLSX、XLSM、CSV、TSV；不要把 ZIP 传给表格工具。存在多个表格文件时，必须通过一次 `spreadsheet_inspect({ sources })` 纳入同一个 `analysisId`，先处理 `failedSources`、重复来源和日期重叠，再显式记录 `sourceDecisions`。同类报表通过 `from.type=union` 与明确 `columnMap` 纵向合并，不同粒度数据仍使用声明了基数的 `joins`；不得逐文件心算或用临时脚本拼接最终金额。正式交付需包含必需的 `source_coverage` 校验，证明每个来源已被使用或有证据地排除。
+
 合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，必须按以下顺序处理：
 
 1. 先调用 `spreadsheet_inspect`，根据返回的候选区域明确选择 `tableId`；不得根据 sheet 名或首行自行猜测数据表；
