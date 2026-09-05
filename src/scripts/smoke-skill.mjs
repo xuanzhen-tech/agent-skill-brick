@@ -654,6 +654,11 @@ try {
     assert.match(activated.loadedSkill.content, /spreadsheet_validate/);
     assert.match(activated.loadedSkill.content, /analysisId\/resultId/);
     assert.match(activated.loadedSkill.content, /补数清单/);
+    assert.match(activated.loadedSkill.content, /spreadsheet_inspect\(\{ sources \}\)/);
+    assert.match(activated.loadedSkill.content, /sourceDecisions/);
+    assert.match(activated.loadedSkill.content, /source_coverage/);
+    assert.match(activated.loadedSkill.content, /run_shell/);
+    assert.match(activated.loadedSkill.content, /temp\//);
   }
 
   // 同名目录若不是由 builtin 安装记录管理，不能被预制 catalog 覆盖或误暴露。

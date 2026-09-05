@@ -34,6 +34,8 @@ requiredTools: [spreadsheet_inspect, spreadsheet_compute, spreadsheet_validate]
 
 ## 表格计算与数据闭环
 
+若输入为 ZIP，先使用 `run_shell` 解压到本次任务的 `temp/` 目录并列出实际 XLSX、XLSM、CSV、TSV；不要把 ZIP 传给表格工具。存在多个表格文件时，必须通过一次 `spreadsheet_inspect({ sources })` 纳入同一个 `analysisId`，先处理 `failedSources`、重复来源和日期重叠，再显式记录 `sourceDecisions`。同类报表通过 `from.type=union` 与明确 `columnMap` 纵向合并，不同粒度数据仍使用声明了基数的 `joins`；不得逐文件心算或用临时脚本拼接最终金额。正式交付需包含必需的 `source_coverage` 校验，证明每个来源已被使用或有证据地排除。
+
 合法输入中存在 XLSX、XLSM、CSV 或 TSV 时，必须先调用 `spreadsheet_inspect` 并明确 `tableId`。KPI 分子、分母、汇总、周期差额和比率只能由 `spreadsheet_compute` 的 Decimal 结果形成，不得使用模型心算、图表读数、旧报告摘要或工作簿公式缓存。
 
 正式 KPI 报表前必须调用 `spreadsheet_validate`，货币对账默认使用 `0.01` 绝对容差，并检查字段覆盖、唯一性、期间实体集合和指标恒等式。正文、表格、图表和看板引用同一分析下的 `analysisId/resultId`，可视化使用对应 `dataRef`。必需检查失败时，只交付差异、可用范围和补数清单，不输出正式 KPI 判断或策略。MCP 数据始终作为独立外部观察，不进入第一方 KPI 分子或分母。
