@@ -1,6 +1,9 @@
 ---
 name: logistics-customer-prospecting
 description: 为跨境物流、货代或履约服务商发现可能有国际运输需求的企业客户，将平台店铺或供应商线索解析为唯一法定主体，补全可追溯的公开商务联系方式并形成待人工触达的线索表。适用于按品类、线路、国家或客户画像开展小批量拓客与数据验证；不适用于自动群发/外呼、购买泄露名单、绕过登录或验证码、无证据猜测主体或联系人。
+version: 0.1.0
+capabilities: [logistics-prospecting, company-research, contact-enrichment]
+requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 ---
 
 <!--
@@ -48,7 +51,7 @@ description: 为跨境物流、货代或履约服务商发现可能有国际运�
 - 当前 Agent 已注入且获授权使用的供应商平台采集、企业信息和公开网页工具；
 - 业务人工确认的联系结果、拒绝联系状态和 CRM 历史。
 
-不得读取或要求用户把 API Key、Cookie、密码写入 Prompt、Skill、工作簿或日志。密钥只能由产品运行时的 Secret Manager 注入。
+不得读取或要求用户把 API Key、Cookie、密码写入 Prompt、Skill、工作簿或日志。MCP 密钥只能由服务端 Gateway 的 Secret 配置注入，Product、Agent 和工作区均不得持有。
 
 ## 工作区约定
 
@@ -80,6 +83,8 @@ description: 为跨境物流、货代或履约服务商发现可能有国际运�
 
 八爪鱼只负责发现店铺、供应商或企业线索，不承担联系方式终态。
 
+所有八爪鱼能力均通过 `bazhuayu_mcp` 渐进调用：先用 `help` 确认服务状态，再以 `search` 查找能力，以 `describe` 读取精确 Schema，最后以 `call` 传入远端工具名和 `arguments`。下列 `search_templates`、`execute_task` 等名称都是 `call.name`，不是可直接调用的顶层 AgentTool；不得凭本文猜测参数。
+
 使用约束：
 
 1. 先用 `search_templates` 查找模板，并检查模板输入与输出字段是否满足当前平台、对象和关键词；模板名称相似不等于语义正确。
@@ -94,7 +99,7 @@ description: 为跨境物流、货代或履约服务商发现可能有国际运�
 
 ### 企查查 MCP：中国法定主体与联系方式
 
-企查查只处理能够合理映射到中国法定主体的候选。允许工具限定为：
+企查查只处理能够合理映射到中国法定主体的候选。所有能力均通过 `qcc_company_mcp` 渐进调用：先用 `help`，再用 `search` 和 `describe` 获取本次实际合同，最后用 `call` 执行。下列名称都是 `call.name`，不是顶层 AgentTool。允许的远端工具限定为：
 
 - `get_company_by_query`
 - `verify_company_accuracy`
