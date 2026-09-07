@@ -26,7 +26,7 @@ const builtinRoot = fileURLToPath(new URL("../builtin-skills", import.meta.url))
 const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "agent-skill-ecosystem-validation-"));
 
 try {
-  assert.equal(listBuiltinSkills().length, 79, "legacy builtin catalog must remain core-only");
+  assert.equal(listBuiltinSkills().length, 80, "legacy builtin catalog must remain core-only");
   const catalog = readAllCatalog({ collections: ["ecosystem"] });
   assert.equal(catalog.length, expectedEcosystemCount);
   assert.equal(new Set(catalog.map((entry) => entry.name)).size, expectedEcosystemCount);

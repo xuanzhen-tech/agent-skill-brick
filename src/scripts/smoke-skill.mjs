@@ -540,6 +540,7 @@ try {
     "amazon-operating-analysis",
     "amazon-product-image-generation",
     "ecommerce-product-video-generation",
+    "logistics-customer-prospecting",
     // skill-management 是通用元 Skill，不属于十四位业务专家的 64 项能力。
     "skill-management",
     // 运营复盘自助链路由 Product 按需组合，不属于十四位专家的固定能力集。
@@ -586,6 +587,39 @@ try {
     assert.equal(activated.loadedSkill.name, skillName);
     assert.equal(activated.loadedSkill.content.length > 0, true);
   }
+
+  // 物流拓客 Skill 必须按 AgentMcp 的渐进式 Provider 合同调用八爪鱼和企查查，
+  // 并将证据合同与正式交付模板作为真实包资源发布。
+  const logisticsRoot = path.join(tempRoot, "logistics-prospecting-managed");
+  const logisticsSkills = new AgentSkill({
+    skillsPath: logisticsRoot,
+    skills: ["logistics-customer-prospecting"]
+  });
+  await logisticsSkills.refresh();
+  assert.deepEqual(logisticsSkills.definitions.map((skill) => skill.name), [
+    "logistics-customer-prospecting"
+  ]);
+  assert.deepEqual(logisticsSkills.definitions[0].requiredTools, [
+    "bazhuayu_mcp",
+    "qcc_company_mcp"
+  ]);
+  const activatedLogistics = await logisticsSkills.activate("logistics-customer-prospecting");
+  assert.match(activatedLogistics.loadedSkill.content, /bazhuayu_mcp/);
+  assert.match(activatedLogistics.loadedSkill.content, /qcc_company_mcp/);
+  assert.match(activatedLogistics.loadedSkill.content, /search.*describe.*call/s);
+  const logisticsEvidence = await logisticsSkills.readReference(
+    "logistics-customer-prospecting",
+    "references/prospecting-evidence-contract.md"
+  );
+  assert.match(logisticsEvidence.loadedSkillReference.content, /entity_unique_match/);
+  const logisticsTemplate = await logisticsSkills.resolveAsset(
+    "logistics-customer-prospecting",
+    "assets/templates/logistics-prospecting-delivery-template.md"
+  );
+  assert.equal(
+    logisticsTemplate.asset.path,
+    "assets/templates/logistics-prospecting-delivery-template.md"
+  );
 
   // 通用 Skill 管理指南也必须作为真实预制包完成安装、激活和 reference 读取，不能
   // 只在 catalog 中登记一条不可用元数据。

@@ -5,7 +5,7 @@
 `agent-skill-brick` 是统一 Skill 目录、离线包、受管安装、索引和 Agent 白名单
 语义的 owner。它不实现 Product 页面，也不保存 Product 的角色或专家配置。
 
-共享目录当前包含 79 个 `core` Skill 和 203 个 `ecosystem` Skill。生态内容来自
+共享目录当前包含 80 个 `core` Skill 和 203 个 `ecosystem` Skill。生态内容来自
 既有详情服务中已经翻译和加工的正文，内容在发版前固化进仓库；构建、安装和
 运行时均不访问详情服务或 GitHub。
 

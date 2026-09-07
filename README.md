@@ -107,7 +107,7 @@ import { listBuiltinSkills } from "@xuanzhen-tech/agent-skill-brick";
 console.log(listBuiltinSkills());
 ```
 
-`listBuiltinSkills()` 保持兼容，只返回现有 79 个 core Skill。统一共享池另外包含
+`listBuiltinSkills()` 保持兼容，只返回现有 80 个 core Skill。统一共享池另外包含
 203 个已经翻译和加工的 ecosystem Skill；它们随 SDK 和 runtime artifact 离线
 发布，但不会自动安装、启用或注入上下文。
 
