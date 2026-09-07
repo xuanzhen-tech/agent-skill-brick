@@ -60,6 +60,12 @@ const BASE_BUILTIN_SKILLS = [
     description: "把一张真实商品照片和简单意图扩写为高质量商品视频提示词，并调用 Seedance 生成可交付 MP4；适用于电商商品展示、广告素材、详情页动态演示和社媒短视频，不处理真人或数字人视频。"
   }),
   Object.freeze({
+    id: "logistics-customer-prospecting",
+    name: "logistics-customer-prospecting",
+    version: "0.1.0",
+    description: "为跨境物流、货代或履约服务商发现可能有国际运输需求的企业客户，将平台店铺或供应商线索解析为唯一法定主体，补全可追溯的公开商务联系方式并形成待人工触达的线索表。适用于按品类、线路、国家或客户画像开展小批量拓客与数据验证；不适用于自动群发/外呼、购买泄露名单、绕过登录或验证码、无证据猜测主体或联系人。"
+  }),
+  Object.freeze({
     id: "skill-management",
     name: "skill-management",
     version: "0.2.0",

@@ -540,6 +540,7 @@ try {
     "amazon-operating-analysis",
     "amazon-product-image-generation",
     "ecommerce-product-video-generation",
+    "logistics-customer-prospecting",
     // skill-management 是通用元 Skill，不属于十四位业务专家的 64 项能力。
     "skill-management",
     // 运营复盘自助链路由 Product 按需组合，不属于十四位专家的固定能力集。
