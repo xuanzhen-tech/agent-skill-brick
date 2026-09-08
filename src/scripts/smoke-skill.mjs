@@ -607,6 +607,9 @@ try {
   assert.match(activatedLogistics.loadedSkill.content, /bazhuayu_mcp/);
   assert.match(activatedLogistics.loadedSkill.content, /qcc_company_mcp/);
   assert.match(activatedLogistics.loadedSkill.content, /search.*describe.*call/s);
+  assert.match(activatedLogistics.loadedSkill.content, /默认工作簿固定为 4 个 Sheet/);
+  assert.match(activatedLogistics.loadedSkill.content, /首联话术默认直接放在第一个 Sheet/);
+  assert.match(activatedLogistics.loadedSkill.content, /聊天正文只给关键结论、风险提示和文件路径/);
   const logisticsEvidence = await logisticsSkills.readReference(
     "logistics-customer-prospecting",
     "references/prospecting-evidence-contract.md"
@@ -620,6 +623,10 @@ try {
     logisticsTemplate.asset.path,
     "assets/templates/logistics-prospecting-delivery-template.md"
   );
+  const logisticsTemplateContent = await fs.readFile(logisticsTemplate.asset.absolutePath, "utf8");
+  assert.match(logisticsTemplateContent, /线索与首联/);
+  assert.match(logisticsTemplateContent, /默认严格 4 个 Sheet/);
+  assert.match(logisticsTemplateContent, /不使用合并单元格/);
 
   // 通用 Skill 管理指南也必须作为真实预制包完成安装、激活和 reference 读取，不能
   // 只在 catalog 中登记一条不可用元数据。
