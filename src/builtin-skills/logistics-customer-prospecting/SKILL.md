@@ -1,7 +1,7 @@
 ---
 name: logistics-customer-prospecting
 description: 为跨境物流、货代或履约服务商发现可能有国际运输需求的企业客户，将平台店铺或供应商线索解析为唯一法定主体，补全可追溯的公开商务联系方式并形成待人工触达的线索表。适用于按品类、线路、国家或客户画像开展小批量拓客与数据验证；不适用于自动群发/外呼、购买泄露名单、绕过登录或验证码、无证据猜测主体或联系人。
-version: 0.2.0
+version: 0.2.1
 capabilities: [logistics-prospecting, company-research, contact-enrichment]
 requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 ---
@@ -85,6 +85,8 @@ requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 
 所有八爪鱼能力均通过 `bazhuayu_mcp` 渐进调用：先用 `help` 确认服务状态，再以 `search` 查找能力，以 `describe` 读取精确 Schema，最后以 `call` 传入远端工具名和 `arguments`。下列 `search_templates`、`execute_task` 等名称都是 `call.name`，不是可直接调用的顶层 AgentTool；不得凭本文猜测参数。
 
+每个运行批次对 `help` 最多调用一次。不得把 `help`、工具目录或原始大结果复制进回答；只保留本次实际使用的远端工具名、Schema 摘要和结果引用。结果被压缩或物化时，按返回的分页或结果读取能力分段读取所需字段，不能为恢复一小段信息反复读取整份结果。
+
 使用约束：
 
 1. 先用 `search_templates` 查找模板，并检查模板输入与输出字段是否满足当前平台、对象和关键词；模板名称相似不等于语义正确。
@@ -94,6 +96,8 @@ requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 5. `start_or_stop_task` 会改变已有任务状态，必须得到用户对该具体任务的明确授权。
 6. 禁止调用 `redeem_coupon_code`。
 7. 保存模板 ID、输入 Schema、参数摘要、任务 ID、`lotNo`、分页范围、状态和行数；不保存密钥。
+8. 返回 `insufficient_balance`、`quota_exhausted` 或等价余额不足状态时，该能力在本批次立即终止，禁止重试同一请求、改写参数规避计费或循环查询；只允许继续使用已经创建且可恢复的任务，或者在合同明确允许且不会重复计费时走既有任务的 `get_task_status -> export_data` 路径。
+9. `export_data` 返回临时签名下载 URL 时，不得把 URL 交给 `run_shell`、Python、浏览器或其它通用工具下载，也不得把 URL 写入工作区、报告或聊天。只有 MCP 返回可直接物化的文件或 workspace artifact 时才视为已完成本地导出；否则记录 `export_artifact_unavailable`，说明数据已导出但未安全落盘，并停止该下载步骤。
 
 模板没有电话、邮箱或官网字段时，按 `not_provided_by_discovery_source` 记录，不得从空值推断“企业没有联系方式”。
 
@@ -108,12 +112,17 @@ requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 
 执行顺序：
 
-1. 平台英文名、店铺名或品牌名先进入实体证据解析；不能只把英文名直传后把“无匹配”写成企业不存在。
-2. 用中文法定主体候选调用 `get_company_by_query`。
-3. 只有唯一候选，且名称、英文名、地区、地址、成立日期、官网或统一社会信用代码等证据足以支持时，状态才能进入 `entity_unique_match`。
-4. 用 `get_company_registration_info` 或 `verify_company_accuracy` 复核主体。
-5. 仅对唯一主体，以法定名称或统一社会信用代码调用 `get_contact_info`；电话查询应使用 `excludeInvalidPhone=true`。
-6. 无匹配、多候选或关键证据冲突时停止联系方式调用，进入人工研究或复核队列。
+1. 先为每个候选建立 `qcc_query_key`。它只能是有来源证据的中文法定名称或 18 位统一社会信用代码；英文企业名、英文店铺名、品牌名、域名、机器翻译、拼音和 Agent 猜测的中文名都不是合格查询键。
+2. 没有合格 `qcc_query_key` 的记录标记为 `qcc_not_attempted_missing_legal_key`，不得调用 `get_company_by_query`。不能把“未调用”写成“未匹配”或“已核验”。
+3. 有合格查询键时先执行试查门禁：按证据强度排序，最多选 5 个不同主体调用 `get_company_by_query`。试查不得重复查询同一法定名称或信用代码。
+4. 如果试查命中数为 0，立即停止本批次剩余企查查调用，记录 `qcc_pilot_zero_match`，将未试查记录归为 `qcc_not_attempted_after_gate` 并转人工复核；禁止把其余英文名称继续逐条提交。
+5. 试查至少命中 1 个时，才允许对剩余具有合格查询键的候选继续查询。单条无匹配只表示该查询键在当前响应中未命中，不证明企业不存在。
+6. 只有唯一候选，且名称、英文名、地区、地址、成立日期、官网或统一社会信用代码等证据足以支持时，状态才能进入 `entity_unique_match`。
+7. 用 `get_company_registration_info` 或 `verify_company_accuracy` 复核主体。
+8. 仅对唯一主体，以法定名称或统一社会信用代码调用 `get_contact_info`；电话查询应使用 `excludeInvalidPhone=true`。
+9. 无匹配、多候选或关键证据冲突时停止该主体的联系方式调用，进入人工研究或复核队列。
+
+企查查批次必须分别统计并如实展示：`qcc_eligible`（有合格查询键）、`qcc_attempted`（实际查询）、`qcc_matched`（返回候选）、`qcc_verified`（完成主体复核）、`qcc_unresolved`（仍需人工处理）和 `qcc_not_attempted`（未查询）。`qcc_attempted` 才是查询分母；平台采集 60 条但企查查仅试查 5 条且 0 命中时，必须写“平台采集 60 条；企查查主体查询 0/5 命中，55 条未查询，需补充中文法定名称或统一社会信用代码”，不得写“已采集并复核 60 条”。
 
 `excludeInvalidPhone=true` 仅表示过滤企查查已知无效号码，不证明其余号码在职、归属正确、可接通或适合营销。
 
@@ -122,6 +131,8 @@ requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 可检查企业官网的 Contact、About、Imprint、Dealer、Wholesale、OEM/ODM 页面，以及公开展会目录、制造商档案或授权文件。只提取页面明确公开用于企业联系的内容，并保存 URL、访问日期、页面语境和联系方式角色。
 
 不得绕过登录、验证码、robots/访问限制，不得从私人社交账号、泄露数据库或非公开文档中提取信息。网页只能证明页面在该时间公开了某项陈述，不能单独证明法定主体或联系方式当前有效。
+
+同一域名连续 2 次 `web_fetch` 因访问限制、拒绝、验证码或等价不可访问状态失败后，本批次对该域名立即熔断，不再更换路径连续抓取。可使用 `web_search` 补充发现，但搜索摘要只能标为 `indirect_search_evidence`，不能等同官网页面核验；如需官网级结论，必须保留 `official_page_unverified` 缺口。
 
 ## 标准工作流
 
@@ -201,6 +212,8 @@ requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 
 按 `references/prospecting-evidence-contract.md` 计算发现相关率、唯一主体率、可联系企业率、待人工复核率、异常联系方式率和每个唯一可联系企业成本。失败记录不能静默丢弃。
 
+复盘必须把平台发现、企查查查询、企查查匹配、主体复核和联系方式补全视为不同阶段，不得用“采集并复核”合并描述。若任何阶段只覆盖样本，结论中必须同时给出该阶段分子、分母、未处理数量和停止原因。
+
 ## 状态机与失败关闭
 
 主路径：
@@ -228,6 +241,11 @@ discovered
 - `do_not_contact`：所有渠道停止营销并记录来源与生效时间；
 - `provider_timeout_or_unknown`：先恢复既有任务，无法恢复时停止并报告；
 - `provider_schema_changed`：隔离响应，不能按旧字段继续解析。
+- `provider_insufficient_balance`：本批次停止该付费能力，不重试；
+- `export_artifact_unavailable`：仅得到临时下载地址，未形成安全 workspace artifact；
+- `qcc_not_attempted_missing_legal_key`：缺少有证据的中文法定名称或统一社会信用代码；
+- `qcc_pilot_zero_match`：企查查试查最多 5 条且 0 命中，剩余查询熔断；
+- `official_page_unverified`：官网直连核验失败，搜索摘要不能替代。
 
 ## 正式交付
 
@@ -250,6 +268,10 @@ discovered
 - 八爪鱼任务可按唯一任务名恢复，没有因超时重复创建；
 - 发现源缺少联系方式没有被解释为企业无联系方式；
 - 平台名称到法定主体有逐项证据，非唯一主体没有进入企查查联系方式调用；
+- 企查查查询只使用有来源的中文法定名称或统一社会信用代码，0/5 试查未命中后没有继续批量调用；
+- 平台采集数、企查查合格数、实际查询数、匹配数、复核数、未解决数和未查询数分别报告；
+- 余额不足没有重试，临时签名 URL 没有进入通用 shell、工作区或交付；
+- 同域官网连续两次访问受限后已熔断，搜索摘要明确标为间接证据；
 - 电话、邮箱和网址逐条保存来源、日期、角色、验证和抑制状态；
 - 个人或免费邮箱、个人手机号、疑似代记账号码没有被默认列为高优先级；
 - 缺失、冲突、无匹配、无效和真实零值没有相互替代；

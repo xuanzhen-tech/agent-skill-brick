@@ -62,6 +62,19 @@
 - `error_code`
 - `recovery_action`
 
+企查查运行还必须记录：
+
+- `qcc_eligible`
+- `qcc_attempted`
+- `qcc_matched`
+- `qcc_verified`
+- `qcc_unresolved`
+- `qcc_not_attempted`
+- `qcc_gate_status`
+- `qcc_gate_reason`
+
+这些数量不得由平台发现总数代替。`qcc_attempted=0` 表示没有执行查询，不等于查询后 0 命中；`qcc_matched=0` 也不等于企业不存在。
+
 ### `source_lead`
 
 - `source_lead_id`
@@ -234,6 +247,14 @@
 - `ready_lead_rate = ready_for_human_outreach_companies / reviewed_source_leads`
 - `cost_per_unique_contactable_company = attributable_provider_cost / unique_companies_with_unsuppressed_contact`
 
+企查查主体核验必须额外给出绝对数量和明确分母：
+
+- `qcc_query_coverage = qcc_attempted / qcc_eligible`
+- `qcc_match_rate = qcc_matched / qcc_attempted`
+- `qcc_verification_rate = qcc_verified / qcc_attempted`
+
+试查 0/5 命中并触发门禁时，后续记录计入 `qcc_not_attempted`，不能计入 `qcc_attempted`，也不能称为已复核。
+
 目的性样本、便利样本和人工挑选样本必须标记，不能把其成功率外推到总体。分母为零时指标为 `not_computable`，不是 0%。
 
 ## 8. Evidence 写法
@@ -258,7 +279,12 @@
 - `provider_rate_limited`
 - `provider_schema_changed`
 - `provider_task_state_unknown`
+- `provider_insufficient_balance`
+- `export_artifact_unavailable`
 - `discovery_result_truncated`
+- `qcc_not_attempted_missing_legal_key`
+- `qcc_pilot_zero_match`
+- `official_page_unverified`
 - `entity_no_evidence`
 - `entity_no_match`
 - `entity_multiple_matches`
