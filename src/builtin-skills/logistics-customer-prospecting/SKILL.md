@@ -1,7 +1,7 @@
 ---
 name: logistics-customer-prospecting
 description: 为跨境物流、货代或履约服务商发现可能有国际运输需求的企业客户，将平台店铺或供应商线索解析为唯一法定主体，补全可追溯的公开商务联系方式并形成待人工触达的线索表。适用于按品类、线路、国家或客户画像开展小批量拓客与数据验证；不适用于自动群发/外呼、购买泄露名单、绕过登录或验证码、无证据猜测主体或联系人。
-version: 0.1.0
+version: 0.2.0
 capabilities: [logistics-prospecting, company-research, contact-enrichment]
 requiredTools: [bazhuayu_mcp, qcc_company_mcp]
 ---
@@ -231,17 +231,18 @@ discovered
 
 ## 正式交付
 
-使用 `assets/templates/logistics-prospecting-delivery-template.md`，至少输出：
+使用 `assets/templates/logistics-prospecting-delivery-template.md`。用户要求 Excel、工作簿、Sheet 或表格文件时，正式交付必须是 `.xlsx`，聊天正文只给关键结论、风险提示和文件路径，不再粘贴一份完整 Markdown 长报告。只有用户明确要求 Markdown 时才同时生成 `.md`。
 
-1. `lead-register`：一行一个企业，包含画像适配、唯一主体、首选联系方式、状态和下一步；
-2. `contact-evidence`：一行一个联系方式来源记录；
-3. `entity-evidence`：平台记录、主体候选、证据、冲突和匹配结论；
-4. `collection-runs`：模板、查询、范围、任务、行数、成本和错误；
-5. `manual-review-queue`：多候选、冲突、异常联系方式和责任人；
-6. `do-not-contact`：拒绝联系和抑制记录；
-7. `batch-summary`：质量与成本指标、限制和下一轮建议。
+默认工作簿固定为 4 个 Sheet，名称和顺序不得自行增加或拆分：
 
-若用户要求 Excel、CSV、飞书多维表格或 CRM 导入，保持上述实体分层和 `lead_id`/`company_id` 外键，不把多个电话或邮箱塞入一个不可追溯的文本单元格。
+1. `线索与首联`：一行一个企业，先放销售真正需要扫描的优先级、公司、画像适配、首选渠道、首联话术、状态和下一步；
+2. `联系方式证据`：一行一个联系方式来源，保留 `lead_id`/`company_id` 外键、来源、日期、验证和抑制状态；
+3. `主体与复核`：合并主体证据、冲突、匹配结论和人工复核队列；
+4. `批次摘要`：批次参数、采集任务、质量与成本指标、失败原因和限制。
+
+首联话术默认直接放在第一个 Sheet，不为每种渠道或每个企业新增 Sheet。只有用户明确要求独立话术表时才允许增加第 5 个 `首联话术` Sheet；此时第一个 Sheet 保留 `话术 ID` 和一句话摘要，第 5 个 Sheet 使用一行一条话术的结构，并以 `lead_id` 关联，不能复制成没有主键的长段落。
+
+工作簿必须保持实体分层和外键，不把多个电话、邮箱或证据塞入一个不可追溯的文本单元格。生成后检查 Sheet 数量、名称、列名、主外键、行数、公式错误和文件可打开性；验证失败不得把损坏文件作为正式交付。
 
 ## 质量门
 
