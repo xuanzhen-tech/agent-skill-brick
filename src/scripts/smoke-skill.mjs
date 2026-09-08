@@ -610,11 +610,20 @@ try {
   assert.match(activatedLogistics.loadedSkill.content, /默认工作簿固定为 4 个 Sheet/);
   assert.match(activatedLogistics.loadedSkill.content, /首联话术默认直接放在第一个 Sheet/);
   assert.match(activatedLogistics.loadedSkill.content, /聊天正文只给关键结论、风险提示和文件路径/);
+  assert.match(activatedLogistics.loadedSkill.content, /最多选 5 个不同主体/);
+  assert.match(activatedLogistics.loadedSkill.content, /qcc_pilot_zero_match/);
+  assert.match(activatedLogistics.loadedSkill.content, /qcc_attempted.*查询分母/s);
+  assert.match(activatedLogistics.loadedSkill.content, /insufficient_balance/);
+  assert.match(activatedLogistics.loadedSkill.content, /不得把 URL 交给 `run_shell`/);
+  assert.match(activatedLogistics.loadedSkill.content, /同一域名连续 2 次 `web_fetch`/);
+  assert.match(activatedLogistics.loadedSkill.content, /indirect_search_evidence/);
   const logisticsEvidence = await logisticsSkills.readReference(
     "logistics-customer-prospecting",
     "references/prospecting-evidence-contract.md"
   );
   assert.match(logisticsEvidence.loadedSkillReference.content, /entity_unique_match/);
+  assert.match(logisticsEvidence.loadedSkillReference.content, /qcc_query_coverage/);
+  assert.match(logisticsEvidence.loadedSkillReference.content, /qcc_not_attempted/);
   const logisticsTemplate = await logisticsSkills.resolveAsset(
     "logistics-customer-prospecting",
     "assets/templates/logistics-prospecting-delivery-template.md"
@@ -627,6 +636,8 @@ try {
   assert.match(logisticsTemplateContent, /线索与首联/);
   assert.match(logisticsTemplateContent, /默认严格 4 个 Sheet/);
   assert.match(logisticsTemplateContent, /不使用合并单元格/);
+  assert.match(logisticsTemplateContent, /企查查核验漏斗/);
+  assert.match(logisticsTemplateContent, /禁止使用“采集并复核 N 条”/);
 
   // 通用 Skill 管理指南也必须作为真实预制包完成安装、激活和 reference 读取，不能
   // 只在 catalog 中登记一条不可用元数据。
