@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "agent-skill.self-service-release.v1",
+  "version": "0.14.3",
+  "skills": [
+    {
+      "name": "skill-management",
+      "contentHash": "10f0ca29c9105a4d279d1bf13e0e4f113919adfa29467c58a2d3bb779d1bcc63",
+      "fileCount": 4
+    }
+  ]
+}
